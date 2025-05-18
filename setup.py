@@ -5,13 +5,19 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash
 import sys
 
+# Update this to match your SQL Server instance
+# For default instance use: 'localhost' or '.'
+# For named instance use: 'localhost\\INSTANCENAME' or '.\\INSTANCENAME'
+# For example: 'localhost\\SQLEXPRESS'
+SQL_SERVER_INSTANCE = 'localhost'
+
 def create_database():
     """Create the SchoolRecommendation database if it doesn't exist."""
     try:
         # Connect to the master database to create our database
         conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=localhost;'
+            f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+            f'SERVER={SQL_SERVER_INSTANCE};'
             'DATABASE=master;'
             'Trusted_Connection=yes;'
         )
@@ -42,8 +48,8 @@ def create_tables():
     try:
         # Connect to our database
         conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=localhost;'
+            f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+            f'SERVER={SQL_SERVER_INSTANCE};'
             'DATABASE=SchoolRecommendation;'
             'Trusted_Connection=yes;'
         )
@@ -199,8 +205,8 @@ def add_sample_data():
     try:
         # Connect to our database
         conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=localhost;'
+            f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+            f'SERVER={SQL_SERVER_INSTANCE};'
             'DATABASE=SchoolRecommendation;'
             'Trusted_Connection=yes;'
         )
@@ -293,6 +299,26 @@ def add_sample_data():
         print(f"Error adding sample data: {e}")
         return False
 
+def update_config_file():
+    """Update the config.py file with the correct server instance name."""
+    try:
+        with open('config.py', 'r') as f:
+            config_content = f.read()
+        
+        # Update the server name in the connection string
+        old_connection = "SERVER=localhost;DATABASE=SchoolRecommendation;"
+        new_connection = f"SERVER={SQL_SERVER_INSTANCE};DATABASE=SchoolRecommendation;"
+        config_content = config_content.replace(old_connection, new_connection)
+        
+        with open('config.py', 'w') as f:
+            f.write(config_content)
+        
+        print(f"Updated config.py to use SQL Server instance: {SQL_SERVER_INSTANCE}")
+        return True
+    except Exception as e:
+        print(f"Error updating config.py: {e}")
+        return False
+
 def main():
     print("Setting up SchoolRecommendation database...")
     
@@ -335,6 +361,22 @@ def main():
                 return
         else:
             print("Continuing with ODBC Driver 17 for SQL Server, but setup might fail.")
+    
+    # Ask for the SQL Server instance name
+    use_different_instance = input(f"The current SQL Server instance name is '{SQL_SERVER_INSTANCE}'. Do you want to change it? (y/n): ")
+    if use_different_instance.lower() == 'y':
+        print("\nEnter your SQL Server instance name. Examples:")
+        print("  - For default instance use: 'localhost' or '.'")
+        print("  - For named instance use: 'localhost\\INSTANCENAME' or '.\\SQLEXPRESS'")
+        
+        new_instance = input("SQL Server instance name: ")
+        if new_instance:
+            global SQL_SERVER_INSTANCE
+            SQL_SERVER_INSTANCE = new_instance
+            print(f"Using SQL Server instance: {SQL_SERVER_INSTANCE}")
+            
+            # Update config.py
+            update_config_file()
     
     # Create the database
     if not create_database():

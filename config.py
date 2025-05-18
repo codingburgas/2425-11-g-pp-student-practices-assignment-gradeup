@@ -4,13 +4,18 @@ from dotenv import load_dotenv
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
+# Update this to match your SQL Server instance
+# For default instance use: 'localhost' or '.'
+# For named instance use: 'localhost\\INSTANCENAME' or '.\\SQLEXPRESS'
+SQL_SERVER_INSTANCE = 'localhost'
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard-to-guess-string'
     
     # SQL Server connection string with Windows Authentication
-    # Format for Windows Authentication: 'mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=SchoolRecommendation;Trusted_Connection=yes'
+    # Format for Windows Authentication: 'mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=servername;DATABASE=SchoolRecommendation;Trusted_Connection=yes'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=SchoolRecommendation;Trusted_Connection=yes'
+        f'mssql+pyodbc:///?odbc_connect=DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SQL_SERVER_INSTANCE};DATABASE=SchoolRecommendation;Trusted_Connection=yes'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
