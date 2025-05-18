@@ -6,8 +6,12 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard-to-guess-string'
+    
+    # SQL Server connection string
+    # Format: 'mssql+pyodbc://username:password@server/database?driver=ODBC+Driver+17+for+SQL+Server'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'app.db')
+        'mssql+pyodbc://sa:YourPassword@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server'
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Mail settings
