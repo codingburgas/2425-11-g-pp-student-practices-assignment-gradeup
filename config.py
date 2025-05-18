@@ -7,10 +7,10 @@ load_dotenv(os.path.join(basedir, '.env'))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard-to-guess-string'
     
-    # SQL Server connection string
-    # Format: 'mssql+pyodbc://username:password@server/database?driver=ODBC+Driver+17+for+SQL+Server'
+    # SQL Server connection string with Windows Authentication
+    # Format for Windows Authentication: 'mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=SchoolRecommendation;Trusted_Connection=yes'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mssql+pyodbc://sa:YourPassword@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server'
+        'mssql+pyodbc:///?odbc_connect=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=SchoolRecommendation;Trusted_Connection=yes'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
