@@ -25,34 +25,40 @@ venv/
 env/
 ENV/
 
-# Flask
-instance/
-.webassets-cache
-flask_session/
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
+# Flask
+instance/
+.webassets-cache
+*.db
+
 # Environment variables
 .env
 .env.*
 
-# Database
-*.db
-*.sqlite3
-
 # Logs
 *.log
-logs/
 
-# OS generated files
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db 
+
+# Windows
+Thumbs.db
+
+# Project specific
+STEPS.txt 
