@@ -10,7 +10,7 @@ from app.models import User, School, Program, Survey, SurveyResponse, Recommenda
 from config import Config
 from werkzeug.security import generate_password_hash
 
-# Database configuration
+
 DB_NAME = 'SchoolRecommendation'
 SERVER = 'localhost'
 DRIVER = 'ODBC Driver 17 for SQL Server'
@@ -18,7 +18,7 @@ DRIVER = 'ODBC Driver 17 for SQL Server'
 def drop_database():
     """Drop the database if it exists"""
     try:
-        # Connect to SQL Server using Windows Authentication
+        
         conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
         drop_db_sql = f"""
         IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DB_NAME}')
@@ -42,7 +42,7 @@ def drop_database():
 def create_database():
     """Create the database if it doesn't exist"""
     try:
-        # Connect to SQL Server using Windows Authentication
+        
         conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
         create_db_sql = f"CREATE DATABASE [{DB_NAME}]"
         
@@ -74,7 +74,7 @@ def create_admin_user():
     try:
         app = create_app(Config)
         with app.app_context():
-            # Check if admin already exists
+            
             admin = User.query.filter_by(username='admin').first()
             if admin is None:
                 print("Creating admin user...")
@@ -99,14 +99,14 @@ def create_sample_schools():
     try:
         app = create_app(Config)
         with app.app_context():
-            # Check if schools already exist
+            
             if School.query.count() > 0:
                 print("Schools already exist. Skipping...")
                 return True
                 
             print("Creating sample schools and programs...")
             
-            # Create a copy of schools data for printing statistics at the end
+            
             schools_data = [
                 {
                     "name": "Sofia University St. Kliment Ohridski",
@@ -430,19 +430,19 @@ def create_sample_schools():
                 }
             ]
             
-            # Add schools and programs to database
+            
             total_programs = 0
             for school_data in schools_data:
-                # Create a copy to avoid modifying the original
+                
                 school_dict = dict(school_data)
                 programs_data = school_dict.pop('programs_data')
                 
-                # Create the school
+                
                 school = School(**school_dict)
                 db.session.add(school)
-                db.session.flush()  # To get the school.id
+                db.session.flush()  
                 
-                # Create all programs for this school
+                
                 for program_data in programs_data:
                     program = Program(school_id=school.id, **program_data)
                     db.session.add(program)
@@ -460,7 +460,7 @@ def create_sample_survey():
     try:
         app = create_app(Config)
         with app.app_context():
-            # Check if survey already exists
+            
             if Survey.query.count() > 0:
                 print("Survey already exists. Skipping...")
                 return True
@@ -555,32 +555,32 @@ def main():
     print("School Recommendation System - Database Setup")
     print("=" * 50)
     
-    # Drop existing database if it exists
+    
     if not drop_database():
         print("Database drop failed. Exiting...")
         sys.exit(1)
     
-    # Create new database
+    
     if not create_database():
         print("Database creation failed. Exiting...")
         sys.exit(1)
     
-    # Create tables
+    
     if not create_tables():
         print("Table creation failed. Exiting...")
         sys.exit(1)
     
-    # Create admin user
+    
     if not create_admin_user():
         print("Admin user creation failed. Exiting...")
         sys.exit(1)
     
-    # Create sample schools
+    
     if not create_sample_schools():
         print("Sample schools creation failed. Exiting...")
         sys.exit(1)
     
-    # Create sample survey
+    
     if not create_sample_survey():
         print("Sample survey creation failed. Exiting...")
         sys.exit(1)
