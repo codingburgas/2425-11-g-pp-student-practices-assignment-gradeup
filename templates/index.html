@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or 'Flask App' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">My Flask App</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500">Home</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500">About</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-16 text-center">
+        <h2 class="text-4xl font-extrabold mb-4">Welcome to Your Flask App</h2>
+        <p class="text-lg text-gray-600 mb-8">This is a modern, stylish starting point for your project.</p>
+        <a href="/dashboard" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
+            Go to Dashboard
+        </a>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-16">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
+            &copy; {{ year or 2025 }} My Flask App. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
