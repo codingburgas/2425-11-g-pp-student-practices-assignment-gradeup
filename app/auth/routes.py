@@ -5,6 +5,9 @@ from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm
 from app.models import User
+import os
+from werkzeug.utils import secure_filename
+from flask import current_app
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,8 +102,30 @@ def profile():
         current_user.email = form.email.data
         current_user.bio = form.bio.data
         current_user.location = form.location.data
+        
+        # Handle profile picture upload
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.profile_picture = picture_file
+        
         db.session.commit()
         flash('Your profile has been updated.', 'success')
         return redirect(url_for('auth.profile'))
     
-    return render_template('auth/profile.html', title='Profile', form=form) 
+    return render_template('auth/profile.html', title='Profile', form=form)
+
+def save_picture(form_picture):
+    """Save uploaded picture to static/profile_pics directory"""
+    random_hex = os.urandom(8).hex()
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    
+    # Create profile_pics directory if it doesn't exist
+    picture_path = os.path.join(current_app.root_path, 'static', 'profile_pics')
+    if not os.path.exists(picture_path):
+        os.makedirs(picture_path)
+    
+    picture_path = os.path.join(picture_path, picture_fn)
+    form_picture.save(picture_path)
+    
+    return picture_fn 
