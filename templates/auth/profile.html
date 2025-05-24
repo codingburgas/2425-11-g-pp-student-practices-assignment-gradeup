@@ -70,10 +70,13 @@
             </div>
             <div class="card-footer">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <a href="{{ url_for('auth.reset_password_request') }}" class="btn btn-outline-secondary">Change Password</a>
                     </div>
-                    <div class="col-md-6 text-end">
+                    <div class="col-md-4 text-center">
+                        <a href="{{ url_for('auth.preferences') }}" class="btn btn-outline-info">Manage Preferences</a>
+                    </div>
+                    <div class="col-md-4 text-end">
                         <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
                     </div>
                 </div>

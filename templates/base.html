@@ -38,6 +38,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.preferences') }}">Preferences</a></li>
                             {% if current_user.is_admin %}
                             <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">Admin</a></li>
                             {% endif %}

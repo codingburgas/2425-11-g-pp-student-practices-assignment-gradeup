@@ -60,7 +60,6 @@ def reset_password_request():
             return redirect(url_for('auth.login'))
         else:
             flash('Email not found in our records', 'warning')
-            return render_template('auth/reset_password_request.html', title='Reset Password', form=form)
     return render_template('auth/reset_password_request.html', title='Reset Password', form=form)
 
 @bp.route('/reset_password/<token>', methods=['GET', 'POST'])
@@ -105,8 +104,20 @@ def profile():
         
         # Handle profile picture upload
         if form.picture.data:
-            picture_file = save_picture(form.picture.data)
-            current_user.profile_picture = picture_file
+            try:
+                picture_file = save_picture(form.picture.data)
+                # Delete old profile picture if it exists
+                if current_user.profile_picture:
+                    old_picture_path = os.path.join(current_app.root_path, 'static', 'profile_pics', current_user.profile_picture)
+                    if os.path.exists(old_picture_path):
+                        os.remove(old_picture_path)
+                current_user.profile_picture = picture_file
+            except ValueError as e:
+                flash(str(e), 'danger')
+                return render_template('auth/profile.html', title='Profile', form=form)
+            except Exception as e:
+                flash('Error uploading profile picture. Please try again.', 'danger')
+                return render_template('auth/profile.html', title='Profile', form=form)
         
         db.session.commit()
         flash('Your profile has been updated.', 'success')
@@ -116,6 +127,15 @@ def profile():
 
 def save_picture(form_picture):
     """Save uploaded picture to static/profile_pics directory"""
+    # Check file size (max 2MB)
+    if len(form_picture.read()) > 2 * 1024 * 1024:  # 2MB in bytes
+        form_picture.seek(0)  # Reset file pointer
+        raise ValueError('File size must be less than 2MB')
+    
+    # Reset file pointer after size check
+    form_picture.seek(0)
+    
+    # Generate random filename
     random_hex = os.urandom(8).hex()
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -125,6 +145,7 @@ def save_picture(form_picture):
     if not os.path.exists(picture_path):
         os.makedirs(picture_path)
     
+    # Save the file
     picture_path = os.path.join(picture_path, picture_fn)
     form_picture.save(picture_path)
     
