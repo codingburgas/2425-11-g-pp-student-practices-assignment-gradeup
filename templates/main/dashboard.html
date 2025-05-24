@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - School Recommendation System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Student Dashboard</h1>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+                <a href="{{ url_for('main.dashboard') }}" class="list-group-item list-group-item-action active">
+                    Dashboard
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    Take Survey
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    My Recommendations
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    Favorite Schools
+                </a>
+                <a href="{{ url_for('auth.profile') }}" class="list-group-item list-group-item-action">
+                    My Profile
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5>Your Recommendations</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center py-4">
+                                <i class="bi bi-search display-4 text-muted mb-3"></i>
+                                <p>You haven't taken our survey yet. Take the survey to get personalized school recommendations.</p>
+                                <a href="#" class="btn btn-primary mt-2">Take Survey</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5>Favorite Schools</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center py-4">
+                                <i class="bi bi-star display-4 text-muted mb-3"></i>
+                                <p>You haven't saved any schools to your favorites yet.</p>
+                                <a href="#" class="btn btn-primary mt-2">Explore Schools</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Popular Schools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Example University</h5>
+                                    <p class="card-text">A top-ranked university known for its excellent programs in science and technology.</p>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Sample College</h5>
+                                    <p class="card-text">A liberal arts college with strong programs in humanities and social sciences.</p>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
