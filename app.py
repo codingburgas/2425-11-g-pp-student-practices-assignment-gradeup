@@ -1,11 +1,20 @@
+from app import create_app, db
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
 
-from flask import Flask, render_template
+app = create_app()
 
-app = Flask(__name__)
-
-@app.route("/")
-def hello_world():
-    return render_template('index.html')
+@app.shell_context_processor
+def make_shell_context():
+    return {
+        'db': db, 
+        'User': User, 
+        'School': School,
+        'Program': Program,
+        'Survey': Survey,
+        'SurveyResponse': SurveyResponse,
+        'Recommendation': Recommendation,
+        'Favorite': Favorite
+    }
 
 if __name__ == '__main__':
     app.run(debug=True)
