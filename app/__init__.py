@@ -25,10 +25,28 @@ def create_app(config_class=Config):
     bootstrap.init_app(app)
 
     # Register blueprints here
-    # from app.main import bp as main_bp
-    # app.register_blueprint(main_bp)
-    # from app.auth import bp as auth_bp
-    # app.register_blueprint(auth_bp, url_prefix='/auth')
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+    
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    
+    from app.admin import bp as admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    # Create a static folder if it doesn't exist
+    import os
+    static_folder = os.path.join(app.root_path, 'static')
+    if not os.path.exists(static_folder):
+        os.makedirs(static_folder)
+        # Create css folder
+        css_folder = os.path.join(static_folder, 'css')
+        if not os.path.exists(css_folder):
+            os.makedirs(css_folder)
+        # Create js folder
+        js_folder = os.path.join(static_folder, 'js')
+        if not os.path.exists(js_folder):
+            os.makedirs(js_folder)
 
     return app
 

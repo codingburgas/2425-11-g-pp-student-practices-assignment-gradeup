@@ -1,40 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title or 'Flask App' }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 text-gray-800">
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-blue-600">My Flask App</h1>
-            <nav>
-                <ul class="flex space-x-4">
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500">Home</a></li>
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500">About</a></li>
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% extends "base.html" %}
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h2 class="text-4xl font-extrabold mb-4">Welcome to Your Flask App</h2>
-        <p class="text-lg text-gray-600 mb-8">This is a modern, stylish starting point for your project.</p>
-        <a href="/dashboard" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
-            Go to Dashboard
-        </a>
-    </main>
+{% block title %}Home - School Recommendation System{% endblock %}
 
-    <!-- Footer -->
-    <footer class="bg-white border-t mt-16">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
-            &copy; {{ year or 2025 }} My Flask App. All rights reserved.
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded-3">
+    <div class="container">
+        <h1 class="display-4">Find Your Perfect School</h1>
+        <p class="lead">Our advanced recommendation system helps you discover educational institutions tailored to your preferences and needs.</p>
+        {% if not current_user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg">Sign In</a>
         </div>
-    </footer>
-</body>
-</html>
+        {% else %}
+        <div class="mt-4">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-search display-4 mb-3 text-primary"></i>
+                    <h3 class="card-title">Personalized Search</h3>
+                    <p class="card-text">Take our survey to find schools that match your interests, goals, and preferences.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-star display-4 mb-3 text-primary"></i>
+                    <h3 class="card-title">Save Favorites</h3>
+                    <p class="card-text">Keep track of schools you're interested in and compare them side by side.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up display-4 mb-3 text-primary"></i>
+                    <h3 class="card-title">Smart Insights</h3>
+                    <p class="card-text">Get valuable insights and analytics to help you make the best educational choice.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
