@@ -97,6 +97,8 @@ def profile():
         
         current_user.username = form.username.data
         current_user.email = form.email.data
+        current_user.bio = form.bio.data
+        current_user.location = form.location.data
         db.session.commit()
         flash('Your profile has been updated.', 'success')
         return redirect(url_for('auth.profile'))

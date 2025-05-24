@@ -38,6 +38,14 @@
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
                             </div>
+                            <div class="mb-3">
+                                {{ form.bio.label(class="form-label") }}
+                                {{ form.bio(class="form-control", rows=4) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control") }}
+                            </div>
                             <div class="d-grid gap-2">
                                 {{ form.submit(class="btn btn-primary") }}
                             </div>

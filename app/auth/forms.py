@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from app.models import User
 
@@ -36,6 +36,14 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset Password')
 
 class ProfileForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
+    username = StringField('Username', validators=[
+        DataRequired(), 
+        Length(min=2, max=64)
+    ])
+    email = StringField('Email', validators=[
+        DataRequired(), 
+        Email()
+    ])
+    bio = TextAreaField('Bio', validators=[Length(max=500)])
+    location = StringField('Location', validators=[Length(max=100)])
     submit = SubmitField('Update Profile') 
