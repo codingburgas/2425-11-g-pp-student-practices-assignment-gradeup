@@ -15,6 +15,15 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     profile_picture = db.Column(db.String(255), nullable=True)
     
+    # Additional profile fields
+    bio = db.Column(db.Text, nullable=True)
+    location = db.Column(db.String(100), nullable=True)
+    date_of_birth = db.Column(db.Date, nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    
+    # User preferences (stored as JSON)
+    preferences = db.Column(db.Text, nullable=True)  # JSON string for preferences
+    
     # One-to-many relationship with survey responses
     survey_responses = db.relationship('SurveyResponse', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
@@ -26,6 +35,16 @@ class User(UserMixin, db.Model):
         
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def get_preferences(self):
+        """Get user preferences as a dictionary"""
+        if self.preferences:
+            return json.loads(self.preferences)
+        return {}
+    
+    def set_preferences(self, preferences_dict):
+        """Set user preferences from a dictionary"""
+        self.preferences = json.dumps(preferences_dict)
     
     def __repr__(self):
         return f'<User {self.username}>'

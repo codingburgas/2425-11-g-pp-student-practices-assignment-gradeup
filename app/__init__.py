@@ -15,7 +15,9 @@ mail = Mail()
 bootstrap = Bootstrap()
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, 
+                template_folder='../templates',  # Look for templates in the root templates directory
+                static_folder='static')
     app.config.from_object(config_class)
 
     db.init_app(app)
