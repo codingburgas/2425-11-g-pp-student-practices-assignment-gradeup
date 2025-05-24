@@ -16,6 +16,7 @@ class User(UserMixin, db.Model):
     profile_picture = db.Column(db.String(255), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     location = db.Column(db.String(100), nullable=True)
+    preferences = db.Column(db.Text, nullable=True)  # JSON string for user preferences
     
     # One-to-many relationship with survey responses
     survey_responses = db.relationship('SurveyResponse', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -31,6 +32,16 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+
+    def get_preferences(self):
+        """Get user preferences as a dictionary"""
+        if self.preferences:
+            return json.loads(self.preferences)
+        return {}
+    
+    def set_preferences(self, prefs_dict):
+        """Set user preferences from a dictionary"""
+        self.preferences = json.dumps(prefs_dict)
 
 @login.user_loader
 def load_user(id):

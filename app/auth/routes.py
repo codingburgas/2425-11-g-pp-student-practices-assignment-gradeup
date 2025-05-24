@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from app import db
 from app.auth import bp
-from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm
+from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm, UserPreferencesForm
 from app.models import User
 import os
 from werkzeug.utils import secure_filename
@@ -128,4 +128,34 @@ def save_picture(form_picture):
     picture_path = os.path.join(picture_path, picture_fn)
     form_picture.save(picture_path)
     
-    return picture_fn 
+    return picture_fn
+
+@bp.route('/preferences', methods=['GET', 'POST'])
+@login_required
+def preferences():
+    form = UserPreferencesForm()
+    
+    # Load existing preferences if any
+    if request.method == 'GET':
+        prefs = current_user.get_preferences()
+        form.preferred_degree_types.data = prefs.get('degree_types', [])
+        form.preferred_locations.data = '\n'.join(prefs.get('locations', []))
+        form.max_tuition.data = prefs.get('max_tuition', '')
+        form.preferred_programs.data = '\n'.join(prefs.get('programs', []))
+    
+    if form.validate_on_submit():
+        # Convert form data to preferences dictionary
+        prefs = {
+            'degree_types': form.preferred_degree_types.data,
+            'locations': [loc.strip() for loc in form.preferred_locations.data.split('\n') if loc.strip()],
+            'max_tuition': form.max_tuition.data,
+            'programs': [prog.strip() for prog in form.preferred_programs.data.split('\n') if prog.strip()]
+        }
+        
+        # Save preferences
+        current_user.set_preferences(prefs)
+        db.session.commit()
+        flash('Your preferences have been saved.', 'success')
+        return redirect(url_for('auth.preferences'))
+    
+    return render_template('auth/preferences.html', title='Preferences', form=form) 

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Preferences{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Your Preferences</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.preferred_degree_types.label(class="form-label") }}
+                        {{ form.preferred_degree_types(class="form-select", size=5, multiple=true) }}
+                        <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple options</small>
+                        {% for error in form.preferred_degree_types.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.preferred_locations.label(class="form-label") }}
+                        {{ form.preferred_locations(class="form-control", rows=3) }}
+                        <small class="form-text text-muted">{{ form.preferred_locations.description }}</small>
+                        {% for error in form.preferred_locations.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.max_tuition.label(class="form-label") }}
+                        {{ form.max_tuition(class="form-control") }}
+                        <small class="form-text text-muted">{{ form.max_tuition.description }}</small>
+                        {% for error in form.max_tuition.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.preferred_programs.label(class="form-label") }}
+                        {{ form.preferred_programs(class="form-control", rows=3) }}
+                        <small class="form-text text-muted">{{ form.preferred_programs.description }}</small>
+                        {% for error in form.preferred_programs.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">Back to Profile</a>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

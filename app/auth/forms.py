@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from app.models import User
 
@@ -48,4 +48,24 @@ class ProfileForm(FlaskForm):
     bio = TextAreaField('Bio', validators=[Length(max=500)])
     location = StringField('Location', validators=[Length(max=100)])
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
-    submit = SubmitField('Update Profile') 
+    submit = SubmitField('Update Profile')
+
+class UserPreferencesForm(FlaskForm):
+    preferred_degree_types = SelectMultipleField('Preferred Degree Types', 
+        choices=[
+            ('bachelors', "Bachelor's"),
+            ('masters', "Master's"),
+            ('phd', 'PhD'),
+            ('associate', "Associate's"),
+            ('certificate', 'Certificate')
+        ])
+    preferred_locations = TextAreaField('Preferred Locations', 
+        validators=[Length(max=500)],
+        description='Enter preferred locations, one per line')
+    max_tuition = StringField('Maximum Tuition Fee', 
+        validators=[Length(max=20)],
+        description='Enter maximum tuition fee you can afford')
+    preferred_programs = TextAreaField('Preferred Programs', 
+        validators=[Length(max=500)],
+        description='Enter preferred programs or fields of study, one per line')
+    submit = SubmitField('Save Preferences') 
