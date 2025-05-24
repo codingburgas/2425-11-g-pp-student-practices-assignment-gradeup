@@ -1,8 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
-from werkzeug.utils import secure_filename
-import os
 from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm
@@ -97,51 +95,10 @@ def profile():
                 flash('Email already in use.', 'danger')
                 return render_template('auth/profile.html', title='Profile', form=form)
         
-        # Handle profile picture upload
-        if form.profile_picture.data:
-            # Create uploads directory if it doesn't exist
-            uploads_dir = os.path.join('app', 'static', 'uploads')
-            if not os.path.exists(uploads_dir):
-                os.makedirs(uploads_dir)
-            
-            # Save the file
-            f = form.profile_picture.data
-            filename = secure_filename(f.filename)
-            # Add user id to filename to make it unique
-            filename = f"{current_user.id}_{filename}"
-            filepath = os.path.join(uploads_dir, filename)
-            f.save(filepath)
-            current_user.profile_picture = filename
-        
-        # Update user fields
         current_user.username = form.username.data
         current_user.email = form.email.data
-        current_user.bio = form.bio.data
-        current_user.location = form.location.data
-        current_user.phone = form.phone.data
-        current_user.date_of_birth = form.date_of_birth.data
-        
         db.session.commit()
         flash('Your profile has been updated.', 'success')
         return redirect(url_for('auth.profile'))
     
-    # Pre-populate form with current user data
-    elif request.method == 'GET':
-        form.bio.data = current_user.bio
-        form.location.data = current_user.location
-        form.phone.data = current_user.phone
-        form.date_of_birth.data = current_user.date_of_birth
-    
-    return render_template('auth/profile.html', title='Profile', form=form)
-
-@bp.route('/update_preferences', methods=['POST'])
-@login_required
-def update_preferences():
-    """Update user preferences via AJAX"""
-    try:
-        preferences = request.get_json()
-        current_user.set_preferences(preferences)
-        db.session.commit()
-        return {'status': 'success', 'message': 'Preferences updated successfully'}
-    except Exception as e:
-        return {'status': 'error', 'message': str(e)}, 400 
+    return render_template('auth/profile.html', title='Profile', form=form) 

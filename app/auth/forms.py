@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, DateField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from app.models import User
 
 class LoginForm(FlaskForm):
@@ -39,9 +38,4 @@ class ResetPasswordForm(FlaskForm):
 class ProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
-    bio = TextAreaField('Bio')
-    location = StringField('Location')
-    date_of_birth = DateField('Date of Birth', format='%Y-%m-%d')
-    phone = StringField('Phone')
-    profile_picture = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     submit = SubmitField('Update Profile') 
