@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4"><i class="fas fa-check-circle"></i> Data Validation Testing</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-edit"></i> Test Data Validation</h5>
+                </div>
+                <div class="card-body">
+                    <form id="validation-form">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="test@example.com">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="text" class="form-control" id="phone" name="phone" 
+                                   placeholder="+1234567890">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="John Doe">
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rating">Rating (1-5)</label>
+                            <select class="form-control" id="rating" name="rating">
+                                <option value="">Select rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-primary" onclick="validateData()">
+                                <i class="fas fa-check"></i> Validate Data
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="submitData()">
+                                <i class="fas fa-paper-plane"></i> Submit Data
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-broom"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clipboard-list"></i> Validation Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="validation-results">
+                        <div class="text-muted text-center py-4">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                            <p>Click "Validate Data" to see results here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-lightbulb"></i> Validation Rules</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <ul class="mb-0">
+                            <li><strong>Email:</strong> Must be valid email format</li>
+                            <li><strong>Phone:</strong> 10+ digits, can include +, spaces, dashes</li>
+                            <li><strong>Name:</strong> 2-100 characters required</li>
+                            <li><strong>Rating:</strong> Must be between 1 and 5</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateData() {
+    const formData = getFormData();
+    
+    fetch('/data/surveys/validate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayValidationResults(data);
+        updateFormValidation(data.validation_results);
+    })
+    .catch(error => {
+        console.error('Validation error:', error);
+        showAlert('Error during validation', 'danger');
+    });
+}
+
+function submitData() {
+    const formData = getFormData();
+    formData.survey_id = 1; // Default survey ID for testing
+    
+    fetch('/data/surveys/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.valid) {
+            showAlert('Data submitted successfully!', 'success');
+            clearForm();
+        } else {
+            showAlert('Submission failed: ' + (data.errors ? data.errors.join(', ') : data.error), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Submission error:', error);
+        showAlert('Error during submission', 'danger');
+    });
+}
+
+function getFormData() {
+    return {
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        name: document.getElementById('name').value,
+        rating: document.getElementById('rating').value
+    };
+}
+
+function displayValidationResults(data) {
+    const resultsDiv = document.getElementById('validation-results');
+    
+    if (data.validation_results) {
+        let html = '<h6>Field Validation Results:</h6><ul class="list-group list-group-flush">';
+        
+        for (const [field, isValid] of Object.entries(data.validation_results)) {
+            const icon = isValid ? 'fa-check text-success' : 'fa-times text-danger';
+            const status = isValid ? 'Valid' : 'Invalid';
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                    <span>${field.charAt(0).toUpperCase() + field.slice(1)}</span>
+                    <span><i class="fas ${icon}"></i> ${status}</span>
+                </li>
+            `;
+        }
+        html += '</ul>';
+        resultsDiv.innerHTML = html;
+    }
+}
+
+function updateFormValidation(results) {
+    // Clear previous validation states
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
+    
+    // Apply validation states
+    for (const [field, isValid] of Object.entries(results)) {
+        const input = document.getElementById(field);
+        if (input) {
+            input.classList.add(isValid ? 'is-valid' : 'is-invalid');
+        }
+    }
+}
+
+function clearForm() {
+    document.getElementById('validation-form').reset();
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+    });
+    document.getElementById('validation-results').innerHTML = `
+        <div class="text-muted text-center py-4">
+            <i class="fas fa-info-circle fa-2x mb-2"></i>
+            <p>Click "Validate Data" to see results here</p>
+        </div>
+    `;
+}
+
+function showAlert(message, type) {
+    const alert = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %} 

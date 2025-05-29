@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4"><i class="fas fa-chart-bar"></i> Data Collection Dashboard</h1>
+        </div>
+    </div>
+
+    <!-- Survey Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-surveys">0</h4>
+                            <p class="card-text">Active Surveys</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-poll fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-responses">0</h4>
+                            <p class="card-text">Total Responses</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="pending-responses">0</h4>
+                            <p class="card-text">Pending Processing</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-exports">0</h4>
+                            <p class="card-text">Data Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-download fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tasks"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('data_collection.survey_list') }}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Surveys
+                        </a>
+                        <a href="{{ url_for('data_collection.data_validation') }}" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> Validate Data
+                        </a>
+                        <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-warning">
+                            <i class="fas fa-file-export"></i> Export Data
+                        </a>
+                        <a href="{{ url_for('data_collection.export_history') }}" class="btn btn-info">
+                            <i class="fas fa-history"></i> Export History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Surveys Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recent Surveys</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="surveys-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Responses</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data loaded via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load dashboard data
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    loadSurveys();
+});
+
+function loadDashboardData() {
+    // This would typically load from your API endpoints
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-surveys').textContent = data.surveys.length;
+        })
+        .catch(error => console.error('Error loading dashboard data:', error));
+}
+
+function loadSurveys() {
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('#surveys-table tbody');
+            tbody.innerHTML = '';
+            
+            data.surveys.forEach(survey => {
+                const row = `
+                    <tr>
+                        <td>${survey.id}</td>
+                        <td>${survey.title}</td>
+                        <td><span class="badge badge-success">Active</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-info" onclick="viewSurvey(${survey.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-warning" onclick="exportSurvey(${survey.id})">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error('Error loading surveys:', error));
+}
+
+function viewSurvey(surveyId) {
+    window.location.href = `/data/surveys/${surveyId}/responses`;
+}
+
+function exportSurvey(surveyId) {
+    window.location.href = `/data/surveys/${surveyId}/export/csv`;
+}
+</script>
+{% endblock %} 

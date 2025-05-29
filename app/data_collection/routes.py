@@ -11,6 +11,33 @@ from .validators import SurveyValidator, ResponseValidator
 from .models import DataStorageManager, SurveyData
 from .exporters import ExportManager
 
+# HTML Template Routes
+@data_collection.route('/')
+@data_collection.route('/dashboard')
+def dashboard():
+    """Data collection dashboard page."""
+    return render_template('data_collection/dashboard.html')
+
+@data_collection.route('/validation')
+def data_validation():
+    """Data validation testing page."""
+    return render_template('data_collection/validation.html')
+
+@data_collection.route('/export')
+def export_center():
+    """Data export center page."""
+    return render_template('data_collection/export.html')
+
+@data_collection.route('/history')
+def export_history():
+    """Export history page."""
+    return render_template('data_collection/history.html')
+
+@data_collection.route('/surveys/list')
+def survey_list():
+    """Survey list page."""
+    return render_template('data_collection/surveys.html')
+
 @data_collection.route('/surveys', methods=['GET'])
 def get_surveys():
     """Retrieve list of available surveys."""
