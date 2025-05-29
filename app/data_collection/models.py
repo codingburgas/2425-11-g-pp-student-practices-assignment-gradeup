@@ -19,7 +19,7 @@ class SurveyData(db.Model):
     response_id = db.Column(db.Integer, db.ForeignKey('survey_responses.id'), nullable=True)
     raw_data = db.Column(db.Text, nullable=False)  # Original JSON data
     processed_data = db.Column(db.Text, nullable=True)  # Processed/cleaned data
-    metadata = db.Column(db.Text, nullable=True)  # Additional metadata
+    survey_metadata = db.Column(db.Text, nullable=True)  # Additional metadata
     submission_ip = db.Column(db.String(45), nullable=True)  # IPv4/IPv6 address
     user_agent = db.Column(db.String(255), nullable=True)
     submission_time = db.Column(db.DateTime, default=datetime.utcnow)
@@ -43,11 +43,11 @@ class SurveyData(db.Model):
     
     def set_metadata(self, metadata_dict):
         """Store metadata as JSON."""
-        self.metadata = json.dumps(metadata_dict)
+        self.survey_metadata = json.dumps(metadata_dict)
     
     def get_metadata(self):
         """Retrieve metadata as dictionary."""
-        return json.loads(self.metadata) if self.metadata else {}
+        return json.loads(self.survey_metadata) if self.survey_metadata else {}
 
 
 class DataExportLog(db.Model):
