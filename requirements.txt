@@ -10,4 +10,5 @@ email-validator==2.1.0.post1
 Werkzeug==3.0.1
 SQLAlchemy==2.0.27
 alembic==1.13.1
-pyodbc==5.0.1 
+pyodbc==5.0.1
+xlsxwriter==3.1.9 

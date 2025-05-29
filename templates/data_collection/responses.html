@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-chart-bar"></i> Survey Responses
+                <span class="badge bg-secondary" id="survey-title">Loading...</span>
+            </h1>
+        </div>
+    </div>
+
+    <!-- Response Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-responses">0</h4>
+                            <p class="card-text">Total Responses</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="processed-responses">0</h4>
+                            <p class="card-text">Processed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="pending-responses">0</h4>
+                            <p class="card-text">Pending</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="failed-responses">0</h4>
+                            <p class="card-text">Failed</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-filter"></i> Filter Options</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-status">Processing Status</label>
+                                <select class="form-control" id="filter-status">
+                                    <option value="">All Status</option>
+                                    <option value="processed">Processed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-date-from">From Date</label>
+                                <input type="date" class="form-control" id="filter-date-from">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-date-to">To Date</label>
+                                <input type="date" class="form-control" id="filter-date-to">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" onclick="applyFilters()">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responses Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list"></i> Survey Responses</h5>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-secondary btn-sm" onclick="refreshResponses()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-file-export"></i> Export All
+                            </a>
+                            <a href="{{ url_for('data_collection.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="responses-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Response Data</th>
+                                    <th>IP Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        Loading responses...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Details Modal -->
+    <div class="modal fade" id="responseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="responseModalTitle">Response Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="responseModalBody">
+                    <!-- Response details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Get survey ID from URL
+const surveyId = window.location.pathname.split('/')[3];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadSurveyInfo();
+    loadResponses();
+});
+
+function loadSurveyInfo() {
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            const survey = data.surveys.find(s => s.id == surveyId);
+            if (survey) {
+                document.getElementById('survey-title').textContent = survey.title;
+            }
+        })
+        .catch(error => console.error('Error loading survey info:', error));
+}
+
+function loadResponses() {
+    fetch(`/data/surveys/${surveyId}/responses`)
+        .then(response => response.json())
+        .then(data => {
+            updateStatistics(data.responses);
+            displayResponses(data.responses);
+        })
+        .catch(error => {
+            console.error('Error loading responses:', error);
+            showError('Failed to load responses');
+        });
+}
+
+function updateStatistics(responses) {
+    const total = responses.length;
+    const processed = responses.filter(r => r.processing_status === 'processed').length;
+    const pending = responses.filter(r => r.processing_status === 'pending').length;
+    const failed = responses.filter(r => r.processing_status === 'failed').length;
+    
+    document.getElementById('total-responses').textContent = total;
+    document.getElementById('processed-responses').textContent = processed;
+    document.getElementById('pending-responses').textContent = pending;
+    document.getElementById('failed-responses').textContent = failed;
+}
+
+function displayResponses(responses) {
+    const tbody = document.querySelector('#responses-table tbody');
+    tbody.innerHTML = '';
+    
+    if (responses.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                    No responses found for this survey
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    responses.forEach(response => {
+        const date = new Date(response.submission_time);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        
+        const statusBadge = getStatusBadge(response.processing_status);
+        const responsePreview = getResponsePreview(response.data);
+        
+        const row = `
+            <tr>
+                <td><strong>#${response.id}</strong></td>
+                <td><small>${formattedDate}</small></td>
+                <td>${statusBadge}</td>
+                <td>
+                    <small class="text-muted">${responsePreview}</small>
+                </td>
+                <td>
+                    <small>${response.metadata?.ip || 'N/A'}</small>
+                </td>
+                <td>
+                    <button class="btn btn-outline-info btn-sm" onclick="viewResponse(${response.id})" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function getStatusBadge(status) {
+    const statusMap = {
+        'processed': 'bg-success',
+        'pending': 'bg-warning',
+        'failed': 'bg-danger'
+    };
+    
+    const badgeClass = statusMap[status] || 'bg-secondary';
+    return `<span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+}
+
+function getResponsePreview(data) {
+    if (!data || typeof data !== 'object') return 'No data';
+    
+    const keys = Object.keys(data);
+    if (keys.length === 0) return 'Empty response';
+    
+    // Show first few fields
+    const preview = keys.slice(0, 3).map(key => {
+        const value = data[key];
+        const displayValue = value && value.length > 20 ? value.substring(0, 20) + '...' : value;
+        return `${key}: ${displayValue}`;
+    }).join(', ');
+    
+    return keys.length > 3 ? preview + '...' : preview;
+}
+
+function viewResponse(responseId) {
+    fetch(`/data/surveys/${surveyId}/responses`)
+        .then(response => response.json())
+        .then(data => {
+            const response = data.responses.find(r => r.id === responseId);
+            if (response) {
+                showResponseModal(response);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading response details:', error);
+            showError('Failed to load response details');
+        });
+}
+
+function showResponseModal(response) {
+    document.getElementById('responseModalTitle').textContent = `Response #${response.id}`;
+    
+    let responseDataHtml = '<div class="alert alert-info">No response data</div>';
+    if (response.data && typeof response.data === 'object') {
+        responseDataHtml = '<div class="row">';
+        for (const [key, value] of Object.entries(response.data)) {
+            responseDataHtml += `
+                <div class="col-md-6 mb-3">
+                    <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong>
+                    <div class="mt-1 p-2 bg-light rounded">${value || 'N/A'}</div>
+                </div>
+            `;
+        }
+        responseDataHtml += '</div>';
+    }
+    
+    let metadataHtml = '<div class="alert alert-info">No metadata</div>';
+    if (response.metadata && typeof response.metadata === 'object') {
+        metadataHtml = '<ul class="list-group list-group-flush">';
+        for (const [key, value] of Object.entries(response.metadata)) {
+            if (value) {
+                metadataHtml += `
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><strong>${key.replace('_', ' ').charAt(0).toUpperCase() + key.slice(1)}:</strong></span>
+                        <span>${value}</span>
+                    </li>
+                `;
+            }
+        }
+        metadataHtml += '</ul>';
+    }
+    
+    document.getElementById('responseModalBody').innerHTML = `
+        <div class="mb-4">
+            <h6>Response Information</h6>
+            <table class="table table-sm">
+                <tr><td><strong>ID:</strong></td><td>#${response.id}</td></tr>
+                <tr><td><strong>Status:</strong></td><td>${getStatusBadge(response.processing_status)}</td></tr>
+                <tr><td><strong>Submitted:</strong></td><td>${new Date(response.submission_time).toLocaleString()}</td></tr>
+            </table>
+        </div>
+        
+        <div class="mb-4">
+            <h6>Response Data</h6>
+            ${responseDataHtml}
+        </div>
+        
+        <div class="mb-4">
+            <h6>Metadata</h6>
+            ${metadataHtml}
+        </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('responseModal')).show();
+}
+
+function applyFilters() {
+    // In a real implementation, this would filter the table based on the selected criteria
+    const status = document.getElementById('filter-status').value;
+    const dateFrom = document.getElementById('filter-date-from').value;
+    const dateTo = document.getElementById('filter-date-to').value;
+    
+    console.log('Applying filters:', { status, dateFrom, dateTo });
+    
+    // For now, just reload the data
+    loadResponses();
+    
+    showSuccess('Filters applied successfully');
+}
+
+function refreshResponses() {
+    const refreshBtn = document.querySelector('[onclick="refreshResponses()"]');
+    const icon = refreshBtn.querySelector('i');
+    
+    // Add spinning animation
+    icon.classList.remove('fa-sync-alt');
+    icon.classList.add('fa-spinner', 'fa-spin');
+    refreshBtn.disabled = true;
+    
+    setTimeout(() => {
+        loadResponses();
+        
+        // Reset button
+        icon.classList.remove('fa-spinner', 'fa-spin');
+        icon.classList.add('fa-sync-alt');
+        refreshBtn.disabled = false;
+    }, 1000);
+}
+
+function showError(message) {
+    const alert = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const alert = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %} 

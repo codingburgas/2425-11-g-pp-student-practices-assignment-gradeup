@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4"><i class="fas fa-chart-bar"></i> Data Collection Dashboard</h1>
+        </div>
+    </div>
+
+    <!-- Survey Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-surveys">0</h4>
+                            <p class="card-text">Active Surveys</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-poll fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-responses">0</h4>
+                            <p class="card-text">Total Responses</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="pending-responses">0</h4>
+                            <p class="card-text">Pending Processing</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-exports">0</h4>
+                            <p class="card-text">Data Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-download fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tasks"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('data_collection.survey_list') }}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Surveys
+                        </a>
+                        <a href="{{ url_for('data_collection.data_validation') }}" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> Validate Data
+                        </a>
+                        <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-warning">
+                            <i class="fas fa-file-export"></i> Export Data
+                        </a>
+                        <a href="{{ url_for('data_collection.export_history') }}" class="btn btn-info">
+                            <i class="fas fa-history"></i> Export History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Surveys Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recent Surveys</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="surveys-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Responses</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data loaded via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load dashboard data
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    loadSurveys();
+});
+
+function loadDashboardData() {
+    // Load surveys count
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-surveys').textContent = data.surveys.length;
+            
+            // Load statistics for each survey to get total responses
+            let totalResponses = 0;
+            let pendingResponses = 0;
+            let processedResponses = 0;
+            
+            const promises = data.surveys.map(survey => 
+                fetch(`/data/surveys/${survey.id}/responses`)
+                    .then(response => response.json())
+                    .then(responseData => {
+                        if (responseData.responses) {
+                            totalResponses += responseData.responses.length;
+                            pendingResponses += responseData.responses.filter(r => r.processing_status === 'pending').length;
+                            processedResponses += responseData.responses.filter(r => r.processing_status === 'processed').length;
+                        }
+                    })
+                    .catch(error => console.log('No responses for survey', survey.id))
+            );
+            
+            Promise.all(promises).then(() => {
+                document.getElementById('total-responses').textContent = totalResponses;
+                document.getElementById('pending-responses').textContent = pendingResponses;
+            });
+        })
+        .catch(error => console.error('Error loading dashboard data:', error));
+    
+    // Load export history count
+    fetch('/data/exports/history')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-exports').textContent = data.export_history ? data.export_history.length : 0;
+        })
+        .catch(error => {
+            console.log('No export history available');
+            document.getElementById('total-exports').textContent = 0;
+        });
+}
+
+function loadSurveys() {
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('#surveys-table tbody');
+            tbody.innerHTML = '';
+            
+            // Create array to store promises for response counts
+            const responsePromises = data.surveys.map(survey => 
+                fetch(`/data/surveys/${survey.id}/responses`)
+                    .then(response => response.json())
+                    .then(responseData => ({
+                        surveyId: survey.id,
+                        responseCount: responseData.responses ? responseData.responses.length : 0
+                    }))
+                    .catch(error => ({
+                        surveyId: survey.id,
+                        responseCount: 0
+                    }))
+            );
+            
+            Promise.all(responsePromises).then(responseCounts => {
+                data.surveys.forEach(survey => {
+                    const responseData = responseCounts.find(r => r.surveyId === survey.id);
+                    const responseCount = responseData ? responseData.responseCount : 0;
+                    
+                    // Get created date from survey (if available) or use placeholder
+                    const createdDate = survey.created_at ? new Date(survey.created_at).toLocaleDateString() : 'N/A';
+                    
+                    const row = `
+                        <tr>
+                            <td>${survey.id}</td>
+                            <td>${survey.title}</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td><span class="badge bg-primary">${responseCount}</span></td>
+                            <td><small>${createdDate}</small></td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-info" onclick="viewSurvey(${survey.id})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-warning" onclick="exportSurvey(${survey.id})">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+        })
+        .catch(error => console.error('Error loading surveys:', error));
+}
+
+function viewSurvey(surveyId) {
+    window.location.href = `/data/surveys/${surveyId}/responses/view`;
+}
+
+function exportSurvey(surveyId) {
+    window.location.href = `/data/surveys/${surveyId}/export/csv`;
+}
+</script>
+{% endblock %} 

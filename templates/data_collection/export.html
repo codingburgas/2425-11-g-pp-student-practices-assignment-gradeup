@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4"><i class="fas fa-file-export"></i> Data Export Center</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-download"></i> Export Survey Data</h5>
+                </div>
+                <div class="card-body">
+                    <form id="export-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="survey-select">Select Survey</label>
+                                    <select class="form-control" id="survey-select" required>
+                                        <option value="">Choose a survey...</option>
+                                        <!-- Loaded via JavaScript -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="format-select">Export Format</label>
+                                    <select class="form-control" id="format-select" required>
+                                        <option value="csv">CSV (Comma Separated)</option>
+                                        <option value="json">JSON (JavaScript Object)</option>
+                                        <option value="excel">Excel (XLSX)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="start-date">Start Date (Optional)</label>
+                                    <input type="date" class="form-control" id="start-date">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="end-date">End Date (Optional)</label>
+                                    <input type="date" class="form-control" id="end-date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-info" onclick="previewExport()">
+                                <i class="fas fa-eye"></i> Preview Data
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="exportData()">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-broom"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="card mt-4" id="preview-card" style="display: none;">
+                <div class="card-header">
+                    <h6><i class="fas fa-table"></i> Data Preview</h6>
+                </div>
+                <div class="card-body">
+                    <div id="preview-content">
+                        <!-- Preview data will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Export Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-info-circle"></i> Export Information</h6>
+                </div>
+                <div class="card-body">
+                    <div id="export-info">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-lightbulb"></i> Select a survey to see export information
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Format Information -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-file-alt"></i> Format Guide</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <div class="mb-2">
+                            <strong>CSV:</strong> Best for spreadsheet applications
+                        </div>
+                        <div class="mb-2">
+                            <strong>JSON:</strong> Best for APIs and programming
+                        </div>
+                        <div class="mb-2">
+                            <strong>Excel:</strong> Best for advanced data analysis
+                        </div>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Recent Exports -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-history"></i> Recent Exports</h6>
+                </div>
+                <div class="card-body">
+                    <div id="recent-exports">
+                        <!-- Recent exports will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSurveys();
+    loadRecentExports();
+});
+
+function loadSurveys() {
+    fetch('/data/surveys')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('survey-select');
+            select.innerHTML = '<option value="">Choose a survey...</option>';
+            
+            data.surveys.forEach(survey => {
+                const option = document.createElement('option');
+                option.value = survey.id;
+                option.textContent = survey.title;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading surveys:', error));
+}
+
+function previewExport() {
+    const surveyId = document.getElementById('survey-select').value;
+    if (!surveyId) {
+        showAlert('Please select a survey first', 'warning');
+        return;
+    }
+
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    let url = `/data/surveys/${surveyId}/export/preview?limit=5`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            displayPreview(data);
+            updateExportInfo(data);
+        })
+        .catch(error => {
+            console.error('Preview error:', error);
+            showAlert('Error loading preview', 'danger');
+        });
+}
+
+function exportData() {
+    const surveyId = document.getElementById('survey-select').value;
+    const format = document.getElementById('format-select').value;
+    
+    if (!surveyId) {
+        showAlert('Please select a survey first', 'warning');
+        return;
+    }
+
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    let url = `/data/surveys/${surveyId}/export/${format}`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+
+    // Create download link
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showAlert('Export started! File will download shortly.', 'success');
+    
+    // Refresh recent exports after a delay
+    setTimeout(loadRecentExports, 2000);
+}
+
+function displayPreview(data) {
+    const previewCard = document.getElementById('preview-card');
+    const previewContent = document.getElementById('preview-content');
+    
+    if (data.preview_data && data.preview_data.length > 0) {
+        let html = `
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Submission Time</th>
+                            <th>Status</th>
+                            <th>Data Sample</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.preview_data.forEach(item => {
+            const dataKeys = Object.keys(item.raw_data).slice(0, 2);
+            const dataSample = dataKeys.map(key => `${key}: ${item.raw_data[key]}`).join(', ');
+            
+            html += `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${new Date(item.submission_time).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${item.processing_status === 'processed' ? 'success' : 'warning'}">${item.processing_status}</span></td>
+                    <td><small>${dataSample}...</small></td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+        html += `<small class="text-muted">Showing ${data.preview_count} of ${data.total_available} total records</small>`;
+        
+        previewContent.innerHTML = html;
+        previewCard.style.display = 'block';
+    } else {
+        previewContent.innerHTML = '<p class="text-muted">No data available for preview</p>';
+        previewCard.style.display = 'block';
+    }
+}
+
+function updateExportInfo(data) {
+    const infoDiv = document.getElementById('export-info');
+    infoDiv.innerHTML = `
+        <p><strong>Survey ID:</strong> ${data.survey_id}</p>
+        <p><strong>Total Records:</strong> ${data.total_available}</p>
+        <p><strong>Preview Count:</strong> ${data.preview_count}</p>
+    `;
+}
+
+function loadRecentExports() {
+    fetch('/data/exports/history?limit=5')
+        .then(response => response.json())
+        .then(data => {
+            const exportsDiv = document.getElementById('recent-exports');
+            
+            if (data.export_history && data.export_history.length > 0) {
+                let html = '<div class="list-group list-group-flush">';
+                data.export_history.forEach(exp => {
+                    html += `
+                        <div class="list-group-item p-2">
+                            <small>
+                                <div><strong>${exp.export_type.toUpperCase()}</strong> - ${exp.record_count} records</div>
+                                <div class="text-muted">${new Date(exp.created_at).toLocaleDateString()}</div>
+                            </small>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                exportsDiv.innerHTML = html;
+            } else {
+                exportsDiv.innerHTML = '<small class="text-muted">No recent exports</small>';
+            }
+        })
+        .catch(error => console.error('Error loading export history:', error));
+}
+
+function clearForm() {
+    document.getElementById('export-form').reset();
+    document.getElementById('preview-card').style.display = 'none';
+    document.getElementById('export-info').innerHTML = `
+        <p class="text-muted mb-2">
+            <i class="fas fa-lightbulb"></i> Select a survey to see export information
+        </p>
+    `;
+}
+
+function showAlert(message, type) {
+    const alert = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %} 
