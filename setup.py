@@ -9,7 +9,7 @@ from app import create_app, db
 from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
 from config import Config
 from werkzeug.security import generate_password_hash
-
+import platform
 
 DB_NAME = 'SchoolRecommendation'
 SERVER = 'localhost'
@@ -18,8 +18,10 @@ DRIVER = 'ODBC Driver 17 for SQL Server'
 def drop_database():
     """Drop the database if it exists"""
     try:
-        
-        conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
+        if platform.system() == 'Windows':
+            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
+        else:
+            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};UID=sa;PWD=yo(!)urStrongPassword12;DATABASE=master'
         drop_db_sql = f"""
         IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DB_NAME}')
         BEGIN
@@ -42,8 +44,10 @@ def drop_database():
 def create_database():
     """Create the database if it doesn't exist"""
     try:
-        
-        conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
+        if platform.system() == 'Windows':
+            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
+        else:
+            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};UID=sa;PWD=yo(!)urStrongPassword12;DATABASE=master'
         create_db_sql = f"CREATE DATABASE [{DB_NAME}]"
         
         print(f"Creating database '{DB_NAME}'...")
