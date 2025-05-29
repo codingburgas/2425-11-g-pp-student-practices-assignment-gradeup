@@ -49,6 +49,20 @@ class SurveyData(db.Model):
         """Retrieve metadata as dictionary."""
         return json.loads(self.survey_metadata) if self.survey_metadata else {}
 
+    def mark_as_processed(self, processed_data=None):
+        """Mark this survey data as successfully processed."""
+        self.processing_status = 'processed'
+        if processed_data:
+            self.set_processed_data(processed_data)
+    
+    def mark_as_failed(self, error_message=None):
+        """Mark this survey data as failed processing."""
+        self.processing_status = 'failed'
+        if error_message:
+            metadata = self.get_metadata()
+            metadata['processing_error'] = error_message
+            self.set_metadata(metadata)
+
 
 class DataExportLog(db.Model):
     """Track data exports for auditing purposes."""

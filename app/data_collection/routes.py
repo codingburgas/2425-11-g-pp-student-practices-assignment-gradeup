@@ -115,14 +115,34 @@ def submit_survey():
             metadata=metadata
         )
         
+        # Update processing status to 'processed' since validation passed
+        from app.data_collection.models import SurveyData
+        survey_data = SurveyData.query.get(storage_id)
+        if survey_data:
+            survey_data.mark_as_processed(data)  # Use new method
+            from app import db
+            db.session.commit()
+        
         return jsonify({
-            'message': 'Survey submitted and stored successfully',
+            'message': 'Survey submitted and processed successfully',
             'valid': True,
             'storage_id': storage_id,
-            'status': 'stored'
+            'status': 'processed'
         })
         
     except Exception as e:
+        # If there was an error after storage, mark as failed
+        try:
+            if 'storage_id' in locals():
+                from app.data_collection.models import SurveyData
+                survey_data = SurveyData.query.get(storage_id)
+                if survey_data:
+                    survey_data.mark_as_failed(str(e))
+                    from app import db
+                    db.session.commit()
+        except:
+            pass  # Don't let error handling create more errors
+            
         return jsonify({
             'error': f'Internal server error: {str(e)}',
             'valid': False
