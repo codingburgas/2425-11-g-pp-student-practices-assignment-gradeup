@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}User Management{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -18,7 +16,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.users') }}">
+                        <a class="nav-link" href="{{ url_for('admin.users') }}">
                             <i class="fas fa-users"></i> User Management
                         </a>
                     </li>
@@ -28,7 +26,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
+                        <a class="nav-link active" href="{{ url_for('admin.programs') }}">
                             <i class="fas fa-graduation-cap"></i> Programs
                         </a>
                     </li>
@@ -49,95 +47,93 @@
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">User Management</h1>
+                <h1 class="h2">Program Management</h1>
+                <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Program
+                </a>
             </div>
 
             <!-- Search and Filters -->
             <div class="row mb-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Search users..." value="{{ search }}">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Search programs..." value="{{ search }}">
                         <button type="submit" class="btn btn-outline-secondary">
                             <i class="fas fa-search"></i>
                         </button>
                         {% if search %}
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-danger ms-2">
+                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-danger ms-2">
                             <i class="fas fa-times"></i>
                         </a>
                         {% endif %}
                     </form>
                 </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Total: {{ users.total }} users</span>
+                <div class="col-md-4">
+                    <form method="GET" class="d-flex">
+                        <input type="hidden" name="search" value="{{ search }}">
+                        <select name="university_id" class="form-select me-2" onchange="this.form.submit()">
+                            <option value="">All Universities</option>
+                            {% for university in universities %}
+                            <option value="{{ university.id }}" {% if selected_university == university.id %}selected{% endif %}>
+                                {{ university.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="text-muted">Total: {{ programs.total }} programs</span>
                 </div>
             </div>
 
-            <!-- Users Table -->
+            <!-- Programs Table -->
             <div class="card shadow">
                 <div class="card-body">
-                    {% if users.items %}
+                    {% if programs.items %}
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Surveys</th>
-                                    <th>Joined</th>
+                                    <th>Program</th>
+                                    <th>University</th>
+                                    <th>Degree Type</th>
+                                    <th>Duration</th>
+                                    <th>Tuition</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users.items %}
+                                {% for program in programs.items %}
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3">
-                                                {{ user.username[0].upper() }}
-                                            </div>
-                                            <div>
-                                                <strong>{{ user.username }}</strong>
-                                                <br><small class="text-muted">{{ user.email }}</small>
-                                                {% if user.location %}
-                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</small>
-                                                {% endif %}
-                                            </div>
-                                        </div>
+                                        <strong>{{ program.name }}</strong>
+                                        {% if program.description %}
+                                        <br><small class="text-muted">{{ program.description[:80] }}...</small>
+                                        {% endif %}
                                     </td>
+                                    <td>{{ program.school.name }}</td>
+                                    <td><span class="badge bg-primary">{{ program.degree_type }}</span></td>
+                                    <td>{{ program.duration or 'N/A' }}</td>
                                     <td>
-                                        <span class="badge bg-{{ 'warning' if user.is_admin else 'primary' }}">
-                                            {{ 'Admin' if user.is_admin else 'User' }}
-                                        </span>
+                                        {% if program.tuition_fee %}
+                                        ${{ "{:,.0f}".format(program.tuition_fee) }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
                                     </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ user.survey_responses.count() }} responses</span>
-                                    </td>
-                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                            <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" 
                                                class="btn btn-sm btn-outline-primary" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-{{ 'warning' if user.is_admin else 'success' }}" 
-                                               title="{{ 'Remove Admin' if user.is_admin else 'Make Admin' }}"
-                                               {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
-                                                <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
-                                            </a>
-                                            {% if user != current_user %}
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-user-name="{{ user.username }}"
-                                                    data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                                                    onclick="confirmDelete(this.dataset.userName, this.dataset.deleteUrl)"
+                                                    data-program-name="{{ program.name }}"
+                                                    data-delete-url="{{ url_for('admin.delete_program', program_id=program.id) }}"
+                                                    onclick="confirmDelete(this.dataset.programName, this.dataset.deleteUrl)"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -147,20 +143,20 @@
                     </div>
 
                     <!-- Pagination -->
-                    {% if users.pages > 1 %}
-                    <nav aria-label="Users pagination">
+                    {% if programs.pages > 1 %}
+                    <nav aria-label="Programs pagination">
                         <ul class="pagination justify-content-center">
-                            {% if users.has_prev %}
+                            {% if programs.has_prev %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, search=search) }}">Previous</a>
+                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.prev_num, search=search, university_id=selected_university) }}">Previous</a>
                             </li>
                             {% endif %}
                             
-                            {% for page_num in users.iter_pages() %}
+                            {% for page_num in programs.iter_pages() %}
                                 {% if page_num %}
-                                    {% if page_num != users.page %}
+                                    {% if page_num != programs.page %}
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.users', page=page_num, search=search) }}">{{ page_num }}</a>
+                                        <a class="page-link" href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}">{{ page_num }}</a>
                                     </li>
                                     {% else %}
                                     <li class="page-item active">
@@ -174,9 +170,9 @@
                                 {% endif %}
                             {% endfor %}
                             
-                            {% if users.has_next %}
+                            {% if programs.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.next_num, search=search) }}">Next</a>
+                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.next_num, search=search, university_id=selected_university) }}">Next</a>
                             </li>
                             {% endif %}
                         </ul>
@@ -184,11 +180,14 @@
                     {% endif %}
                     {% else %}
                     <div class="text-center py-5">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No users found</h5>
-                        {% if search %}
-                        <p class="text-muted">No users match your search criteria.</p>
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">Clear Search</a>
+                        <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No programs found</h5>
+                        {% if search or selected_university %}
+                        <p class="text-muted">No programs match your criteria.</p>
+                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-primary">Clear Filters</a>
+                        {% else %}
+                        <p class="text-muted">Start by adding your first program.</p>
+                        <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">Add Program</a>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -207,13 +206,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the user "<span id="userName"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This will also delete all user data including survey responses and cannot be undone.</p>
+                <p>Are you sure you want to delete the program "<span id="programName"></span>"?</p>
+                <p class="text-danger"><strong>Warning:</strong> This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete User</button>
+                    <button type="submit" class="btn btn-danger">Delete Program</button>
                 </form>
             </div>
         </div>
@@ -221,8 +220,8 @@
 </div>
 
 <script>
-function confirmDelete(userName, deleteUrl) {
-    document.getElementById('userName').textContent = userName;
+function confirmDelete(programName, deleteUrl) {
+    document.getElementById('programName').textContent = programName;
     document.getElementById('deleteForm').action = deleteUrl;
     var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
@@ -238,19 +237,6 @@ function confirmDelete(userName, deleteUrl) {
     z-index: 100;
     padding: 48px 0 0;
     box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-}
-
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #007bff;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
 }
 </style>
 {% endblock %} 

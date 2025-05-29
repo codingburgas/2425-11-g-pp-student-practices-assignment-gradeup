@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>{{ title }}</h4>
+                    <div>
+                        <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit Survey
+                        </a>
+                        <a href="{{ url_for('admin.toggle_survey_active', survey_id=survey.id) }}" 
+                           class="btn btn-outline-{{ 'warning' if survey.is_active else 'success' }} btn-sm">
+                            <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
+                            {{ 'Deactivate' if survey.is_active else 'Activate' }}
+                        </a>
+                        <a href="{{ url_for('admin.surveys') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5>{{ survey.title }}</h5>
+                    <span class="badge bg-{{ 'success' if survey.is_active else 'secondary' }} mb-3">
+                        {{ 'Active' if survey.is_active else 'Inactive' }}
+                    </span>
+                    
+                    {% if survey.description %}
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <p>{{ survey.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Created:</strong>
+                            <p>{{ survey.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Last Updated:</strong>
+                            <p>{{ survey.updated_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Survey Questions</h5>
+                </div>
+                <div class="card-body">
+                    {% for question in survey.get_questions() %}
+                    <div class="mb-4 p-3 border rounded">
+                        <h6>Question {{ question.id }}: {{ question.text }}</h6>
+                        <span class="badge bg-info">{{ question.type }}</span>
+                        {% if question.required %}
+                        <span class="badge bg-danger">Required</span>
+                        {% endif %}
+                        
+                        {% if question.type == 'multiple_choice' or question.type == 'multiple_select' %}
+                        <div class="mt-2">
+                            <strong>Options:</strong>
+                            <ul class="mt-1">
+                                {% for option in question.options %}
+                                <li>{{ option }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% elif question.type == 'rating' %}
+                        <div class="mt-2">
+                            <strong>Rating Scale:</strong>
+                            <p>{{ question.scale.min }} to {{ question.scale.max }}</p>
+                            {% if question.scale.labels %}
+                            <small class="text-muted">
+                                {{ question.scale.labels['1'] }} - {{ question.scale.labels['5'] }}
+                            </small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>Survey Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 text-center">
+                        <h3 class="text-primary">{{ survey.responses.count() }}</h3>
+                        <p class="text-muted">Total Responses</p>
+                    </div>
+                    
+                    {% if survey.responses.count() > 0 %}
+                    <div class="mb-3">
+                        <strong>Latest Response:</strong>
+                        <p class="text-muted">{{ survey.responses.order_by('-created_at').first().created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Average Recommendations:</strong>
+                        {% set total_recs = namespace(value=0) %}
+                        {% for response in survey.responses %}
+                            {% set total_recs.value = total_recs.value + response.recommendations.count() %}
+                        {% endfor %}
+                        <p class="text-muted">
+                            {% if survey.responses.count() > 0 %}
+                                {{ "%.1f"|format(total_recs.value / survey.responses.count()) }} per response
+                            {% else %}
+                                0 per response
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('admin.survey_responses', survey_id=survey.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar"></i> View All Responses
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {% if survey.responses.count() > 0 %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Recent Responses</h6>
+                </div>
+                <div class="card-body">
+                    {% for response in survey.responses.order_by('-created_at').limit(5) %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small><strong>{{ response.user.username }}</strong></small>
+                            <br><small class="text-muted">{{ response.created_at.strftime('%m/%d/%Y') }}</small>
+                        </div>
+                        <span class="badge bg-info">{{ response.recommendations.count() }} recs</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

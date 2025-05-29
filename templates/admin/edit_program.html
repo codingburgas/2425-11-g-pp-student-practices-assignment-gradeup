@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Program Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ program.name if program else '' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="school_id" class="form-label">University <span class="text-danger">*</span></label>
+                            <select class="form-select" id="school_id" name="school_id" required>
+                                <option value="">Select University</option>
+                                {% for university in universities %}
+                                <option value="{{ university.id }}" {% if program and program.school_id == university.id %}selected{% endif %}>
+                                    {{ university.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="degree_type" class="form-label">Degree Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="degree_type" name="degree_type" required>
+                                        <option value="">Select Degree Type</option>
+                                        <option value="Bachelor's" {% if program and program.degree_type == "Bachelor's" %}selected{% endif %}>Bachelor's</option>
+                                        <option value="Master's" {% if program and program.degree_type == "Master's" %}selected{% endif %}>Master's</option>
+                                        <option value="PhD" {% if program and program.degree_type == "PhD" %}selected{% endif %}>PhD</option>
+                                        <option value="Diploma" {% if program and program.degree_type == "Diploma" %}selected{% endif %}>Diploma</option>
+                                        <option value="Certificate" {% if program and program.degree_type == "Certificate" %}selected{% endif %}>Certificate</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="duration" class="form-label">Duration</label>
+                                    <input type="text" class="form-control" id="duration" name="duration" 
+                                           value="{{ program.duration if program else '' }}" placeholder="e.g., 4 years, 2 semesters">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ program.description if program else '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tuition_fee" class="form-label">Tuition Fee (USD)</label>
+                            <input type="number" class="form-control" id="tuition_fee" name="tuition_fee" 
+                                   value="{{ program.tuition_fee if program else '' }}" step="0.01" min="0">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="admission_requirements" class="form-label">Admission Requirements</label>
+                            <textarea class="form-control" id="admission_requirements" name="admission_requirements" rows="6">{{ program.admission_requirements if program else '' }}</textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.programs') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if program %}Update Program{% else %}Create Program{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

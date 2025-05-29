@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>{{ title }}</h4>
+                    <div>
+                        <a href="{{ url_for('admin.edit_university', university_id=university.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit University
+                        </a>
+                        <a href="{{ url_for('admin.universities') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5>{{ university.name }}</h5>
+                    <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ university.location }}</p>
+                    
+                    {% if university.description %}
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <p>{{ university.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        {% if university.website %}
+                        <div class="col-md-6 mb-3">
+                            <strong>Website:</strong>
+                            <p><a href="{{ university.website }}" target="_blank">{{ university.website }}</a></p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if university.email %}
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong>
+                            <p><a href="mailto:{{ university.email }}">{{ university.email }}</a></p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if university.phone %}
+                        <div class="col-md-6 mb-3">
+                            <strong>Phone:</strong>
+                            <p><a href="tel:{{ university.phone }}">{{ university.phone }}</a></p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-md-6 mb-3">
+                            <strong>Created:</strong>
+                            <p>{{ university.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if university.admission_requirements %}
+                    <div class="mb-3">
+                        <strong>Admission Requirements:</strong>
+                        <p>{{ university.admission_requirements }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Programs:</span>
+                            <span class="badge bg-primary">{{ university.programs.count() }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Favorites:</span>
+                            <span class="badge bg-success">{{ university.favorites.count() }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if university.programs.count() > 0 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Programs ({{ university.programs.count() }})</h5>
+                    <a href="{{ url_for('admin.new_program') }}?university_id={{ university.id }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add Program
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for program in university.programs %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-left-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ program.name }}</h6>
+                                    <span class="badge bg-primary">{{ program.degree_type }}</span>
+                                    {% if program.duration %}
+                                    <span class="badge bg-info">{{ program.duration }}</span>
+                                    {% endif %}
+                                    {% if program.tuition_fee %}
+                                    <br><small class="text-muted">Tuition: ${{ "{:,.0f}".format(program.tuition_fee) }}</small>
+                                    {% endif %}
+                                    {% if program.description %}
+                                    <p class="card-text mt-2">{{ program.description[:100] }}...</p>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Programs Yet</h5>
+                    <p class="text-muted">This university doesn't have any programs added yet.</p>
+                    <a href="{{ url_for('admin.new_program') }}?university_id={{ university.id }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add First Program
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #007bff !important;
+}
+</style>
+{% endblock %} 
