@@ -5,27 +5,47 @@ Handles the API endpoints for survey data collection.
 """
 
 from flask import request, jsonify, render_template
+from flask_login import current_user
 from . import data_collection
 from .validators import SurveyValidator, ResponseValidator
+from .models import DataStorageManager, SurveyData
 
 @data_collection.route('/surveys', methods=['GET'])
 def get_surveys():
     """Retrieve list of available surveys."""
-    # Basic endpoint setup - will be enhanced in later commits
+    from app.models import Survey
+    surveys = Survey.query.filter_by(is_active=True).all()
+    
+    survey_list = []
+    for survey in surveys:
+        survey_list.append({
+            'id': survey.id,
+            'title': survey.title,
+            'description': survey.description,
+            'questions': survey.get_questions()
+        })
+    
     return jsonify({
-        'surveys': [],
-        'message': 'Data collection system initialized'
+        'surveys': survey_list,
+        'message': 'Data collection system active'
     })
 
 @data_collection.route('/surveys/submit', methods=['POST'])
 def submit_survey():
-    """Submit survey response."""
+    """Submit survey response with data storage."""
     try:
         data = request.get_json()
         
         if not data:
             return jsonify({
                 'error': 'No data provided',
+                'valid': False
+            }), 400
+        
+        survey_id = data.get('survey_id')
+        if not survey_id:
+            return jsonify({
+                'error': 'Survey ID is required',
                 'valid': False
             }), 400
         
@@ -43,22 +63,40 @@ def submit_survey():
         validator = ResponseValidator(demo_schema)
         validation_result = validator.validate_response(data)
         
-        if validation_result['valid']:
-            return jsonify({
-                'message': 'Survey data validated successfully',
-                'valid': True,
-                'status': 'validated'
-            })
-        else:
+        if not validation_result['valid']:
             return jsonify({
                 'message': 'Validation failed',
                 'valid': False,
                 'errors': validation_result['errors']
             }), 400
-            
+        
+        # Prepare metadata
+        metadata = {
+            'ip': request.remote_addr,
+            'user_agent': request.headers.get('User-Agent'),
+            'timestamp': data.get('timestamp'),
+            'validation_passed': True
+        }
+        
+        # Store the survey submission
+        user_id = current_user.id if current_user.is_authenticated else None
+        storage_id = DataStorageManager.store_survey_submission(
+            survey_id=survey_id,
+            response_data=data,
+            user_id=user_id,
+            metadata=metadata
+        )
+        
+        return jsonify({
+            'message': 'Survey submitted and stored successfully',
+            'valid': True,
+            'storage_id': storage_id,
+            'status': 'stored'
+        })
+        
     except Exception as e:
         return jsonify({
-            'error': 'Internal server error during validation',
+            'error': f'Internal server error: {str(e)}',
             'valid': False
         }), 500
 
@@ -96,4 +134,62 @@ def validate_survey_data():
         return jsonify({
             'error': 'Validation error',
             'valid': False
+        }), 500
+
+@data_collection.route('/surveys/<int:survey_id>/statistics', methods=['GET'])
+def get_survey_statistics(survey_id):
+    """Get statistics for a specific survey."""
+    try:
+        stats = DataStorageManager.get_response_statistics(survey_id)
+        return jsonify({
+            'survey_id': survey_id,
+            'statistics': stats,
+            'message': 'Statistics retrieved successfully'
+        })
+    except Exception as e:
+        return jsonify({
+            'error': f'Error retrieving statistics: {str(e)}'
+        }), 500
+
+@data_collection.route('/surveys/<int:survey_id>/responses', methods=['GET'])
+def get_survey_responses(survey_id):
+    """Get responses for a specific survey."""
+    try:
+        # Get query parameters for filtering
+        limit = request.args.get('limit', 100, type=int)
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        # Convert date strings to datetime objects if provided
+        from datetime import datetime
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        responses = DataStorageManager.get_survey_data(
+            survey_id=survey_id,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        response_data = []
+        for response in responses:
+            response_data.append({
+                'id': response.id,
+                'submission_time': response.submission_time.isoformat(),
+                'processing_status': response.processing_status,
+                'data': response.get_raw_data(),
+                'metadata': response.get_metadata()
+            })
+        
+        return jsonify({
+            'survey_id': survey_id,
+            'responses': response_data,
+            'count': len(response_data),
+            'message': 'Responses retrieved successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error retrieving responses: {str(e)}'
         }), 500 
