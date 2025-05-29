@@ -131,7 +131,9 @@
                                             </a>
                                             {% if user != current_user %}
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="confirmDelete('{{ user.username }}', '{{ url_for('admin.delete_user', user_id=user.id) }}')"
+                                                    data-user-name="{{ user.username }}"
+                                                    data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                                    onclick="confirmDelete(this.dataset.userName, this.dataset.deleteUrl)"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>

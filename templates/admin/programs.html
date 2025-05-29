@@ -128,7 +128,9 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="confirmDelete('{{ program.name }}', '{{ url_for('admin.delete_program', program_id=program.id) }}')"
+                                                    data-program-name="{{ program.name }}"
+                                                    data-delete-url="{{ url_for('admin.delete_program', program_id=program.id) }}"
+                                                    onclick="confirmDelete(this.dataset.programName, this.dataset.deleteUrl)"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>

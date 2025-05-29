@@ -116,7 +116,9 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-sm btn-outline-info" 
-                                                    onclick="viewResponse({{ response.id }})" title="View Response">
+                                                    data-response-id="{{ response.id }}" 
+                                                    onclick="viewResponse(this.dataset.responseId)" 
+                                                    title="View Response">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" 

@@ -104,7 +104,9 @@
                                                 <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="confirmDelete('{{ survey.title }}', '{{ url_for('admin.delete_survey', survey_id=survey.id) }}')"
+                                                    data-survey-title="{{ survey.title }}"
+                                                    data-delete-url="{{ url_for('admin.delete_survey', survey_id=survey.id) }}"
+                                                    onclick="confirmDelete(this.dataset.surveyTitle, this.dataset.deleteUrl)"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
