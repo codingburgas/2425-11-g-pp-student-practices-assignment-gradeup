@@ -9,6 +9,7 @@ from flask_login import current_user
 from . import data_collection
 from .validators import SurveyValidator, ResponseValidator
 from .models import DataStorageManager, SurveyData
+from .exporters import ExportManager
 
 @data_collection.route('/surveys', methods=['GET'])
 def get_surveys():
@@ -192,4 +193,116 @@ def get_survey_responses(survey_id):
     except Exception as e:
         return jsonify({
             'error': f'Error retrieving responses: {str(e)}'
+        }), 500
+
+@data_collection.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
+def export_survey_data(survey_id, export_format):
+    """Export survey data in specified format (csv, json, excel)."""
+    try:
+        # Get query parameters for filtering
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        # Convert date strings to datetime objects if provided
+        from datetime import datetime
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        # Get current user ID if authenticated
+        exported_by = current_user.id if current_user.is_authenticated else None
+        
+        # Create export
+        export_result = ExportManager.create_export(
+            survey_id=survey_id,
+            export_format=export_format,
+            start_date=start_dt,
+            end_date=end_dt,
+            exported_by=exported_by
+        )
+        
+        if export_result['success']:
+            return ExportManager.create_flask_response(export_result)
+        else:
+            return jsonify({
+                'error': export_result['error'],
+                'message': 'Export failed'
+            }), 500
+            
+    except ValueError as e:
+        return jsonify({
+            'error': str(e),
+            'message': 'Invalid export format. Supported formats: csv, json, excel'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'error': f'Export error: {str(e)}'
+        }), 500
+
+@data_collection.route('/exports/history', methods=['GET'])
+def get_export_history():
+    """Get history of data exports."""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        history = ExportManager.get_export_history(limit=limit)
+        
+        return jsonify({
+            'export_history': history,
+            'count': len(history),
+            'message': 'Export history retrieved successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error retrieving export history: {str(e)}'
+        }), 500
+
+@data_collection.route('/surveys/<int:survey_id>/export/preview', methods=['GET'])
+def preview_export_data(survey_id):
+    """Preview data that would be exported for a survey."""
+    try:
+        # Get query parameters for filtering
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        limit = request.args.get('limit', 10, type=int)  # Small limit for preview
+        
+        # Convert date strings to datetime objects if provided
+        from datetime import datetime
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        responses = DataStorageManager.get_survey_data(
+            survey_id=survey_id,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        # Get total count without limit
+        total_responses = DataStorageManager.get_survey_data(
+            survey_id=survey_id,
+            start_date=start_dt,
+            end_date=end_dt
+        )
+        
+        preview_data = []
+        for response in responses:
+            preview_data.append({
+                'id': response.id,
+                'submission_time': response.submission_time.isoformat(),
+                'processing_status': response.processing_status,
+                'raw_data': response.get_raw_data(),
+                'metadata': response.get_metadata()
+            })
+        
+        return jsonify({
+            'survey_id': survey_id,
+            'preview_data': preview_data,
+            'preview_count': len(preview_data),
+            'total_available': len(total_responses),
+            'message': 'Export preview generated successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error generating preview: {str(e)}'
         }), 500 
