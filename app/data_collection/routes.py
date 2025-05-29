@@ -50,7 +50,8 @@ def get_surveys():
             'id': survey.id,
             'title': survey.title,
             'description': survey.description,
-            'questions': survey.get_questions()
+            'questions': survey.get_questions(),
+            'created_at': survey.created_at.isoformat() if survey.created_at else None
         })
     
     return jsonify({
