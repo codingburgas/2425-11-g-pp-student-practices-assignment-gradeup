@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Admin Panel</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                            <i class="fas fa-chart-bar"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.users') }}">
+                            <i class="fas fa-users"></i> User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
+                            <i class="fas fa-university"></i> Universities
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.programs') }}">
+                            <i class="fas fa-graduation-cap"></i> Programs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
+                            <i class="fas fa-poll"></i> Survey Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
+                            <i class="fas fa-chart-pie"></i> Survey Responses
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Program Management</h1>
+                <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Program
+                </a>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <form method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Search programs..." value="{{ search }}">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        {% if search %}
+                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-danger ms-2">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <form method="GET" class="d-flex">
+                        <input type="hidden" name="search" value="{{ search }}">
+                        <select name="university_id" class="form-select me-2" onchange="this.form.submit()">
+                            <option value="">All Universities</option>
+                            {% for university in universities %}
+                            <option value="{{ university.id }}" {% if selected_university == university.id %}selected{% endif %}>
+                                {{ university.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="text-muted">Total: {{ programs.total }} programs</span>
+                </div>
+            </div>
+
+            <!-- Programs Table -->
+            <div class="card shadow">
+                <div class="card-body">
+                    {% if programs.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Program</th>
+                                    <th>University</th>
+                                    <th>Degree Type</th>
+                                    <th>Duration</th>
+                                    <th>Tuition</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for program in programs.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ program.name }}</strong>
+                                        {% if program.description %}
+                                        <br><small class="text-muted">{{ program.description[:80] }}...</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ program.school.name }}</td>
+                                    <td><span class="badge bg-primary">{{ program.degree_type }}</span></td>
+                                    <td>{{ program.duration or 'N/A' }}</td>
+                                    <td>
+                                        {% if program.tuition_fee %}
+                                        ${{ "{:,.0f}".format(program.tuition_fee) }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmDelete('{{ program.name }}', '{{ url_for('admin.delete_program', program_id=program.id) }}')"
+                                                    title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if programs.pages > 1 %}
+                    <nav aria-label="Programs pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if programs.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.prev_num, search=search, university_id=selected_university) }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in programs.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != programs.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if programs.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.next_num, search=search, university_id=selected_university) }}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No programs found</h5>
+                        {% if search or selected_university %}
+                        <p class="text-muted">No programs match your criteria.</p>
+                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-primary">Clear Filters</a>
+                        {% else %}
+                        <p class="text-muted">Start by adding your first program.</p>
+                        <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">Add Program</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the program "<span id="programName"></span>"?</p>
+                <p class="text-danger"><strong>Warning:</strong> This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Program</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(programName, deleteUrl) {
+    document.getElementById('programName').textContent = programName;
+    document.getElementById('deleteForm').action = deleteUrl;
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+</script>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+</style>
+{% endblock %} 

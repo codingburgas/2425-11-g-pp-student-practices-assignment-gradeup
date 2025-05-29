@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Admin Panel</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                            <i class="fas fa-chart-bar"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.users') }}">
+                            <i class="fas fa-users"></i> User Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
+                            <i class="fas fa-university"></i> Universities
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
+                            <i class="fas fa-graduation-cap"></i> Programs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
+                            <i class="fas fa-poll"></i> Survey Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.survey_responses') }}">
+                            <i class="fas fa-chart-pie"></i> Survey Responses
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Survey Responses</h1>
+            </div>
+
+            <!-- Filters -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form method="GET" class="d-flex">
+                        <select name="survey_id" class="form-select me-2" onchange="this.form.submit()">
+                            <option value="">All Surveys</option>
+                            {% for survey in surveys %}
+                            <option value="{{ survey.id }}" {% if selected_survey == survey.id %}selected{% endif %}>
+                                {{ survey.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if selected_survey %}
+                        <a href="{{ url_for('admin.survey_responses') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="text-muted">Total: {{ responses.total }} responses</span>
+                </div>
+            </div>
+
+            <!-- Responses Table -->
+            <div class="card shadow">
+                <div class="card-body">
+                    {% if responses.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Survey</th>
+                                    <th>Submitted</th>
+                                    <th>Recommendations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3">
+                                                {{ response.user.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ response.user.username }}</strong>
+                                                <br><small class="text-muted">{{ response.user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ response.survey.title }}</strong>
+                                        <br><span class="badge bg-{{ 'success' if response.survey.is_active else 'secondary' }}">
+                                            {{ 'Active' if response.survey.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ response.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ response.recommendations.count() }} recommendations</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                    onclick="viewResponse({{ response.id }})" title="View Response">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="View Survey">
+                                                <i class="fas fa-poll"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if responses.pages > 1 %}
+                    <nav aria-label="Responses pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if responses.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.survey_responses', page=responses.prev_num, survey_id=selected_survey) }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in responses.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != responses.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.survey_responses', page=page_num, survey_id=selected_survey) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if responses.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.survey_responses', page=responses.next_num, survey_id=selected_survey) }}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No survey responses found</h5>
+                        {% if selected_survey %}
+                        <p class="text-muted">No responses for the selected survey.</p>
+                        <a href="{{ url_for('admin.survey_responses') }}" class="btn btn-outline-primary">View All Responses</a>
+                        {% else %}
+                        <p class="text-muted">No survey responses have been submitted yet.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Response Details Modal -->
+<div class="modal fade" id="responseModal" tabindex="-1" aria-labelledby="responseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="responseModalLabel">Survey Response Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="responseContent">
+                <!-- Response content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewResponse(responseId) {
+    // This would typically fetch response details via AJAX
+    // For now, show a placeholder
+    document.getElementById('responseContent').innerHTML = '<p>Loading response details for ID: ' + responseId + '</p>';
+    var responseModal = new bootstrap.Modal(document.getElementById('responseModal'));
+    responseModal.show();
+}
+</script>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+</style>
+{% endblock %} 
