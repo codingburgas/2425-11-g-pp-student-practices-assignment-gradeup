@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}User Management{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -18,7 +16,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.users') }}">
+                        <a class="nav-link" href="{{ url_for('admin.users') }}">
                             <i class="fas fa-users"></i> User Management
                         </a>
                     </li>
@@ -33,7 +31,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
+                        <a class="nav-link active" href="{{ url_for('admin.surveys') }}">
                             <i class="fas fa-poll"></i> Survey Management
                         </a>
                     </li>
@@ -49,93 +47,67 @@
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">User Management</h1>
+                <h1 class="h2">Survey Management</h1>
+                <a href="{{ url_for('admin.new_survey') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Survey
+                </a>
             </div>
 
-            <!-- Search and Filters -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Search users..." value="{{ search }}">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        {% if search %}
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-danger ms-2">
-                            <i class="fas fa-times"></i>
-                        </a>
-                        {% endif %}
-                    </form>
-                </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Total: {{ users.total }} users</span>
-                </div>
-            </div>
-
-            <!-- Users Table -->
+            <!-- Surveys Table -->
             <div class="card shadow">
                 <div class="card-body">
-                    {% if users.items %}
+                    {% if surveys.items %}
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Surveys</th>
-                                    <th>Joined</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Responses</th>
+                                    <th>Created</th>
+                                    <th>Last Updated</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users.items %}
+                                {% for survey in surveys.items %}
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3">
-                                                {{ user.username[0].upper() }}
-                                            </div>
-                                            <div>
-                                                <strong>{{ user.username }}</strong>
-                                                <br><small class="text-muted">{{ user.email }}</small>
-                                                {% if user.location %}
-                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</small>
-                                                {% endif %}
-                                            </div>
-                                        </div>
+                                        <strong>{{ survey.title }}</strong>
+                                        {% if survey.description %}
+                                        <br><small class="text-muted">{{ survey.description[:100] }}</small>
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        <span class="badge bg-{{ 'warning' if user.is_admin else 'primary' }}">
-                                            {{ 'Admin' if user.is_admin else 'User' }}
+                                        <span class="badge bg-{{ 'success' if survey.is_active else 'secondary' }}">
+                                            {{ 'Active' if survey.is_active else 'Inactive' }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info">{{ user.survey_responses.count() }} responses</span>
+                                        <span class="badge bg-info">{{ survey.responses.count() }} responses</span>
                                     </td>
-                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ survey.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ survey.updated_at.strftime('%Y-%m-%d') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                                            <a href="{{ url_for('admin.survey_detail', survey_id=survey.id) }}" 
                                                class="btn btn-sm btn-outline-info" title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                            <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" 
                                                class="btn btn-sm btn-outline-primary" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-{{ 'warning' if user.is_admin else 'success' }}" 
-                                               title="{{ 'Remove Admin' if user.is_admin else 'Make Admin' }}"
-                                               {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
-                                                <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
+                                            <a href="{{ url_for('admin.toggle_survey_active', survey_id=survey.id) }}" 
+                                               class="btn btn-sm btn-outline-{{ 'warning' if survey.is_active else 'success' }}" 
+                                               title="{{ 'Deactivate' if survey.is_active else 'Activate' }}">
+                                                <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
                                             </a>
-                                            {% if user != current_user %}
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    onclick="confirmDelete('{{ user.username }}', '{{ url_for('admin.delete_user', user_id=user.id) }}')"
+                                                    onclick="confirmDelete('{{ survey.title }}', '{{ url_for('admin.delete_survey', survey_id=survey.id) }}')"
                                                     title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -145,20 +117,20 @@
                     </div>
 
                     <!-- Pagination -->
-                    {% if users.pages > 1 %}
-                    <nav aria-label="Users pagination">
+                    {% if surveys.pages > 1 %}
+                    <nav aria-label="Surveys pagination">
                         <ul class="pagination justify-content-center">
-                            {% if users.has_prev %}
+                            {% if surveys.has_prev %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, search=search) }}">Previous</a>
+                                <a class="page-link" href="{{ url_for('admin.surveys', page=surveys.prev_num) }}">Previous</a>
                             </li>
                             {% endif %}
                             
-                            {% for page_num in users.iter_pages() %}
+                            {% for page_num in surveys.iter_pages() %}
                                 {% if page_num %}
-                                    {% if page_num != users.page %}
+                                    {% if page_num != surveys.page %}
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.users', page=page_num, search=search) }}">{{ page_num }}</a>
+                                        <a class="page-link" href="{{ url_for('admin.surveys', page=page_num) }}">{{ page_num }}</a>
                                     </li>
                                     {% else %}
                                     <li class="page-item active">
@@ -172,9 +144,9 @@
                                 {% endif %}
                             {% endfor %}
                             
-                            {% if users.has_next %}
+                            {% if surveys.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.next_num, search=search) }}">Next</a>
+                                <a class="page-link" href="{{ url_for('admin.surveys', page=surveys.next_num) }}">Next</a>
                             </li>
                             {% endif %}
                         </ul>
@@ -182,12 +154,10 @@
                     {% endif %}
                     {% else %}
                     <div class="text-center py-5">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No users found</h5>
-                        {% if search %}
-                        <p class="text-muted">No users match your search criteria.</p>
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">Clear Search</a>
-                        {% endif %}
+                        <i class="fas fa-poll fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No surveys found</h5>
+                        <p class="text-muted">Create your first survey to start collecting user feedback.</p>
+                        <a href="{{ url_for('admin.new_survey') }}" class="btn btn-primary">Create Survey</a>
                     </div>
                     {% endif %}
                 </div>
@@ -205,13 +175,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the user "<span id="userName"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This will also delete all user data including survey responses and cannot be undone.</p>
+                <p>Are you sure you want to delete the survey "<span id="surveyTitle"></span>"?</p>
+                <p class="text-danger"><strong>Warning:</strong> This will also delete all associated responses and cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete User</button>
+                    <button type="submit" class="btn btn-danger">Delete Survey</button>
                 </form>
             </div>
         </div>
@@ -219,8 +189,8 @@
 </div>
 
 <script>
-function confirmDelete(userName, deleteUrl) {
-    document.getElementById('userName').textContent = userName;
+function confirmDelete(surveyTitle, deleteUrl) {
+    document.getElementById('surveyTitle').textContent = surveyTitle;
     document.getElementById('deleteForm').action = deleteUrl;
     var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
@@ -236,19 +206,6 @@ function confirmDelete(userName, deleteUrl) {
     z-index: 100;
     padding: 48px 0 0;
     box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-}
-
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #007bff;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
 }
 </style>
 {% endblock %} 
