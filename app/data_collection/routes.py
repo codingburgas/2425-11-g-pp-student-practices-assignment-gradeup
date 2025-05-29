@@ -242,6 +242,11 @@ def get_survey_responses(survey_id):
             'error': f'Error retrieving responses: {str(e)}'
         }), 500
 
+@data_collection.route('/surveys/<int:survey_id>/responses/view')
+def view_survey_responses(survey_id):
+    """HTML page for viewing survey responses."""
+    return render_template('data_collection/responses.html', survey_id=survey_id)
+
 @data_collection.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
 def export_survey_data(survey_id, export_format):
     """Export survey data in specified format (csv, json, excel)."""
