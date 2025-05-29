@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-
+import platform
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
@@ -9,11 +9,13 @@ class Config:
     
     # SQL Server connection string for Windows Authentication
     # Format: 'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
-    
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+    if platform.system() == 'Windows':
+        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+            'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
+        
+        SQLALCHEMY_TRACK_MODIFICATIONS = False
+    else:
+         SQLALCHEMY_DATABASE_URI = f"mssql+pyodbc://sa:yo(!)urStrongPassword12@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server"
     # Mail settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
