@@ -8,4 +8,4 @@ from flask import Blueprint
 
 data_collection = Blueprint('data_collection', __name__)
 
-from . import routes, models 
+from . import routes, models, validators 
