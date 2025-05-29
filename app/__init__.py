@@ -35,6 +35,9 @@ def create_app(config_class=Config):
     
     from app.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    
+    from app.data_collection import data_collection as data_collection_bp
+    app.register_blueprint(data_collection_bp, url_prefix='/data')
 
     # Create a static folder if it doesn't exist
     import os
