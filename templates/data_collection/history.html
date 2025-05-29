@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4"><i class="fas fa-history"></i> Export History</h1>
+        </div>
+    </div>
+
+    <!-- Export Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="total-exports">0</h4>
+                            <p class="card-text">Total Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-download fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="csv-exports">0</h4>
+                            <p class="card-text">CSV Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-csv fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="json-exports">0</h4>
+                            <p class="card-text">JSON Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-code fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title" id="excel-exports">0</h4>
+                            <p class="card-text">Excel Exports</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-excel fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-filter"></i> Filter Options</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-format">Export Format</label>
+                                <select class="form-control" id="filter-format">
+                                    <option value="">All Formats</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="json">JSON</option>
+                                    <option value="excel">Excel</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-date-from">From Date</label>
+                                <input type="date" class="form-control" id="filter-date-from">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="filter-date-to">To Date</label>
+                                <input type="date" class="form-control" id="filter-date-to">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" onclick="applyFilters()">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list"></i> Export History</h5>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-secondary btn-sm" onclick="refreshHistory()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> New Export
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="history-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Export Type</th>
+                                    <th>Records</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Exported By</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        Loading export history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Details Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalTitle">Export Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="exportModalBody">
+                    <!-- Export details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadExportHistory();
+});
+
+function loadExportHistory() {
+    fetch('/data/exports/history')
+        .then(response => response.json())
+        .then(data => {
+            updateStatistics(data.export_history);
+            displayHistory(data.export_history);
+        })
+        .catch(error => {
+            console.error('Error loading export history:', error);
+            showError('Failed to load export history');
+        });
+}
+
+function updateStatistics(exports) {
+    const totalExports = exports.length;
+    const csvExports = exports.filter(e => e.export_type === 'csv').length;
+    const jsonExports = exports.filter(e => e.export_type === 'json').length;
+    const excelExports = exports.filter(e => e.export_type === 'excel').length;
+    
+    document.getElementById('total-exports').textContent = totalExports;
+    document.getElementById('csv-exports').textContent = csvExports;
+    document.getElementById('json-exports').textContent = jsonExports;
+    document.getElementById('excel-exports').textContent = excelExports;
+}
+
+function displayHistory(exports) {
+    const tbody = document.querySelector('#history-table tbody');
+    tbody.innerHTML = '';
+    
+    if (exports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                    No export history found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    exports.forEach(exp => {
+        const date = new Date(exp.created_at);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        
+        const statusBadge = getStatusBadge(exp.status);
+        const typeBadge = getTypeBadge(exp.export_type);
+        
+        const row = `
+            <tr>
+                <td><strong>#${exp.id}</strong></td>
+                <td>${typeBadge}</td>
+                <td>
+                    <span class="badge bg-secondary">${exp.record_count.toLocaleString()}</span>
+                </td>
+                <td>
+                    <small>${formattedDate}</small>
+                </td>
+                <td>${statusBadge}</td>
+                <td>
+                    ${exp.exported_by ? `User #${exp.exported_by}` : '<em>System</em>'}
+                </td>
+                <td>
+                    <button class="btn btn-outline-info btn-sm" onclick="viewExportDetails(${exp.id})" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function getStatusBadge(status) {
+    const statusMap = {
+        'completed': 'bg-success',
+        'pending': 'bg-warning',
+        'failed': 'bg-danger'
+    };
+    
+    const badgeClass = statusMap[status] || 'bg-secondary';
+    return `<span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+}
+
+function getTypeBadge(type) {
+    const typeMap = {
+        'csv': { class: 'bg-success', icon: 'fa-file-csv' },
+        'json': { class: 'bg-warning', icon: 'fa-file-code' },
+        'excel': { class: 'bg-info', icon: 'fa-file-excel' }
+    };
+    
+    const config = typeMap[type] || { class: 'bg-secondary', icon: 'fa-file' };
+    return `<span class="badge ${config.class}"><i class="fas ${config.icon} me-1"></i>${type.toUpperCase()}</span>`;
+}
+
+function viewExportDetails(exportId) {
+    fetch('/data/exports/history')
+        .then(response => response.json())
+        .then(data => {
+            const exportItem = data.export_history.find(e => e.id === exportId);
+            if (exportItem) {
+                showExportModal(exportItem);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading export details:', error);
+            showError('Failed to load export details');
+        });
+}
+
+function showExportModal(exportItem) {
+    document.getElementById('exportModalTitle').textContent = `Export #${exportItem.id} Details`;
+    
+    const filters = exportItem.filters || {};
+    let filtersHtml = '<div class="alert alert-info">No filters applied</div>';
+    
+    if (Object.keys(filters).length > 0) {
+        filtersHtml = '<ul class="list-group list-group-flush">';
+        for (const [key, value] of Object.entries(filters)) {
+            if (value) {
+                filtersHtml += `<li class="list-group-item d-flex justify-content-between">
+                    <span><strong>${key.replace('_', ' ').charAt(0).toUpperCase() + key.slice(1)}:</strong></span>
+                    <span>${value}</span>
+                </li>`;
+            }
+        }
+        filtersHtml += '</ul>';
+    }
+    
+    document.getElementById('exportModalBody').innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Export Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Type:</strong></td><td>${exportItem.export_type.toUpperCase()}</td></tr>
+                    <tr><td><strong>Status:</strong></td><td>${getStatusBadge(exportItem.status)}</td></tr>
+                    <tr><td><strong>Records:</strong></td><td>${exportItem.record_count.toLocaleString()}</td></tr>
+                    <tr><td><strong>File Path:</strong></td><td><small>${exportItem.file_path || 'N/A'}</small></td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Export Filters</h6>
+                ${filtersHtml}
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Export Timeline</h6>
+                <div class="alert alert-light">
+                    <i class="fas fa-clock me-2"></i>
+                    <strong>Created:</strong> ${new Date(exportItem.created_at).toLocaleString()}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('exportModal')).show();
+}
+
+function applyFilters() {
+    // In a real implementation, this would filter the table based on the selected criteria
+    const format = document.getElementById('filter-format').value;
+    const dateFrom = document.getElementById('filter-date-from').value;
+    const dateTo = document.getElementById('filter-date-to').value;
+    
+    console.log('Applying filters:', { format, dateFrom, dateTo });
+    
+    // For now, just reload the data
+    loadExportHistory();
+    
+    showSuccess('Filters applied successfully');
+}
+
+function refreshHistory() {
+    const refreshBtn = document.querySelector('[onclick="refreshHistory()"]');
+    const icon = refreshBtn.querySelector('i');
+    
+    // Add spinning animation
+    icon.classList.remove('fa-sync-alt');
+    icon.classList.add('fa-spinner', 'fa-spin');
+    refreshBtn.disabled = true;
+    
+    setTimeout(() => {
+        loadExportHistory();
+        
+        // Reset button
+        icon.classList.remove('fa-spinner', 'fa-spin');
+        icon.classList.add('fa-sync-alt');
+        refreshBtn.disabled = false;
+    }, 1000);
+}
+
+function showError(message) {
+    const alert = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const alert = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alert);
+    
+    setTimeout(() => {
+        const alertElement = container.querySelector('.alert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %} 
