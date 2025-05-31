@@ -385,41 +385,11 @@ function refreshHistory() {
 }
 
 function showError(message) {
-    const alert = `
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alert);
-    
-    setTimeout(() => {
-        const alertElement = container.querySelector('.alert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }, 5000);
+    showNotification(message, 'error');
 }
 
 function showSuccess(message) {
-    const alert = `
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alert);
-    
-    setTimeout(() => {
-        const alertElement = container.querySelector('.alert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }, 3000);
+    showNotification(message, 'success');
 }
 </script>
 {% endblock %} 

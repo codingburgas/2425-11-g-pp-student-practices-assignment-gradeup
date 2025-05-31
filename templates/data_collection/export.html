@@ -1,140 +1,782 @@
 {% extends "base.html" %}
 
+{% block title %}Data Export Center - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3 mb-4"><i class="fas fa-file-export"></i> Data Export Center</h1>
+<div class="cosmic-export-container">
+    <div class="cosmic-export-content">
+        <!-- Export Header -->
+        <div class="cosmic-export-header">
+            <div class="export-icon">
+                <i class="fas fa-file-export"></i>
+            </div>
+            <h1 class="export-title">Data Export Center</h1>
+            <p class="export-subtitle">Export survey data in multiple formats for analysis</p>
+        </div>
+        
+        <!-- Main Export Interface -->
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="cosmic-export-card">
+                    <div class="export-card-header">
+                        <h3>
+                            <i class="fas fa-download"></i>
+                            Export Survey Data
+                        </h3>
+                        <p>Configure your data export settings</p>
+                    </div>
+                    
+                    <div class="export-card-body">
+                        <form id="export-form" class="cosmic-export-form">
+                            <div class="form-row">
+                                <div class="cosmic-form-group">
+                                    <label for="survey-select" class="cosmic-label">
+                                        <i class="fas fa-poll"></i>
+                                        Select Survey
+                                    </label>
+                                    <div class="cosmic-select-container">
+                                        <select class="cosmic-select" id="survey-select" required>
+                                            <option value="">Choose a survey...</option>
+                                            <!-- Loaded via JavaScript -->
+                                        </select>
+                                        <div class="select-arrow">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="cosmic-form-group">
+                                    <label for="format-select" class="cosmic-label">
+                                        <i class="fas fa-file-alt"></i>
+                                        Export Format
+                                    </label>
+                                    <div class="cosmic-select-container">
+                                        <select class="cosmic-select" id="format-select" required>
+                                            <option value="csv">CSV (Comma Separated)</option>
+                                            <option value="json">JSON (JavaScript Object)</option>
+                                            <option value="excel">Excel (XLSX)</option>
+                                        </select>
+                                        <div class="select-arrow">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="cosmic-form-group">
+                                    <label for="start-date" class="cosmic-label">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Start Date (Optional)
+                                    </label>
+                                    <div class="cosmic-date-container">
+                                        <input type="date" class="cosmic-date" id="start-date" placeholder="mm/dd/yyyy">
+                                        <div class="date-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="cosmic-form-group">
+                                    <label for="end-date" class="cosmic-label">
+                                        <i class="fas fa-calendar-check"></i>
+                                        End Date (Optional)
+                                    </label>
+                                    <div class="cosmic-date-container">
+                                        <input type="date" class="cosmic-date" id="end-date" placeholder="mm/dd/yyyy">
+                                        <div class="date-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="export-actions">
+                                <button type="button" class="cosmic-btn cosmic-btn-info" onclick="previewExport()">
+                                    <i class="fas fa-eye"></i>
+                                    Preview Data
+                                </button>
+                                <button type="button" class="cosmic-btn cosmic-btn-success" onclick="exportData()">
+                                    <i class="fas fa-download"></i>
+                                    Export Data
+                                </button>
+                                <button type="button" class="cosmic-btn cosmic-btn-secondary" onclick="clearForm()">
+                                    <i class="fas fa-broom"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div class="cosmic-preview-card" id="preview-card" style="display: none;">
+                    <div class="preview-header">
+                        <h4>
+                            <i class="fas fa-table"></i>
+                            Data Preview
+                        </h4>
+                    </div>
+                    <div class="preview-body">
+                        <div id="preview-content">
+                            <!-- Preview data will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Information -->
+            <div class="col-lg-4">
+                <!-- Export Information -->
+                <div class="cosmic-info-card mb-4">
+                    <div class="info-header">
+                        <h4>
+                            <i class="fas fa-info-circle"></i>
+                            Export Information
+                        </h4>
+                    </div>
+                    <div class="info-body">
+                        <div id="export-info">
+                            <p class="info-placeholder">
+                                <i class="fas fa-lightbulb"></i>
+                                Select a survey to see export information
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Format Guide -->
+                <div class="cosmic-info-card mb-4">
+                    <div class="info-header">
+                        <h4>
+                            <i class="fas fa-file-alt"></i>
+                            Format Guide
+                        </h4>
+                    </div>
+                    <div class="info-body">
+                        <div class="format-item">
+                            <div class="format-icon csv">
+                                <i class="fas fa-table"></i>
+                            </div>
+                            <div class="format-details">
+                                <h5>CSV</h5>
+                                <p>Best for spreadsheet applications</p>
+                            </div>
+                        </div>
+                        
+                        <div class="format-item">
+                            <div class="format-icon json">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="format-details">
+                                <h5>JSON</h5>
+                                <p>Best for APIs and programming</p>
+                            </div>
+                        </div>
+                        
+                        <div class="format-item">
+                            <div class="format-icon excel">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <div class="format-details">
+                                <h5>Excel</h5>
+                                <p>Best for advanced data analysis</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Exports -->
+                <div class="cosmic-info-card">
+                    <div class="info-header">
+                        <h4>
+                            <i class="fas fa-history"></i>
+                            Recent Exports
+                        </h4>
+                    </div>
+                    <div class="info-body">
+                        <div id="recent-exports">
+                            <p class="info-placeholder">No recent exports</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-download"></i> Export Survey Data</h5>
-                </div>
-                <div class="card-body">
-                    <form id="export-form">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="survey-select">Select Survey</label>
-                                    <select class="form-control" id="survey-select" required>
-                                        <option value="">Choose a survey...</option>
-                                        <!-- Loaded via JavaScript -->
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="format-select">Export Format</label>
-                                    <select class="form-control" id="format-select" required>
-                                        <option value="csv">CSV (Comma Separated)</option>
-                                        <option value="json">JSON (JavaScript Object)</option>
-                                        <option value="excel">Excel (XLSX)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="start-date">Start Date (Optional)</label>
-                                    <input type="date" class="form-control" id="start-date">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="end-date">End Date (Optional)</label>
-                                    <input type="date" class="form-control" id="end-date">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-info" onclick="previewExport()">
-                                <i class="fas fa-eye"></i> Preview Data
-                            </button>
-                            <button type="button" class="btn btn-success" onclick="exportData()">
-                                <i class="fas fa-download"></i> Export Data
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="clearForm()">
-                                <i class="fas fa-broom"></i> Clear
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Preview Section -->
-            <div class="card mt-4" id="preview-card" style="display: none;">
-                <div class="card-header">
-                    <h6><i class="fas fa-table"></i> Data Preview</h6>
-                </div>
-                <div class="card-body">
-                    <div id="preview-content">
-                        <!-- Preview data will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <!-- Export Status -->
-            <div class="card">
-                <div class="card-header">
-                    <h6><i class="fas fa-info-circle"></i> Export Information</h6>
-                </div>
-                <div class="card-body">
-                    <div id="export-info">
-                        <p class="text-muted mb-2">
-                            <i class="fas fa-lightbulb"></i> Select a survey to see export information
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Format Information -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-file-alt"></i> Format Guide</h6>
-                </div>
-                <div class="card-body">
-                    <small class="text-muted">
-                        <div class="mb-2">
-                            <strong>CSV:</strong> Best for spreadsheet applications
-                        </div>
-                        <div class="mb-2">
-                            <strong>JSON:</strong> Best for APIs and programming
-                        </div>
-                        <div class="mb-2">
-                            <strong>Excel:</strong> Best for advanced data analysis
-                        </div>
-                    </small>
-                </div>
-            </div>
-
-            <!-- Recent Exports -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6><i class="fas fa-history"></i> Recent Exports</h6>
-                </div>
-                <div class="card-body">
-                    <div id="recent-exports">
-                        <!-- Recent exports will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        </div>
+    
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 </div>
+
+<style>
+/* ===== COSMIC EXPORT CONTAINER ===== */
+.cosmic-export-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    padding: 2rem 0;
+    overflow: hidden;
+}
+
+.cosmic-export-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== EXPORT HEADER ===== */
+.cosmic-export-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: headerSlideIn 0.8s ease-out;
+}
+
+.export-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    animation: iconFloat 6s ease-in-out infinite;
+}
+
+.export-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.export-subtitle {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* ===== EXPORT CARDS ===== */
+.cosmic-export-card,
+.cosmic-preview-card,
+.cosmic-info-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.cosmic-export-card:hover,
+.cosmic-preview-card:hover,
+.cosmic-info-card:hover {
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.2);
+}
+
+/* ===== CARD HEADERS ===== */
+.export-card-header,
+.preview-header,
+.info-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 2rem;
+}
+
+.export-card-header h3,
+.preview-header h4,
+.info-header h4 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.export-card-header h3 {
+    font-size: 1.5rem;
+}
+
+.preview-header h4,
+.info-header h4 {
+    font-size: 1.25rem;
+    margin-bottom: 0;
+}
+
+.export-card-header p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+}
+
+.export-card-header i,
+.preview-header i,
+.info-header i {
+    color: var(--cosmic-purple);
+}
+
+/* ===== CARD BODIES ===== */
+.export-card-body,
+.preview-body,
+.info-body {
+    padding: 2rem;
+}
+
+/* ===== FORM STYLES ===== */
+.cosmic-export-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.cosmic-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cosmic-label {
+    color: var(--star-white);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cosmic-label i {
+    color: var(--cosmic-purple);
+    width: 20px;
+}
+
+/* ===== SELECT STYLES ===== */
+.cosmic-select-container {
+    position: relative;
+}
+
+.cosmic-select {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.5rem;
+    background: rgba(30, 30, 70, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-select:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    background: rgba(30, 30, 70, 0.9);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.cosmic-select option {
+    background: rgba(15, 15, 35, 0.95);
+    color: var(--star-white);
+    padding: 0.5rem;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.cosmic-select:focus + .select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* ===== DATE INPUT STYLES ===== */
+.cosmic-date-container {
+    position: relative;
+}
+
+.cosmic-date {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.5rem;
+    background: rgba(30, 30, 70, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-date:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    background: rgba(30, 30, 70, 0.9);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.cosmic-date::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 1rem;
+    cursor: pointer;
+}
+
+.date-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    pointer-events: none;
+}
+
+/* ===== BUTTON STYLES ===== */
+.export-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.cosmic-btn {
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.cosmic-btn-info {
+    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+}
+
+.cosmic-btn-info:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(6, 182, 212, 0.4);
+}
+
+.cosmic-btn-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.cosmic-btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+}
+
+.cosmic-btn-secondary {
+    background: rgba(30, 30, 70, 0.8);
+    color: rgba(248, 250, 252, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.cosmic-btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    transform: translateY(-2px);
+}
+
+/* ===== INFO CARD CONTENT ===== */
+.info-placeholder {
+    color: rgba(248, 250, 252, 0.6);
+    margin: 0;
+    text-align: center;
+    padding: 1rem;
+}
+
+.info-placeholder i {
+    color: var(--cosmic-purple);
+    margin-right: 0.5rem;
+}
+
+/* ===== FORMAT GUIDE ===== */
+.format-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+}
+
+.format-item:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateX(5px);
+}
+
+.format-item:last-child {
+    margin-bottom: 0;
+}
+
+.format-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.format-icon.csv {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.format-icon.json {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.format-icon.excel {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.format-details h5 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.format-details p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ===== PREVIEW STYLES ===== */
+.cosmic-preview-card {
+    margin-top: 2rem;
+    animation: previewSlideIn 0.5s ease-out;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.preview-table th,
+.preview-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    color: var(--star-white);
+}
+
+.preview-table th {
+    background: rgba(139, 92, 246, 0.2);
+    font-weight: 600;
+    color: var(--cosmic-purple);
+}
+
+.preview-table tr:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* ===== RECENT EXPORTS ===== */
+.export-history-item {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.export-history-item:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateX(5px);
+}
+
+.export-history-item:last-child {
+    margin-bottom: 0;
+}
+
+.export-history-item h6 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.export-history-item p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .cosmic-export-content {
+        padding: 0 0.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .export-actions {
+        flex-direction: column;
+    }
+    
+    .export-title {
+        font-size: 2rem;
+    }
+    
+    .export-card-body,
+    .preview-body,
+    .info-body {
+        padding: 1.5rem;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes headerSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(-30px); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes previewSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     loadSurveys();
     loadRecentExports();
+    
+    // Add card animations on scroll
+    const cards = document.querySelectorAll('.cosmic-export-card, .cosmic-info-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
 });
 
 function loadSurveys() {
@@ -221,8 +863,8 @@ function displayPreview(data) {
     
     if (data.preview_data && data.preview_data.length > 0) {
         let html = `
-            <div class="table-responsive">
-                <table class="table table-sm table-striped">
+            <div style="overflow-x: auto;">
+                <table class="preview-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -242,19 +884,19 @@ function displayPreview(data) {
                 <tr>
                     <td>${item.id}</td>
                     <td>${new Date(item.submission_time).toLocaleDateString()}</td>
-                    <td><span class="badge badge-${item.processing_status === 'processed' ? 'success' : 'warning'}">${item.processing_status}</span></td>
+                    <td><span class="cosmic-badge cosmic-badge-${item.processing_status === 'processed' ? 'success' : 'warning'}">${item.processing_status}</span></td>
                     <td><small>${dataSample}...</small></td>
                 </tr>
             `;
         });
         
         html += '</tbody></table></div>';
-        html += `<small class="text-muted">Showing ${data.preview_count} of ${data.total_available} total records</small>`;
+        html += `<p style="color: rgba(248, 250, 252, 0.7); margin-top: 1rem; font-size: 0.9rem;">Showing ${data.preview_count} of ${data.total_available} total records</p>`;
         
         previewContent.innerHTML = html;
         previewCard.style.display = 'block';
     } else {
-        previewContent.innerHTML = '<p class="text-muted">No data available for preview</p>';
+        previewContent.innerHTML = '<p style="color: rgba(248, 250, 252, 0.7); text-align: center; padding: 2rem;">No data available for preview</p>';
         previewCard.style.display = 'block';
     }
 }
@@ -262,9 +904,18 @@ function displayPreview(data) {
 function updateExportInfo(data) {
     const infoDiv = document.getElementById('export-info');
     infoDiv.innerHTML = `
-        <p><strong>Survey ID:</strong> ${data.survey_id}</p>
-        <p><strong>Total Records:</strong> ${data.total_available}</p>
-        <p><strong>Preview Count:</strong> ${data.preview_count}</p>
+        <div class="export-info-item">
+            <h6>Survey ID</h6>
+            <p>${data.survey_id}</p>
+        </div>
+        <div class="export-info-item">
+            <h6>Total Records</h6>
+            <p>${data.total_available}</p>
+        </div>
+        <div class="export-info-item">
+            <h6>Preview Count</h6>
+            <p>${data.preview_count}</p>
+        </div>
     `;
 }
 
@@ -275,21 +926,18 @@ function loadRecentExports() {
             const exportsDiv = document.getElementById('recent-exports');
             
             if (data.export_history && data.export_history.length > 0) {
-                let html = '<div class="list-group list-group-flush">';
+                let html = '';
                 data.export_history.forEach(exp => {
                     html += `
-                        <div class="list-group-item p-2">
-                            <small>
-                                <div><strong>${exp.export_type.toUpperCase()}</strong> - ${exp.record_count} records</div>
-                                <div class="text-muted">${new Date(exp.created_at).toLocaleDateString()}</div>
-                            </small>
+                        <div class="export-history-item">
+                            <h6>${exp.export_type.toUpperCase()} - ${exp.record_count} records</h6>
+                            <p>${new Date(exp.created_at).toLocaleDateString()}</p>
                         </div>
                     `;
                 });
-                html += '</div>';
                 exportsDiv.innerHTML = html;
             } else {
-                exportsDiv.innerHTML = '<small class="text-muted">No recent exports</small>';
+                exportsDiv.innerHTML = '<p class="info-placeholder">No recent exports</p>';
             }
         })
         .catch(error => console.error('Error loading export history:', error));
@@ -299,31 +947,16 @@ function clearForm() {
     document.getElementById('export-form').reset();
     document.getElementById('preview-card').style.display = 'none';
     document.getElementById('export-info').innerHTML = `
-        <p class="text-muted mb-2">
-            <i class="fas fa-lightbulb"></i> Select a survey to see export information
+        <p class="info-placeholder">
+            <i class="fas fa-lightbulb"></i>
+            Select a survey to see export information
         </p>
     `;
 }
 
 function showAlert(message, type) {
-    const alert = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="close" data-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    `;
-    
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alert);
-    
-    setTimeout(() => {
-        const alertElement = container.querySelector('.alert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }, 5000);
+    // Use unified notification system  
+    showNotification(message, type);
 }
 </script>
 {% endblock %} 

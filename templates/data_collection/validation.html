@@ -207,26 +207,8 @@ function clearForm() {
 }
 
 function showAlert(message, type) {
-    const alert = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="close" data-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    `;
-    
-    // Insert at top of container
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alert);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        const alertElement = container.querySelector('.alert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }, 5000);
+    // Use unified notification system
+    showNotification(message, type);
 }
 </script>
 {% endblock %} 
