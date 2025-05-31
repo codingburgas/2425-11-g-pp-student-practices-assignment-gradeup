@@ -1,0 +1,924 @@
+{% extends "base.html" %}
+
+{% block title %}{{ survey.title }} - GradeUP{% endblock %}
+
+{% block content %}
+<div class="cosmic-page-container">
+    <!-- Survey Header -->
+    <div class="survey-hero-section">
+        <div class="cosmic-particles-survey"></div>
+        <div class="container-fluid">
+            <div class="survey-header">
+                <div class="survey-icon-enhanced">
+                    <div class="professional-emoji size-xl cosmic-glow">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="cosmic-glow-enhanced"></div>
+                </div>
+                <h1 class="survey-title">{{ survey.title }}</h1>
+                <p class="survey-description">{{ survey.description or 'Please answer all questions to help us provide better recommendations.' }}</p>
+                
+                <!-- Survey Progress -->
+                <div class="survey-progress-container">
+                    <div class="progress-info">
+                        <span class="progress-text">Progress: <span id="progress-percent">0%</span></span>
+                        <span class="question-counter">Question <span id="current-question">1</span> of <span id="total-questions">{{ survey.get_questions()|length }}</span></span>
+                    </div>
+                    <div class="cosmic-progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Survey Form -->
+    <div class="survey-form-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form id="survey-form" method="POST" action="{{ url_for('main.submit_survey_response', survey_id=survey.id) }}"
+                          data-total-questions="{{ survey.get_questions()|length|default(0) }}" class="cosmic-survey-form">
+                        {{ csrf_token() }}
+                        
+                        {% for question in survey.get_questions() %}
+                            <div class="survey-question-card" data-question="{{ loop.index }}" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+                                <div class="question-header">
+                                    <div class="question-number">
+                                        <span>{{ loop.index }}</span>
+                                    </div>
+                                    <div class="question-content">
+                                        <h3 class="question-text">{{ question.text }}</h3>
+                                        {% if question.required|default(true) %}
+                                            <span class="required-indicator">*</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="question-body">
+                                    {% if question.type == 'multiple_choice' %}
+                                        <!-- Multiple Choice Question -->
+                                        <div class="cosmic-radio-group">
+                                            {% for option in question.options %}
+                                                <label class="cosmic-radio-option">
+                                                    <input type="radio" 
+                                                           name="question_{{ question.id }}" 
+                                                           value="{{ option }}"
+                                                           {% if question.required|default(true) %}required{% endif %}
+                                                           onchange="updateProgress()">
+                                                    <span class="radio-mark"></span>
+                                                    <span class="option-text">{{ option }}</span>
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                    {% elif question.type == 'multiple_select' %}
+                                        <!-- Multiple Select Question -->
+                                        <div class="cosmic-checkbox-group">
+                                            {% for option in question.options %}
+                                                <label class="cosmic-checkbox-option">
+                                                    <input type="checkbox" 
+                                                           name="question_{{ question.id }}" 
+                                                           value="{{ option }}"
+                                                           onchange="updateProgress()">
+                                                    <span class="checkbox-mark"></span>
+                                                    <span class="option-text">{{ option }}</span>
+                                                </label>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                    {% elif question.type == 'rating' %}
+                                        <!-- Rating Question -->
+                                        <div class="cosmic-rating-group">
+                                            <div class="rating-scale">
+                                                {% for i in range(question.min|default(1), question.max|default(5) + 1) %}
+                                                    <label class="rating-option">
+                                                        <input type="radio" 
+                                                               name="question_{{ question.id }}" 
+                                                               value="{{ i }}"
+                                                               {% if question.required|default(true) %}required{% endif %}
+                                                               onchange="updateProgress()">
+                                                        <span class="rating-circle">{{ i }}</span>
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                            {% if question.labels %}
+                                                <div class="rating-labels">
+                                                    <span class="label-min">{{ question.labels[question.min|default(1)|string] or 'Low' }}</span>
+                                                    <span class="label-max">{{ question.labels[question.max|default(5)|string] or 'High' }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    
+                                    {% elif question.type == 'slider' %}
+                                        <!-- Slider Question -->
+                                        <div class="cosmic-slider-group">
+                                            <div class="slider-container">
+                                                <input type="range" 
+                                                       class="cosmic-slider" 
+                                                       name="question_{{ question.id }}"
+                                                       min="{{ question.min|default(1) }}" 
+                                                       max="{{ question.max|default(5) }}"
+                                                       value="{{ ((question.min|default(1) + question.max|default(5)) / 2)|round|int }}"
+                                                       oninput="updateSliderValue(this); updateProgress()">
+                                                <div class="slider-track"></div>
+                                            </div>
+                                            <div class="slider-value">
+                                                Value: <span class="value-display">{{ ((question.min|default(1) + question.max|default(5)) / 2)|round|int }}</span>
+                                            </div>
+                                            {% if question.labels %}
+                                                <div class="slider-labels">
+                                                    {% for label in question.labels %}
+                                                        <span>{{ label }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    
+                                    {% else %}
+                                        <!-- Text Input Question -->
+                                        <div class="cosmic-text-group">
+                                            <textarea class="cosmic-textarea" 
+                                                    name="question_{{ question.id }}"
+                                                    placeholder="Enter your answer here..."
+                                                    rows="4"
+                                                    {% if question.required|default(true) %}required{% endif %}
+                                                    oninput="updateProgress()"></textarea>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Submit Section -->
+                        <div class="survey-submit-section" data-aos="fade-up">
+                            <div class="submit-card">
+                                <div class="submit-content">
+                                    <h3>Ready to Submit?</h3>
+                                    <p>Thank you for taking the time to complete this survey. Your responses will help us provide better recommendations.</p>
+                                    
+                                    <div class="submit-actions">
+                                        <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced ghost">
+                                            <i class="fas fa-arrow-left"></i>
+                                            <span>Back to Surveys</span>
+                                            <div class="btn-cosmic-glow"></div>
+                                        </a>
+                                        <button type="submit" class="cosmic-btn-enhanced primary submit-btn" id="submit-btn" disabled>
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span>Submit Survey</span>
+                                            <div class="btn-cosmic-glow"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating particles -->
+    <div class="cosmic-particles-floating"></div>
+</div>
+
+<style>
+/* ===== SURVEY TAKING COSMIC STYLES ===== */
+.survey-hero-section {
+    position: relative;
+    background: linear-gradient(135deg, rgba(30, 30, 70, 0.9) 0%, rgba(20, 20, 50, 0.95) 100%);
+    padding: 3rem 0;
+    overflow: hidden;
+}
+
+.survey-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.survey-icon-enhanced .professional-emoji {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #C084FC 100%);
+    margin-bottom: 1.5rem;
+}
+
+.survey-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.survey-description {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* ===== PROGRESS BAR ===== */
+.survey-progress-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: rgba(248, 250, 252, 0.9);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.cosmic-progress-bar {
+    height: 8px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8B5CF6 0%, #A855F7 50%, #C084FC 100%);
+    border-radius: 1rem;
+    width: 0%;
+    transition: width 0.4s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    animation: progress-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ===== SURVEY FORM ===== */
+.survey-form-section {
+    padding: 4rem 0;
+}
+
+.survey-question-card {
+    background: rgba(30, 30, 70, 0.3);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.survey-question-card:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.2);
+}
+
+.question-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.question-number {
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+.question-content {
+    flex: 1;
+}
+
+.question-text {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.required-indicator {
+    color: #EF4444;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+/* ===== RADIO BUTTONS ===== */
+.cosmic-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cosmic-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cosmic-radio-option:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateX(5px);
+}
+
+.cosmic-radio-option input[type="radio"] {
+    display: none;
+}
+
+.radio-mark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.cosmic-radio-option input[type="radio"]:checked + .radio-mark {
+    border-color: #8B5CF6;
+    background: #8B5CF6;
+}
+
+.cosmic-radio-option input[type="radio"]:checked + .radio-mark::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.option-text {
+    color: rgba(248, 250, 252, 0.9);
+    font-size: 1rem;
+    font-weight: 500;
+    flex: 1;
+}
+
+.cosmic-radio-option input[type="radio"]:checked ~ .option-text {
+    color: var(--star-white);
+}
+
+/* ===== CHECKBOXES ===== */
+.cosmic-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cosmic-checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cosmic-checkbox-option:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateX(5px);
+}
+
+.cosmic-checkbox-option input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-mark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.cosmic-checkbox-option input[type="checkbox"]:checked + .checkbox-mark {
+    border-color: #8B5CF6;
+    background: #8B5CF6;
+}
+
+.cosmic-checkbox-option input[type="checkbox"]:checked + .checkbox-mark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    transform: translate(-50%, -50%);
+}
+
+/* ===== RATING SCALE ===== */
+.cosmic-rating-group {
+    text-align: center;
+}
+
+.rating-scale {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.rating-option {
+    cursor: pointer;
+}
+
+.rating-option input[type="radio"] {
+    display: none;
+}
+
+.rating-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.1);
+    color: rgba(248, 250, 252, 0.7);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.rating-option:hover .rating-circle {
+    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba(139, 92, 246, 0.2);
+    transform: scale(1.1);
+}
+
+.rating-option input[type="radio"]:checked + .rating-circle {
+    border-color: #8B5CF6;
+    background: #8B5CF6;
+    color: white;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+.rating-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* ===== SLIDER ===== */
+.cosmic-slider-group {
+    text-align: center;
+}
+
+.slider-container {
+    position: relative;
+    margin: 2rem 0;
+}
+
+.cosmic-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 1rem;
+    background: rgba(139, 92, 246, 0.2);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.cosmic-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s ease;
+}
+
+.cosmic-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 6px 30px rgba(139, 92, 246, 0.6);
+}
+
+.cosmic-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+.slider-value {
+    margin: 1rem 0;
+    color: rgba(248, 250, 252, 0.9);
+    font-weight: 600;
+}
+
+.value-display {
+    color: #8B5CF6;
+    font-size: 1.2rem;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+/* ===== TEXT INPUT ===== */
+.cosmic-textarea {
+    width: 100%;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.cosmic-textarea:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+/* ===== SUBMIT SECTION ===== */
+.survey-submit-section {
+    margin-top: 3rem;
+}
+
+.submit-card {
+    background: rgba(30, 30, 70, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.submit-content {
+    position: relative;
+    z-index: 2;
+}
+
+.submit-content h3 {
+    color: var(--star-white);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.submit-content p {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.submit-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.submit-btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .survey-title {
+        font-size: 2rem;
+    }
+    
+    .survey-question-card {
+        padding: 2rem;
+    }
+    
+    .question-header {
+        gap: 1rem;
+    }
+    
+    .question-text {
+        font-size: 1.1rem;
+    }
+    
+    .rating-scale {
+        gap: 0.5rem;
+    }
+    
+    .rating-circle {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .survey-hero-section {
+        padding: 2rem 0;
+    }
+    
+    .survey-question-card {
+        padding: 1.5rem;
+    }
+    
+    .question-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .submit-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cosmic-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* ===== ENHANCED COSMIC BUTTONS ===== */
+.cosmic-btn-enhanced {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.cosmic-btn-enhanced.primary {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #C084FC 100%);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-enhanced.primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7C3AED 0%, #9333EA 50%, #A855F7 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+}
+
+.cosmic-btn-enhanced.ghost {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-btn-enhanced.ghost:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.cosmic-btn-enhanced i {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.cosmic-btn-enhanced span {
+    font-weight: 600;
+}
+
+.btn-cosmic-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.cosmic-btn-enhanced:hover:not(:disabled) .btn-cosmic-glow {
+    transform: translateX(100%);
+}
+
+.cosmic-btn-enhanced:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.cosmic-btn-enhanced:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.cosmic-btn-enhanced:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+</style>
+
+<script>
+let totalQuestions = 0;
+let currentProgress = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get total questions from form data attribute
+    const form = document.getElementById('survey-form');
+    totalQuestions = parseInt(form.dataset.totalQuestions) || 0;
+    
+    // Initialize AOS if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 100
+        });
+    }
+    
+    // Add floating particles
+    createFloatingParticles();
+    
+    // Initial progress check
+    updateProgress();
+});
+
+function updateProgress() {
+    let answeredQuestions = 0;
+    const form = document.getElementById('survey-form');
+    const questionCards = form.querySelectorAll('.survey-question-card');
+    
+    questionCards.forEach((card, index) => {
+        const questionNumber = index + 1;
+        const inputs = card.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked, textarea:not(:placeholder-shown), input[type="range"]');
+        
+        // Check for checkboxes (at least one should be checked)
+        const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+        const textareas = card.querySelectorAll('textarea');
+        
+        if (checkboxes.length > 0) {
+            const checkedBoxes = card.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkedBoxes.length > 0) {
+                answeredQuestions++;
+            }
+        } else if (textareas.length > 0) {
+            const textarea = textareas[0];
+            if (textarea.value.trim() !== '') {
+                answeredQuestions++;
+            }
+        } else if (inputs.length > 0) {
+            answeredQuestions++;
+        }
+    });
+    
+    const progressPercent = Math.round((answeredQuestions / totalQuestions) * 100);
+    
+    // Update progress bar
+    document.getElementById('progress-fill').style.width = progressPercent + '%';
+    document.getElementById('progress-percent').textContent = progressPercent + '%';
+    
+    // Update current question indicator
+    document.getElementById('current-question').textContent = Math.min(answeredQuestions + 1, totalQuestions);
+    
+    // Enable/disable submit button
+    const submitBtn = document.getElementById('submit-btn');
+    if (progressPercent === 100) {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Submit Survey';
+    } else {
+        submitBtn.disabled = true;
+        const remaining = totalQuestions - answeredQuestions;
+        const questionText = remaining !== 1 ? 's' : '';
+        submitBtn.querySelector('span').textContent = 'Complete ' + remaining + ' more question' + questionText;
+    }
+}
+
+function updateSliderValue(slider) {
+    const valueDisplay = slider.parentElement.parentElement.querySelector('.value-display');
+    valueDisplay.textContent = slider.value;
+}
+
+function createFloatingParticles() {
+    const container = document.querySelector('.cosmic-particles-floating');
+    if (!container) return;
+    
+    for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'floating-particle';
+        const width = Math.random() * 4 + 2;
+        const height = Math.random() * 4 + 2;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const duration = Math.random() * 25 + 20;
+        
+        particle.style.cssText = 
+            'position: absolute;' +
+            'width: ' + width + 'px;' +
+            'height: ' + height + 'px;' +
+            'background: radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, transparent 70%);' +
+            'border-radius: 50%;' +
+            'left: ' + left + '%;' +
+            'top: ' + top + '%;' +
+            'animation: float-around ' + duration + 's linear infinite;' +
+            'pointer-events: none;';
+        container.appendChild(particle);
+    }
+}
+
+// Form submission with loading state
+document.getElementById('survey-form').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Submitting...</span>';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %} 
