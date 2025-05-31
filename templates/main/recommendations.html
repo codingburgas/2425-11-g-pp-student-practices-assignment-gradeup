@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}My Recommendations - GradeUP{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-star me-2"></i>
+                        My Recommendations
+                    </h1>
+                    <p class="dashboard-subtitle">Personalized university recommendations based on your profile.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="container-fluid">
+            <div class="text-center py-5">
+                <div class="coming-soon-icon">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h2>AI-Powered Recommendations</h2>
+                <p>Take our survey first to get personalized university recommendations!</p>
+                <div class="action-buttons">
+                    <a href="{{ url_for('main.start_survey') }}" class="btn btn-cosmic me-3">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Take Survey
+                    </a>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-cosmic-outline">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.coming-soon-icon {
+    width: 120px;
+    height: 120px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 3rem;
+    color: white;
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4);
+}
+
+.coming-soon-icon i {
+    animation: sparkle 2s ease-in-out infinite alternate;
+}
+
+.action-buttons {
+    margin-top: 2rem;
+}
+
+@keyframes sparkle {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(10deg); }
+}
+</style>
+{% endblock %} 
