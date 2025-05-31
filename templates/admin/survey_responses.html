@@ -1,242 +1,1684 @@
 {% extends "base.html" %}
 
+{% block title %}Survey Responses - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
+<div class="cosmic-admin-container">
+    <!-- Enhanced Admin Survey Responses Hero Section -->
+    <div class="admin-hero-enhanced">
+        <div class="container-fluid">
+            <div class="admin-header-enhanced">
+                <div class="admin-icon-enhanced">
+                    <div class="professional-emoji size-xxl cosmic-glow">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="admin-glow-enhanced"></div>
+                </div>
+                <div class="admin-info-enhanced">
+                    <h1 class="admin-title-enhanced">Survey Responses</h1>
+                    <p class="admin-subtitle-enhanced">Comprehensive Response Analytics & Management</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-number">{{ responses.total }}</span>
+                                <span class="stat-label">Total Responses</span>
+                            </div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-number">{{ surveys|length }}</span>
+                                <span class="stat-label">Active Surveys</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-actions-enhanced">
+                    <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn-enhanced primary">
+                        <i class="fas fa-poll"></i>
+                        <span>Manage Surveys</span>
+                    </a>
+                    <a href="{{ url_for('admin.dashboard') }}" class="cosmic-btn-enhanced secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Survey Responses</h1>
+    <!-- Main Content -->
+    <div class="admin-main-content-enhanced">
+        <div class="container-fluid">
+            <!-- Enhanced Filters Section -->
+            <div class="cosmic-card-enhanced animate-on-scroll">
+                <div class="cosmic-card-header-enhanced">
+                    <div class="card-title-enhanced">
+                        <i class="fas fa-filter rotating-icon"></i>
+                        Response Filters
+                    </div>
+                </div>
+                <div class="cosmic-card-body-enhanced">
+                    <div class="filter-form-container-enhanced">
+                        <form method="GET" class="filter-form-enhanced">
+                            <div class="filter-group-enhanced">
+                                <label for="survey-select">Select Survey</label>
+                                <div class="select-wrapper">
+                                    <select name="survey_id" id="survey-select" class="cosmic-select-enhanced" onchange="this.form.submit()">
+                                        <option value="">All Surveys</option>
+                                        {% for survey in surveys %}
+                                        <option value="{{ survey.id }}" {% if selected_survey == survey.id %}selected{% endif %}>
+                                            {{ survey.title }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            {% if selected_survey %}
+                            <div class="filter-actions-enhanced">
+                                <a href="{{ url_for('admin.survey_responses') }}" class="cosmic-btn-enhanced danger">
+                                    <i class="fas fa-times"></i>
+                                    <span>Clear Filter</span>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </form>
+                        <div class="response-stats-enhanced">
+                            <div class="stat-badge-enhanced">
+                                <div class="stat-icon-small">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <span>{{ responses.total }} Total Responses</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Filters -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <form method="GET" class="d-flex">
-                        <select name="survey_id" class="form-select me-2" onchange="this.form.submit()">
-                            <option value="">All Surveys</option>
-                            {% for survey in surveys %}
-                            <option value="{{ survey.id }}" {% if selected_survey == survey.id %}selected{% endif %}>
-                                {{ survey.title }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        {% if selected_survey %}
-                        <a href="{{ url_for('admin.survey_responses') }}" class="btn btn-outline-danger">
-                            <i class="fas fa-times"></i>
-                        </a>
-                        {% endif %}
-                    </form>
+            <!-- Enhanced Responses Content -->
+            {% if responses.items %}
+            <div class="cosmic-card-enhanced animate-on-scroll">
+                <div class="cosmic-card-header-enhanced">
+                    <div class="card-title-enhanced">
+                        <i class="fas fa-database rotating-icon"></i>
+                        Response Data
+                        <span class="data-count">({{ responses.items|length }})</span>
+                    </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Total: {{ responses.total }} responses</span>
-                </div>
-            </div>
-
-            <!-- Responses Table -->
-            <div class="card shadow">
-                <div class="card-body">
-                    {% if responses.items %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Survey</th>
-                                    <th>Submitted</th>
-                                    <th>Recommendations</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for response in responses.items %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3">
-                                                {{ response.user.username[0].upper() }}
-                                            </div>
-                                            <div>
-                                                <strong>{{ response.user.username }}</strong>
-                                                <br><small class="text-muted">{{ response.user.email }}</small>
-                                            </div>
+                <div class="cosmic-card-body-enhanced">
+                    <div class="responses-grid-enhanced">
+                        {% for response in responses.items %}
+                        <div class="response-card-enhanced">
+                            <div class="response-gradient"></div>
+                            <div class="response-header-enhanced">
+                                <div class="user-info-enhanced">
+                                    <div class="user-avatar-enhanced">
+                                        <div class="avatar-inner">
+                                            {{ response.user.username[0].upper() }}
                                         </div>
-                                    </td>
-                                    <td>
-                                        <strong>{{ response.survey.title }}</strong>
-                                        <br><span class="badge bg-{{ 'success' if response.survey.is_active else 'secondary' }}">
+                                        <div class="avatar-glow"></div>
+                                    </div>
+                                    <div class="user-details-enhanced">
+                                        <h6>{{ response.user.username }}</h6>
+                                        <small>{{ response.user.email }}</small>
+                                    </div>
+                                </div>
+                                <div class="response-date-enhanced">
+                                    <div class="date-container">
+                                        <span class="date-main">{{ response.created_at.strftime('%b %d, %Y') }}</span>
+                                        <small class="date-time">{{ response.created_at.strftime('%I:%M %p') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="response-body-enhanced">
+                                <div class="survey-title-enhanced">
+                                    <div class="survey-icon">
+                                        <i class="fas fa-poll"></i>
+                                    </div>
+                                    <span>{{ response.survey.title }}</span>
+                                </div>
+                                <div class="survey-meta-enhanced">
+                                    <div class="status-container">
+                                        <span class="status-badge-enhanced {{ 'active' if response.survey.is_active else 'inactive' }}">
+                                            <i class="fas fa-{{ 'play' if response.survey.is_active else 'pause' }}"></i>
                                             {{ 'Active' if response.survey.is_active else 'Inactive' }}
                                         </span>
-                                    </td>
-                                    <td>{{ response.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>
-                                        <span class="badge bg-info">{{ response.recommendations.count() }} recommendations</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-info" 
-                                                    data-response-id="{{ response.id }}" 
-                                                    onclick="viewResponse(this.dataset.responseId)" 
-                                                    title="View Response">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="View Survey">
-                                                <i class="fas fa-poll"></i>
-                                            </a>
+                                    </div>
+                                    <div class="recommendations-count-enhanced">
+                                        <div class="rec-icon">
+                                            <i class="fas fa-star"></i>
                                         </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        <span>{{ response.recommendations.count() }} Recommendations</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="response-actions-enhanced">
+                                <button type="button" class="cosmic-btn-enhanced info" 
+                                        data-response-id="{{ response.id }}" 
+                                        onclick="viewResponse(this.dataset.responseId)">
+                                    <i class="fas fa-eye"></i>
+                                    <span>View Details</span>
+                                </button>
+                                <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" 
+                                   class="cosmic-btn-enhanced primary">
+                                    <i class="fas fa-poll"></i>
+                                    <span>View Survey</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
 
-                    <!-- Pagination -->
+                    <!-- Enhanced Pagination -->
                     {% if responses.pages > 1 %}
-                    <nav aria-label="Responses pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if responses.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.survey_responses', page=responses.prev_num, survey_id=selected_survey) }}">Previous</a>
-                            </li>
-                            {% endif %}
-                            
-                            {% for page_num in responses.iter_pages() %}
-                                {% if page_num %}
-                                    {% if page_num != responses.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.survey_responses', page=page_num, survey_id=selected_survey) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                    {% endif %}
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
+                    <div class="pagination-container-enhanced">
+                        <nav aria-label="Responses pagination">
+                            <ul class="cosmic-pagination-enhanced">
+                                {% if responses.has_prev %}
+                                <li class="page-item-enhanced">
+                                    <a class="page-link-enhanced" href="{{ url_for('admin.survey_responses', page=responses.prev_num, survey_id=selected_survey) }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                        <span>Previous</span>
+                                    </a>
                                 </li>
                                 {% endif %}
-                            {% endfor %}
-                            
-                            {% if responses.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.survey_responses', page=responses.next_num, survey_id=selected_survey) }}">Next</a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No survey responses found</h5>
-                        {% if selected_survey %}
-                        <p class="text-muted">No responses for the selected survey.</p>
-                        <a href="{{ url_for('admin.survey_responses') }}" class="btn btn-outline-primary">View All Responses</a>
-                        {% else %}
-                        <p class="text-muted">No survey responses have been submitted yet.</p>
-                        {% endif %}
+                                
+                                {% for page_num in responses.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != responses.page %}
+                                        <li class="page-item-enhanced">
+                                            <a class="page-link-enhanced" href="{{ url_for('admin.survey_responses', page=page_num, survey_id=selected_survey) }}">{{ page_num }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item-enhanced active">
+                                            <span class="page-link-enhanced current">{{ page_num }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item-enhanced disabled">
+                                        <span class="page-link-enhanced">...</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if responses.has_next %}
+                                <li class="page-item-enhanced">
+                                    <a class="page-link-enhanced" href="{{ url_for('admin.survey_responses', page=responses.next_num, survey_id=selected_survey) }}">
+                                        <span>Next</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
                     </div>
                     {% endif %}
                 </div>
             </div>
-        </main>
-    </div>
-</div>
-
-<!-- Response Details Modal -->
-<div class="modal fade" id="responseModal" tabindex="-1" aria-labelledby="responseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="responseModalLabel">Survey Response Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            {% else %}
+            <!-- Enhanced Empty State -->
+            <div class="cosmic-card-enhanced animate-on-scroll">
+                <div class="cosmic-card-body-enhanced">
+                    <div class="empty-state-enhanced">
+                        <div class="empty-icon-enhanced">
+                            <div class="icon-inner">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>No Survey Responses Found</h3>
+                        {% if selected_survey %}
+                        <p>No responses have been submitted for the selected survey yet.</p>
+                        {% else %}
+                        <p>No survey responses have been submitted yet. Start collecting responses by managing your surveys.</p>
+                        {% endif %}
+                        <div class="empty-actions-enhanced">
+                            <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn-enhanced primary">
+                                <i class="fas fa-plus"></i>
+                                <span>Manage Surveys</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body" id="responseContent">
-                <!-- Response content will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+            {% endif %}
         </div>
     </div>
+
+    <!-- Enhanced Floating Particles -->
+    <div class="floating-particles-enhanced">
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+    </div>
 </div>
 
-<script>
-function viewResponse(responseId) {
-    // This would typically fetch response details via AJAX
-    // For now, show a placeholder
-    document.getElementById('responseContent').innerHTML = '<p>Loading response details for ID: ' + responseId + '</p>';
-    var responseModal = new bootstrap.Modal(document.getElementById('responseModal'));
-    responseModal.show();
-}
-</script>
-
 <style>
-.sidebar {
-    position: fixed;
-    top: 56px;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+/* Enhanced Survey Responses Cosmic Styles */
+.admin-hero-enhanced {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #1e40af 50%, #1e3a8a 75%, #1e1b4b 100%);
+    min-height: 400px;
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
 }
 
-.avatar-circle {
-    width: 40px;
-    height: 40px;
+.admin-hero-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 100, 100, 0.2) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.admin-header-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+}
+
+.admin-icon-enhanced {
+    position: relative;
+}
+
+.professional-emoji.size-xxl {
+    width: 120px;
+    height: 120px;
+    font-size: 3.5rem;
+}
+
+.cosmic-glow {
+    animation: cosmicGlow 3s ease-in-out infinite;
+}
+
+@keyframes cosmicGlow {
+    0%, 100% { transform: rotate(0deg) scale(1); box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
+    50% { transform: rotate(180deg) scale(1.1); box-shadow: 0 0 50px rgba(139, 92, 246, 0.8); }
+}
+
+.admin-glow-enhanced {
+    position: absolute;
+    top: -30px;
+    left: -30px;
+    right: -30px;
+    bottom: -30px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
     border-radius: 50%;
-    background-color: #007bff;
-    color: white;
+    filter: blur(25px);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.admin-info-enhanced {
+    flex: 1;
+    min-width: 350px;
+}
+
+.admin-title-enhanced {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffffff, #e2e8f0, #cbd5e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    line-height: 1.1;
+}
+
+.admin-subtitle-enhanced {
+    font-size: 1.3rem;
+    color: #cbd5e1;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.hero-stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(148, 163, 184, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.stat-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #e2e8f0;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.admin-actions-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 220px;
+}
+
+.cosmic-btn-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    justify-content: center;
+}
+
+.cosmic-btn-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.cosmic-btn-enhanced:hover::before {
+    left: 100%;
+}
+
+.cosmic-btn-enhanced.primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.cosmic-btn-enhanced.primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+}
+
+.cosmic-btn-enhanced.secondary:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.cosmic-btn-enhanced.danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.info {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+}
+
+.cosmic-btn-enhanced.info:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.6);
+    color: white;
+}
+
+.admin-main-content-enhanced {
+    padding: 2rem 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%);
+    min-height: calc(100vh - 400px);
+}
+
+.cosmic-card-enhanced {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.cosmic-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.cosmic-card-enhanced:hover {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cosmic-card-header-enhanced {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+}
+
+.card-title-enhanced {
+    color: #e2e8f0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rotating-icon {
+    animation: rotateIcon 3s linear infinite;
+}
+
+@keyframes rotateIcon {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.data-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.cosmic-card-body-enhanced {
+    padding: 2rem;
+}
+
+.filter-form-container-enhanced {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.filter-form-enhanced {
+    display: flex;
+    align-items: end;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.filter-group-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 280px;
+}
+
+.filter-group-enhanced label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.cosmic-select-enhanced {
+    appearance: none;
+    background: rgba(148, 163, 184, 0.1);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    padding: 1rem 3rem 1rem 1rem;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-select-enhanced:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.cosmic-select-enhanced option {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 0.5rem;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.cosmic-select-enhanced:focus + .select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.response-stats-enhanced {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-badge-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 1rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.stat-icon-small {
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.responses-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+}
+
+.response-card-enhanced {
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.response-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+}
+
+.response-card-enhanced:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+.response-header-enhanced {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.user-info-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.user-avatar-enhanced {
+    position: relative;
+}
+
+.avatar-inner {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.avatar-glow {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 16px;
+    filter: blur(8px);
+    opacity: 0.4;
+    z-index: 1;
+}
+
+.user-details-enhanced h6 {
+    color: #e2e8f0;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.user-details-enhanced small {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.response-date-enhanced {
+    text-align: right;
+}
+
+.date-container {
+    background: rgba(148, 163, 184, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.date-main {
+    display: block;
+    color: #e2e8f0;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.date-time {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.response-body-enhanced {
+    margin-bottom: 2rem;
+}
+
+.survey-title-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(148, 163, 184, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.survey-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.survey-title-enhanced span {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.survey-meta-enhanced {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.status-badge-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge-enhanced.active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge-enhanced.inactive {
+    background: rgba(107, 114, 128, 0.2);
+    color: #d1d5db;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.recommendations-count-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #34d399;
+    font-weight: 600;
+    background: rgba(52, 211, 153, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.rec-icon {
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #34d399, #10b981);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+}
+
+.response-actions-enhanced {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-container-enhanced {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+}
+
+.cosmic-pagination-enhanced {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.75rem;
+}
+
+.page-link-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    color: #e2e8f0;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.page-link-enhanced:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+    transform: translateY(-2px);
+}
+
+.page-item-enhanced.active .page-link-enhanced {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.empty-state-enhanced {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.empty-icon-enhanced {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem;
+}
+
+.icon-inner {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 4rem;
+    box-shadow: 0 8px 30px rgba(107, 114, 128, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.icon-glow {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    border-radius: 50%;
+    filter: blur(15px);
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.empty-state-enhanced h3 {
+    color: #e2e8f0;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.empty-state-enhanced p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-actions-enhanced {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.floating-particles-enhanced {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.particle-enhanced {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    border-radius: 50%;
+    animation: floatParticle 8s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+
+.particle-enhanced:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.particle-enhanced:nth-child(2) { top: 80%; left: 20%; animation-delay: 1s; }
+.particle-enhanced:nth-child(3) { top: 40%; right: 30%; animation-delay: 2s; }
+.particle-enhanced:nth-child(4) { bottom: 30%; right: 10%; animation-delay: 3s; }
+.particle-enhanced:nth-child(5) { top: 60%; left: 50%; animation-delay: 4s; }
+.particle-enhanced:nth-child(6) { bottom: 60%; left: 70%; animation-delay: 5s; }
+
+@keyframes floatParticle {
+    0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-20px) rotate(180deg) scale(1.2); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-header-enhanced {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-actions-enhanced {
+        flex-direction: row;
+        width: 100%;
+        gap: 1rem;
+    }
+    
+    .admin-title-enhanced {
+        font-size: 2.5rem;
+    }
+    
+    .hero-stats {
+        justify-content: center;
+    }
+    
+    .responses-grid-enhanced {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-form-container-enhanced {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-form-enhanced {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group-enhanced {
+        min-width: unset;
+    }
+    
+    .response-header-enhanced {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .response-date-enhanced {
+        text-align: left;
+        align-self: stretch;
+    }
+    
+    .survey-meta-enhanced {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .response-actions-enhanced {
+        flex-direction: column;
+    }
+    
+    .cosmic-btn-enhanced {
+        justify-content: center;
+    }
+    
+    .cosmic-pagination-enhanced {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 </style>
+
+<script>
+// Enhanced animations and functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on scroll with enhanced effects
+    const cards = document.querySelectorAll('.animate-on-scroll');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0) scale(1)';
+                }, index * 150);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px) scale(0.95)';
+        card.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        observer.observe(card);
+    });
+
+    // Enhanced floating animation for particles
+    const particles = document.querySelectorAll('.particle-enhanced');
+    particles.forEach((particle, index) => {
+        particle.style.animationDelay = `${index * 0.8}s`;
+        particle.style.animationDuration = `${8 + (index * 2)}s`;
+    });
+
+    // Add smooth scroll behavior for action buttons
+    const actionButtons = document.querySelectorAll('.cosmic-btn-enhanced');
+    actionButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+
+    // Enhanced hover effects for response cards
+    const responseCards = document.querySelectorAll('.response-card-enhanced');
+    responseCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+
+// Enhanced function to view response details
+function viewResponse(responseId) {
+    // Find the response card that contains this response data
+    const responseButton = document.querySelector(`[data-response-id="${responseId}"]`);
+    const responseCard = responseButton.closest('.response-card-enhanced');
+    
+    // Extract data from the response card
+    const userName = responseCard.querySelector('.user-details-enhanced h6').textContent;
+    const userEmail = responseCard.querySelector('.user-details-enhanced small').textContent;
+    const userAvatar = responseCard.querySelector('.avatar-inner').textContent;
+    const surveyTitle = responseCard.querySelector('.survey-title-enhanced span').textContent;
+    const responseDate = responseCard.querySelector('.date-main').textContent;
+    const responseTime = responseCard.querySelector('.date-time').textContent;
+    const statusBadge = responseCard.querySelector('.status-badge-enhanced');
+    const status = statusBadge.textContent.trim();
+    const statusClass = statusBadge.classList.contains('active') ? 'active' : 'inactive';
+    const recommendationsCount = responseCard.querySelector('.recommendations-count-enhanced span').textContent;
+    
+    // Create enhanced modal with actual data
+    const modal = document.createElement('div');
+    modal.className = 'response-modal-enhanced';
+    modal.innerHTML = `
+        <div class="modal-overlay-enhanced" onclick="this.closest('.response-modal-enhanced').remove()"></div>
+        <div class="modal-content-enhanced">
+            <div class="modal-header-enhanced">
+                <div class="modal-title-section">
+                    <div class="modal-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h3>Response Details</h3>
+                        <p>Detailed view of survey response #${responseId}</p>
+                    </div>
+                </div>
+                <button onclick="this.closest('.response-modal-enhanced').remove()" class="modal-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body-enhanced">
+                <!-- User Information Section -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-user-circle"></i>
+                        <h4>Respondent Information</h4>
+                    </div>
+                    <div class="user-info-modal">
+                        <div class="user-avatar-modal">
+                            <div class="avatar-inner-modal">${userAvatar}</div>
+                        </div>
+                        <div class="user-details-modal">
+                            <div class="detail-row">
+                                <span class="detail-label">Name:</span>
+                                <span class="detail-value">${userName}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value">${userEmail}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survey Information Section -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h4>Survey Information</h4>
+                    </div>
+                    <div class="survey-info-modal">
+                        <div class="detail-row">
+                            <span class="detail-label">Survey Title:</span>
+                            <span class="detail-value">${surveyTitle}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value">
+                                <span class="status-badge-modal ${statusClass}">
+                                    <i class="fas fa-${statusClass === 'active' ? 'play' : 'pause'}"></i>
+                                    ${status}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response Summary Section -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4>Response Summary</h4>
+                    </div>
+                    <div class="response-summary-modal">
+                        <div class="detail-row">
+                            <span class="detail-label">Submitted On:</span>
+                            <span class="detail-value">${responseDate} at ${responseTime}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Generated Recommendations:</span>
+                            <span class="detail-value">
+                                <span class="recommendations-badge-modal">
+                                    <i class="fas fa-star"></i>
+                                    ${recommendationsCount}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Response ID:</span>
+                            <span class="detail-value">#${responseId}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Section -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-cogs"></i>
+                        <h4>Quick Actions</h4>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-action-btn primary">
+                            <i class="fas fa-download"></i>
+                            Export Response
+                        </button>
+                        <button class="modal-action-btn secondary">
+                            <i class="fas fa-eye"></i>
+                            View Recommendations
+                        </button>
+                        <button class="modal-action-btn info">
+                            <i class="fas fa-chart-pie"></i>
+                            Analytics View
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer-enhanced">
+                <button onclick="this.closest('.response-modal-enhanced').remove()" class="modal-btn secondary">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <button class="modal-btn primary">
+                    <i class="fas fa-external-link-alt"></i>
+                    Open Full Details
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add enhanced modal styles
+    const modalStyles = document.createElement('style');
+    modalStyles.textContent = `
+        .response-modal-enhanced {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        .modal-overlay-enhanced {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content-enhanced {
+            background: linear-gradient(135deg, rgba(30, 30, 70, 0.95) 0%, rgba(60, 60, 120, 0.95) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.4s ease-out;
+        }
+        
+        .modal-header-enhanced {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            padding: 2rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .modal-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, #8B5CF6, #A855F7);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .modal-title-section h3 {
+            color: var(--star-white);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .modal-title-section p {
+            color: rgba(248, 250, 252, 0.7);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .modal-close-btn {
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(248, 250, 252, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .modal-body-enhanced {
+            padding: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        
+        .detail-section {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header i {
+            color: rgba(139, 92, 246, 0.8);
+            font-size: 1.2rem;
+        }
+        
+        .section-header h4 {
+            color: var(--star-white);
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .user-info-modal {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .user-avatar-modal {
+            position: relative;
+        }
+        
+        .avatar-inner-modal {
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .user-details-modal {
+            flex: 1;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem 0;
+        }
+        
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .detail-label {
+            color: rgba(148, 163, 184, 0.9);
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        
+        .detail-value {
+            color: var(--star-white);
+            font-weight: 500;
+            text-align: right;
+            flex: 1;
+        }
+        
+        .status-badge-modal {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge-modal.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status-badge-modal.inactive {
+            background: rgba(107, 114, 128, 0.2);
+            color: #d1d5db;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+        
+        .recommendations-badge-modal {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(52, 211, 153, 0.2);
+            color: #34d399;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-weight: 600;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .modal-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            justify-content: center;
+        }
+        
+        .modal-action-btn.primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        
+        .modal-action-btn.secondary {
+            background: rgba(107, 114, 128, 0.2);
+            color: #d1d5db;
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+        
+        .modal-action-btn.info {
+            background: rgba(6, 182, 212, 0.2);
+            color: #67e8f9;
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        
+        .modal-action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .modal-footer-enhanced {
+            background: rgba(30, 30, 70, 0.5);
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .modal-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #8B5CF6, #A855F7);
+            color: white;
+        }
+        
+        .modal-btn.secondary {
+            background: rgba(107, 114, 128, 0.2);
+            color: #d1d5db;
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content-enhanced {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .modal-header-enhanced {
+                padding: 1.5rem;
+            }
+            
+            .modal-title-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .detail-section {
+                padding: 1.5rem;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .detail-label {
+                min-width: unset;
+            }
+            
+            .detail-value {
+                text-align: left;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .modal-action-btn {
+                min-width: unset;
+            }
+            
+            .modal-footer-enhanced {
+                flex-direction: column-reverse;
+            }
+        }
+    `;
+    
+    document.head.appendChild(modalStyles);
+    document.body.appendChild(modal);
+    
+    // Close modal with Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            modalStyles.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+    
+    // Remove styles when modal is closed
+    modal.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-overlay-enhanced') || 
+            e.target.closest('.modal-close-btn') || 
+            e.target.closest('.modal-btn.secondary')) {
+            modalStyles.remove();
+        }
+    });
+}
+</script>
 {% endblock %} 
