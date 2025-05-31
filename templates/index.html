@@ -3,64 +3,73 @@
 {% block title %}Find Your Perfect University Path - GradeUP{% endblock %}
 
 {% block content %}
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
 <div class="home-container">
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container-fluid">
             <div class="row align-items-center min-vh-100">
                 <div class="col-lg-6">
-                    <div class="hero-content">
-                        <h1 class="hero-title">
-                            Find Your Perfect 
-                            <span class="highlight">University Path</span>
-                        </h1>
-                        <p class="hero-description">
-                            GradeUP helps you discover the ideal university and program 
-                            based on your unique skills, interests, and goals. Our AI-
-                            powered platform provides personalized recommendations to 
-                            shape your future.
-                        </p>
+                    <!-- Glassmorphism Hero Box -->
+                    <div class="hero-glass-box">
+                        <!-- Hero Box Particles -->
+                        <div class="hero-particles" id="heroParticles"></div>
                         
-                        <div class="hero-actions">
-                            {% if not current_user.is_authenticated %}
-                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-hero">
-                                Take the Survey
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                            <a href="#universities" class="btn btn-outline-primary btn-hero">
-                                Explore Universities
-                            </a>
-                            {% else %}
-                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-hero">
-                                Go to Dashboard
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
-                            <a href="#universities" class="btn btn-outline-primary btn-hero">
-                                Explore Universities
-                            </a>
-                            {% endif %}
-                        </div>
+                        <div class="hero-content animate-fade-in">
+                            <h1 class="hero-title animate-slide-up">
+                                Find Your Perfect 
+                                <span class="highlight">University Path</span>
+                            </h1>
+                            <p class="hero-description animate-slide-up" data-delay="200">
+                                GradeUP helps you discover the ideal university and program 
+                                based on your unique skills, interests, and goals. Our AI-
+                                powered platform provides personalized recommendations to 
+                                shape your future.
+                            </p>
+                            
+                            <div class="hero-actions animate-slide-up" data-delay="400">
+                                {% if not current_user.is_authenticated %}
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-hero">
+                                    Take the Survey
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                                <a href="{{ url_for('main.universities') }}" class="btn btn-outline-primary btn-hero">
+                                    Explore Universities
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-hero">
+                                    Go to Dashboard
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                                <a href="{{ url_for('main.universities') }}" class="btn btn-outline-primary btn-hero">
+                                    Explore Universities
+                                </a>
+                                {% endif %}
+                            </div>
 
-                        <!-- Features List -->
-                        <div class="features-list">
-                            <div class="feature-item">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Personalized Recommendations</span>
-                            </div>
-                            <div class="feature-item">
-                                <i class="fas fa-check-circle"></i>
-                                <span>AI-Powered Matching</span>
-                            </div>
-                            <div class="feature-item">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Comprehensive University Data</span>
+                            <!-- Features List -->
+                            <div class="features-list animate-slide-up" data-delay="600">
+                                <div class="feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Personalized Recommendations</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>AI-Powered Matching</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Comprehensive University Data</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-lg-6">
-                    <div class="hero-visual">
+                    <div class="hero-visual animate-scale" data-delay="800">
                         <div class="mockup-container">
                             <div class="mockup-screen">
                                 <div class="mockup-header">
@@ -93,11 +102,11 @@
     </section>
 
     <!-- Statistics Section -->
-    <section class="stats-section">
+    <section class="stats-section animate-fade-in" data-delay="0">
         <div class="container">
             <div class="row text-center">
-                <div class="col-md-4">
-                    <div class="stat-item">
+                <div class="col-md-3">
+                    <div class="stat-item animate-slide-up" data-delay="100">
                         <div class="stat-icon">
                             <i class="fas fa-university"></i>
                         </div>
@@ -105,8 +114,8 @@
                         <div class="stat-label">Universities</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="stat-item">
+                <div class="col-md-3">
+                    <div class="stat-item animate-slide-up" data-delay="200">
                         <div class="stat-icon">
                             <i class="fas fa-graduation-cap"></i>
                         </div>
@@ -114,13 +123,63 @@
                         <div class="stat-label">Programs</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="stat-item">
+                <div class="col-md-3">
+                    <div class="stat-item animate-slide-up" data-delay="300">
                         <div class="stat-icon">
                             <i class="fas fa-users"></i>
                         </div>
-                        <div class="stat-number">1000+</div>
-                        <div class="stat-label">Students</div>
+                        <div class="stat-number">1,000+</div>
+                        <div class="stat-label">Students Helped</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item animate-slide-up" data-delay="400">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">Minutes</div>
+                        <div class="stat-sublabel">Average Survey Time</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Stats Row -->
+            <div class="row text-center mt-5">
+                <div class="col-md-3">
+                    <div class="stat-item secondary animate-slide-up" data-delay="500">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-text">Top-Rated</div>
+                        <div class="stat-subtext">Universities</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item secondary animate-slide-up" data-delay="600">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-text">95% Satisfaction</div>
+                        <div class="stat-subtext">From Students</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item secondary animate-slide-up" data-delay="700">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-text">87% Success</div>
+                        <div class="stat-subtext">Admission Rate</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item secondary animate-slide-up" data-delay="800">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-text">15 Minutes</div>
+                        <div class="stat-subtext">Average Survey Time</div>
                     </div>
                 </div>
             </div>
@@ -128,11 +187,11 @@
     </section>
 
     <!-- How GradeUP Works Section -->
-    <section class="how-it-works-section">
+    <section class="how-it-works-section animate-fade-in" data-delay="0">
         <div class="container">
             <div class="text-center mb-5">
-                <h2 class="section-title">How GradeUP Works</h2>
-                <p class="section-description">
+                <h2 class="section-title animate-slide-up" data-delay="100">How GradeUP Works</h2>
+                <p class="section-description animate-slide-up" data-delay="200">
                     Our platform helps you make informed decisions about your academic future through a 
                     simple, data-driven process that matches your profile with the right educational 
                     opportunities.
@@ -140,30 +199,375 @@
             </div>
             
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="process-step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h4>Take the Survey</h4>
-                            <p>Complete our comprehensive assessment to help us understand your academic interests, career goals, and personal preferences.</p>
+                <div class="col-md-3 mb-4">
+                    <div class="process-card animate-slide-up" data-delay="300">
+                        <div class="process-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <h4>Complete Survey</h4>
+                        <p>Answer questions about your interests and skills</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-card animate-slide-up" data-delay="400">
+                        <div class="process-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4>Get Recommendations</h4>
+                        <p>Receive personalized university suggestions</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-card animate-slide-up" data-delay="500">
+                        <div class="process-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h4>Explore Options</h4>
+                        <p>Browse detailed university information</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-card animate-slide-up" data-delay="600">
+                        <div class="process-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h4>Make Decisions</h4>
+                        <p>Choose the best path for your goals</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Your Journey Section -->
+    <section class="journey-section animate-fade-in" data-delay="0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title animate-slide-up" data-delay="100">Your Journey to the Perfect University</h2>
+                <p class="section-description animate-slide-up" data-delay="200">
+                    Follow these steps to discover and secure your ideal educational path
+                </p>
+            </div>
+            
+            <div class="journey-timeline">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="journey-step animate-slide-left" data-delay="300">
+                            <div class="journey-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="journey-content">
+                                <h4>Take the Survey</h4>
+                                <p>Answer questions about your interests, skills, and academic preferences to help us understand your unique profile.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="journey-step animate-slide-right" data-delay="400">
+                            <div class="journey-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="journey-content">
+                                <h4>Get Personalized Recommendations</h4>
+                                <p>Our algorithm analyzes your responses to generate tailored university and program suggestions that match your profile.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="journey-step animate-slide-left" data-delay="500">
+                            <div class="journey-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="journey-content">
+                                <h4>Explore Universities</h4>
+                                <p>Browse detailed information about recommended universities, including programs, facilities, and admission requirements.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="journey-step animate-slide-right" data-delay="600">
+                            <div class="journey-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="journey-content">
+                                <h4>Compare Options</h4>
+                                <p>Use our comparison tools to evaluate different universities and programs side by side.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="journey-step animate-slide-left" data-delay="700">
+                            <div class="journey-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="journey-content">
+                                <h4>Make Informed Decisions</h4>
+                                <p>Choose the best path for your academic and career goals with confidence, backed by data and insights.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="process-step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h4>Get Matched</h4>
-                            <p>Our AI algorithm analyzes your responses and matches you with universities and programs that align with your profile.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose GradeUP Section -->
+    <section class="why-choose-section animate-fade-in" data-delay="0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title animate-slide-up" data-delay="100">Why Choose GradeUP</h2>
+                <p class="section-description animate-slide-up" data-delay="200">
+                    Discover the benefits and features that make GradeUP the leading platform for educational guidance
+                </p>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="feature-tabs animate-scale" data-delay="300">
+                <ul class="nav nav-tabs" id="featureTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">For Students</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="parents-tab" data-bs-toggle="tab" data-bs-target="#parents" type="button" role="tab">For Parents</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="educators-tab" data-bs-toggle="tab" data-bs-target="#educators" type="button" role="tab">For Educators</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="featureTabsContent">
+                    <div class="tab-pane fade show active" id="students" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="feature-content">
+                                    <h3>Empowering Student Choices</h3>
+                                    <p>GradeUP helps students navigate the complex world of higher education by providing personalized guidance based on their unique profile, interests, and goals.</p>
+                                    
+                                    <div class="feature-list">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Personalized Recommendations</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>AI-Powered Matching Algorithm</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Comprehensive University Database</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Real-time Application Tracking</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-visual">
+                                    <div class="feature-card">
+                                        <div class="card-content">
+                                            <h5>Student Dashboard</h5>
+                                            <div class="progress-item">
+                                                <span>Profile Completion</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="progress-item">
+                                                <span>Recommendations</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 92%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="parents" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="feature-content">
+                                    <h3>Supporting Parent Involvement</h3>
+                                    <p>Keep parents informed and involved in the university selection process with transparent insights and progress tracking.</p>
+                                    
+                                    <div class="feature-list">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Progress Monitoring Tools</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Financial Planning Resources</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Application Timeline Tracking</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-visual">
+                                    <div class="feature-card">
+                                        <div class="card-content">
+                                            <h5>Parent Dashboard</h5>
+                                            <p>Track your child's university selection journey</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="educators" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="feature-content">
+                                    <h3>Educator Resources</h3>
+                                    <p>Comprehensive tools and insights for educators to guide students effectively through the university selection process.</p>
+                                    
+                                    <div class="feature-list">
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Student Analytics Dashboard</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Bulk Student Management</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Counseling Support Tools</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-visual">
+                                    <div class="feature-card">
+                                        <div class="card-content">
+                                            <h5>Educator Portal</h5>
+                                            <p>Manage and support multiple students</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="process-step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h4>Explore Options</h4>
-                            <p>Review detailed information about recommended universities, compare programs, and make informed decisions about your future.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section animate-fade-in" data-delay="0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title animate-slide-up" data-delay="100">What Our Users Say</h2>
+                <p class="section-description animate-slide-up" data-delay="200">
+                    Hear from students who found their perfect educational path with GradeUP
+                </p>
+            </div>
+            
+            <div id="testimonialsCarousel" class="carousel slide animate-scale" data-delay="300" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="testimonial-card">
+                            <div class="testimonial-content">
+                                <div class="user-info">
+                                    <img src="{{ url_for('static', filename='images/user1.jpg') }}" alt="User" class="user-avatar">
+                                    <div class="user-details">
+                                        <h5>Ivan Dimitrov</h5>
+                                        <p>Business Administration Student<br>American University in Bulgaria</p>
+                                    </div>
+                                </div>
+                                <blockquote>
+                                    "The survey was comprehensive and the university matches were exactly what I was looking for. Highly recommend!"
+                                </blockquote>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="testimonial-card">
+                            <div class="testimonial-content">
+                                <div class="user-info">
+                                    <img src="{{ url_for('static', filename='images/user2.jpg') }}" alt="User" class="user-avatar">
+                                    <div class="user-details">
+                                        <h5>Maria Petrova</h5>
+                                        <p>Computer Science Student<br>Technical University of Sofia</p>
+                                    </div>
+                                </div>
+                                <blockquote>
+                                    "GradeUP helped me discover universities I never knew existed. The AI recommendations were spot-on!"
+                                </blockquote>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section animate-fade-in" data-delay="0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title animate-slide-up" data-delay="100">Frequently Asked Questions</h2>
+                <p class="section-description animate-slide-up" data-delay="200">
+                    Find answers to common questions about GradeUP and our services
+                </p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+                    <div class="accordion animate-slide-up" data-delay="300" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                    How does GradeUP generate university recommendations?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    GradeUP uses advanced AI algorithms to analyze your survey responses, academic preferences, and career goals to match you with universities that best fit your profile.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                    Is GradeUP free to use?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, GradeUP offers a comprehensive free tier that includes university recommendations, basic comparisons, and access to our university database.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                    How accurate are the university matches?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our AI-powered matching system has a 95% satisfaction rate among users, with most students finding their recommended universities highly relevant to their goals.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
