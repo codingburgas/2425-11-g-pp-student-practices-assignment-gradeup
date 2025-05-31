@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from app import db
 from app.auth import bp
-from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm, UserPreferencesForm
+from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm, UserPreferencesForm, ChangePasswordForm
 from app.models import User
 import os
 from werkzeug.utils import secure_filename
@@ -13,38 +13,51 @@ from flask import current_app
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user is None or not user.check_password(form.password.data):
-            flash('Invalid email or password', 'danger')
-            return render_template('auth/login.html', title='Sign In', form=form)
-        login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or urlparse(next_page).netloc != '':
-            next_page = url_for('main.dashboard')
-        flash('You are now logged in!', 'success')
-        return redirect(next_page)
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            next_page = request.args.get('next')
+            if not next_page or urlparse(next_page).netloc != '':
+                next_page = url_for('main.dashboard')
+            
+            # Add success parameter for notification
+            if '?' in next_page:
+                next_page += '&logged_in=true'
+            else:
+                next_page += '?logged_in=true'
+            
+            return redirect(next_page)
+        
+        # Return error for invalid credentials
+        return render_template('auth/login.html', title='Sign In', form=form, 
+                             error='Invalid email or password')
+    
     return render_template('auth/login.html', title='Sign In', form=form)
 
 @bp.route('/logout')
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index') + '?logged_out=true')
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
+    
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a registered user!', 'success')
-        return redirect(url_for('auth.login'))
+        
+        # Auto-login the user and redirect with success notification
+        login_user(user)
+        return redirect(url_for('main.dashboard') + '?registered=true')
+    
     return render_template('auth/register.html', title='Register', form=form)
 
 @bp.route('/reset_password_request', methods=['GET', 'POST'])
@@ -150,6 +163,18 @@ def save_picture(form_picture):
     form_picture.save(picture_path)
     
     return picture_fn
+
+@bp.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        current_user.set_password(form.new_password.data)
+        db.session.commit()
+        flash('Your password has been changed successfully!', 'success')
+        return redirect(url_for('auth.profile'))
+    
+    return render_template('auth/change_password.html', title='Change Password', form=form)
 
 @bp.route('/preferences', methods=['GET', 'POST'])
 @login_required
