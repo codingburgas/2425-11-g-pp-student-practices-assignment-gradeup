@@ -4,6 +4,7 @@ from app.admin import bp
 from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
 from app import db
 import json
+from app.admin.forms import EditUserForm
 
 def admin_required(f):
     """Decorator for requiring admin access to a route"""
@@ -58,18 +59,17 @@ def user_detail(user_id):
 @admin_required
 def edit_user(user_id):
     user = User.query.get_or_404(user_id)
+    form = EditUserForm(original_user=user)
     
-    if request.method == 'POST':
-        user.username = request.form.get('username', user.username)
-        user.email = request.form.get('email', user.email)
-        user.bio = request.form.get('bio', user.bio)
-        user.location = request.form.get('location', user.location)
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.bio = form.bio.data
+        user.location = form.location.data
         
-        # Handle admin status change
-        if request.form.get('is_admin') and user != current_user:
-            user.is_admin = True
-        elif not request.form.get('is_admin') and user != current_user:
-            user.is_admin = False
+        # Only allow changing admin status if not editing own account
+        if user != current_user:
+            user.is_admin = form.is_admin.data
         
         try:
             db.session.commit()
@@ -79,7 +79,15 @@ def edit_user(user_id):
             db.session.rollback()
             flash('Error updating user.', 'danger')
     
-    return render_template('admin/edit_user.html', title=f'Edit User: {user.username}', user=user)
+    # Pre-populate form with user data
+    if request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
+        form.bio.data = user.bio
+        form.location.data = user.location
+        form.is_admin.data = user.is_admin
+    
+    return render_template('admin/edit_user.html', title=f'Edit User: {user.username}', user=user, form=form)
 
 @bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
@@ -116,7 +124,7 @@ def toggle_admin(user_id):
 # University Management
 @bp.route('/universities')
 @admin_required
-def universities():
+def admin_universities():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '', type=str)
     
@@ -147,7 +155,7 @@ def new_university():
             db.session.add(university)
             db.session.commit()
             flash(f'University {university.name} created successfully.', 'success')
-            return redirect(url_for('admin.universities'))
+            return redirect(url_for('admin.admin_universities'))
         except Exception as e:
             db.session.rollback()
             flash('Error creating university.', 'danger')
@@ -177,7 +185,7 @@ def edit_university(university_id):
         try:
             db.session.commit()
             flash(f'University {university.name} updated successfully.', 'success')
-            return redirect(url_for('admin.universities'))
+            return redirect(url_for('admin.admin_universities'))
         except Exception as e:
             db.session.rollback()
             flash('Error updating university.', 'danger')
@@ -197,7 +205,7 @@ def delete_university(university_id):
         db.session.rollback()
         flash('Error deleting university.', 'danger')
     
-    return redirect(url_for('admin.universities'))
+    return redirect(url_for('admin.admin_universities'))
 
 # Program Management
 @bp.route('/programs')
@@ -328,7 +336,18 @@ def new_survey():
 @admin_required
 def survey_detail(survey_id):
     survey = Survey.query.get_or_404(survey_id)
-    return render_template('admin/survey_detail.html', title=f'Survey: {survey.title}', survey=survey)
+    
+    # Get the latest response (most recent first)
+    latest_response = survey.responses.order_by(SurveyResponse.created_at.desc()).first() if survey.responses.count() > 0 else None
+    
+    # Get recent responses (last 5, most recent first)
+    recent_responses = survey.responses.order_by(SurveyResponse.created_at.desc()).limit(5).all()
+    
+    return render_template('admin/survey_detail.html', 
+                         title=f'Survey: {survey.title}', 
+                         survey=survey,
+                         latest_response=latest_response,
+                         recent_responses=recent_responses)
 
 @bp.route('/surveys/<int:survey_id>/edit', methods=['GET', 'POST'])
 @admin_required
