@@ -1,237 +1,499 @@
 {% extends "base.html" %}
 
+{% block title %}Universities Management - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-university me-2"></i>
+                        Universities Management
+                    </h1>
+                    <p class="dashboard-subtitle">Manage university data and partnerships</p>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-cosmic-outline">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">University Management</h1>
-                <a href="{{ url_for('admin.new_university') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New University
-                </a>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Search universities..." value="{{ search }}">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        {% if search %}
-                        <a href="{{ url_for('admin.universities') }}" class="btn btn-outline-danger ms-2">
-                            <i class="fas fa-times"></i>
-                        </a>
-                        {% endif %}
-                    </form>
-                </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Total: {{ universities.total }} universities</span>
-                </div>
-            </div>
-
-            <!-- Universities Table -->
-            <div class="card shadow">
-                <div class="card-body">
-                    {% if universities.items %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Location</th>
-                                    <th>Programs</th>
-                                    <th>Website</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for university in universities.items %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ university.name }}</strong>
-                                        {% if university.description %}
-                                        <br><small class="text-muted">{{ university.description[:100] }}{% if university.description|length > 100 %}...{% endif %}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ university.location }}</td>
-                                    <td>
-                                        <span class="badge bg-info">{{ university.programs.count() }} programs</span>
-                                    </td>
-                                    <td>
-                                        {% if university.website %}
-                                        <a href="{{ university.website }}" target="_blank" class="text-decoration-none">
-                                            {{ university.website[:30] }}{% if university.website|length > 30 %}...{% endif %}
-                                        </a>
-                                        {% else %}
-                                        <span class="text-muted">No website</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ university.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.university_detail', university_id=university.id) }}" 
-                                               class="btn btn-sm btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.edit_university', university_id=university.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-university-name="{{ university.name }}"
-                                                    data-delete-url="{{ url_for('admin.delete_university', university_id=university.id) }}"
-                                                    onclick="confirmDelete(this.dataset.universityName, this.dataset.deleteUrl)"
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <div class="container-fluid">
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon universities">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>10</h4>
+                            <p>Total Universities</p>
+                        </div>
                     </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>8</h4>
+                            <p>Featured</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>3</h4>
+                            <p>Countries</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>50+</h4>
+                            <p>Programs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Universities List -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>
+                            <i class="fas fa-list me-2"></i>
+                            University Directory
+                        </h3>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('admin.new_university') }}" class="btn btn-cosmic">
+                                <i class="fas fa-plus me-2"></i>
+                                Add University
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    {% if universities.items %}
+                    <div class="universities-grid">
+                        {% for university in universities.items %}
+                        <div class="university-card">
+                            <div class="university-header">
+                                <div class="university-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="university-info">
+                                    <h4>{{ university.name }}</h4>
+                                    <p class="university-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ university.location or 'Location not specified' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="university-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value">{{ university.programs.count() }}</span>
+                                    <span class="stat-label">Programs</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value">{{ university.favorites.count() }}</span>
+                                    <span class="stat-label">Favorites</span>
+                                </div>
+                            </div>
+                            
+                            {% if university.description %}
+                            <div class="university-description">
+                                <p>{{ university.description[:100] }}{% if university.description|length > 100 %}...{% endif %}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="university-actions">
+                                <a href="{{ url_for('admin.university_detail', university_id=university.id) }}" class="university-action-btn primary">
+                                    <i class="fas fa-eye"></i>
+                                    View Details
+                                </a>
+                                <a href="{{ url_for('admin.edit_university', university_id=university.id) }}" class="university-action-btn secondary">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
                     <!-- Pagination -->
                     {% if universities.pages > 1 %}
-                    <nav aria-label="Universities pagination">
-                        <ul class="pagination justify-content-center">
+                    <div class="pagination-wrapper">
+                        <nav class="cosmic-pagination">
                             {% if universities.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.universities', page=universities.prev_num, search=search) }}">Previous</a>
-                            </li>
+                                <a href="{{ url_for('admin.admin_universities', page=universities.prev_num, search=search) }}" class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
                             {% endif %}
                             
                             {% for page_num in universities.iter_pages() %}
                                 {% if page_num %}
                                     {% if page_num != universities.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.universities', page=page_num, search=search) }}">{{ page_num }}</a>
-                                    </li>
+                                        <a href="{{ url_for('admin.admin_universities', page=page_num, search=search) }}" class="page-link">{{ page_num }}</a>
                                     {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
+                                        <span class="page-link active">{{ page_num }}</span>
                                     {% endif %}
                                 {% else %}
-                                <li class="page-item disabled">
                                     <span class="page-link">...</span>
-                                </li>
                                 {% endif %}
                             {% endfor %}
                             
                             {% if universities.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.universities', page=universities.next_num, search=search) }}">Next</a>
-                            </li>
+                                <a href="{{ url_for('admin.admin_universities', page=universities.next_num, search=search) }}" class="page-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
                             {% endif %}
-                        </ul>
-                    </nav>
+                        </nav>
+                    </div>
                     {% endif %}
+                    
                     {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-university fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No universities found</h5>
-                        {% if search %}
-                        <p class="text-muted">No universities match your search criteria.</p>
-                        <a href="{{ url_for('admin.universities') }}" class="btn btn-outline-primary">Clear Search</a>
-                        {% else %}
-                        <p class="text-muted">Start by adding your first university.</p>
-                        <a href="{{ url_for('admin.new_university') }}" class="btn btn-primary">Add University</a>
-                        {% endif %}
+                    <div class="empty-state">
+                        <div class="professional-emoji size-lg">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3>No Universities Yet</h3>
+                        <p class="mb-4">Start building your university database by adding the first university.</p>
+                        <a href="{{ url_for('admin.new_university') }}" class="cosmic-btn cosmic-btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Add First University
+                        </a>
                     </div>
                     {% endif %}
                 </div>
-            </div>
-        </main>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the university "<span id="universityName"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This will also delete all associated programs and cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete University</button>
-                </form>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-function confirmDelete(universityName, deleteUrl) {
-    document.getElementById('universityName').textContent = universityName;
-    document.getElementById('deleteForm').action = deleteUrl;
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
-}
-</script>
-
 <style>
-.sidebar {
-    position: fixed;
-    top: 56px;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+/* ===== UNIVERSITY CARDS ===== */
+.universities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.university-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.university-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+}
+
+.university-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.university-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.university-info {
+    flex: 1;
+}
+
+.university-info h4 {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.university-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.university-location i {
+    color: var(--cosmic-purple);
+}
+
+.university-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(30, 30, 70, 0.5);
+    border-radius: 1rem;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.university-stats .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-value {
+    color: var(--star-white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.university-description {
+    margin-bottom: 1.5rem;
+}
+
+.university-description p {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.university-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.university-action-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid;
+}
+
+.university-action-btn.primary {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.university-action-btn.primary:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.university-action-btn.secondary {
+    background: rgba(30, 30, 70, 0.5);
+    border-color: rgba(248, 250, 252, 0.2);
+}
+
+.university-action-btn.secondary:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.3);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.cosmic-pagination {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.page-link:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.page-link.active {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+    color: white;
+    font-weight: 600;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-state h3 {
+    color: var(--star-white);
+    margin: 1.5rem 0 1rem;
+    font-size: 1.8rem;
+}
+
+.empty-state p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .universities-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .university-header {
+        text-align: center;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .university-stats {
+        justify-content: center;
+    }
+    
+    .university-actions {
+        flex-direction: column;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+/* Remove old coming soon styles */
+.coming-soon-content {
+    text-align: center;
+    padding: 3rem;
+}
+
+.coming-soon-content h3 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+}
+
+.coming-soon-content p {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+}
+
+.feature-list {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.feature-list .feature-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    color: rgba(248, 250, 252, 0.9);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.feature-list .feature-item:last-child {
+    border-bottom: none;
+}
+
+.feature-list .feature-item i {
+    color: var(--cosmic-purple);
 }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showComingSoon(feature) {
+    showToast(`${feature} feature is in development!`, 'info');
+}
+</script>
 {% endblock %} 

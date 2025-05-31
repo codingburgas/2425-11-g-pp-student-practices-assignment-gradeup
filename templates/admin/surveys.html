@@ -1,213 +1,956 @@
 {% extends "base.html" %}
 
+{% block title %}Surveys Management - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Survey Management</h1>
-                <a href="{{ url_for('admin.new_survey') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create New Survey
-                </a>
-            </div>
-
-            <!-- Surveys Table -->
-            <div class="card shadow">
-                <div class="card-body">
-                    {% if surveys.items %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Status</th>
-                                    <th>Responses</th>
-                                    <th>Created</th>
-                                    <th>Last Updated</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for survey in surveys.items %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ survey.title }}</strong>
-                                        {% if survey.description %}
-                                        <br><small class="text-muted">{{ survey.description[:100] }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ 'success' if survey.is_active else 'secondary' }}">
-                                            {{ 'Active' if survey.is_active else 'Inactive' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ survey.responses.count() }} responses</span>
-                                    </td>
-                                    <td>{{ survey.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>{{ survey.updated_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.survey_detail', survey_id=survey.id) }}" 
-                                               class="btn btn-sm btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.toggle_survey_active', survey_id=survey.id) }}" 
-                                               class="btn btn-sm btn-outline-{{ 'warning' if survey.is_active else 'success' }}" 
-                                               title="{{ 'Deactivate' if survey.is_active else 'Activate' }}">
-                                                <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-survey-title="{{ survey.title }}"
-                                                    data-delete-url="{{ url_for('admin.delete_survey', survey_id=survey.id) }}"
-                                                    onclick="confirmDelete(this.dataset.surveyTitle, this.dataset.deleteUrl)"
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+<div class="cosmic-admin-container">
+    <!-- Admin Surveys Hero Section -->
+    <div class="admin-hero">
+        <div class="container-fluid">
+            <div class="admin-header">
+                <div class="admin-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-poll"></i>
                     </div>
-
-                    <!-- Pagination -->
-                    {% if surveys.pages > 1 %}
-                    <nav aria-label="Surveys pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if surveys.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.surveys', page=surveys.prev_num) }}">Previous</a>
-                            </li>
-                            {% endif %}
-                            
-                            {% for page_num in surveys.iter_pages() %}
-                                {% if page_num %}
-                                    {% if page_num != surveys.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.surveys', page=page_num) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                    {% endif %}
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if surveys.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.surveys', page=surveys.next_num) }}">Next</a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-poll fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No surveys found</h5>
-                        <p class="text-muted">Create your first survey to start collecting user feedback.</p>
-                        <a href="{{ url_for('admin.new_survey') }}" class="btn btn-primary">Create Survey</a>
+                    <div class="admin-glow"></div>
+                </div>
+                <div class="admin-info">
+                    <h1 class="admin-title">Surveys Management</h1>
+                    <p class="admin-subtitle">Create and manage surveys for data collection and user insights.</p>
+                    <div class="admin-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-poll"></i>
+                            {{ surveys.total }} Total Surveys
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-check-circle"></i>
+                            {% set active_count = surveys.items|selectattr("is_active")|list|length %}{{ active_count }} Active
+                        </span>
                     </div>
-                    {% endif %}
+                </div>
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.dashboard') }}" class="cosmic-btn cosmic-btn-ghost">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                    <a href="{{ url_for('data_collection.survey_list') }}" class="cosmic-btn cosmic-btn-outline">
+                        <i class="fas fa-eye"></i>
+                        View Public
+                    </a>
+                    <a href="{{ url_for('admin.new_survey') }}" class="cosmic-btn cosmic-btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create Survey
+                    </a>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+
+    <!-- Surveys Content -->
+    <div class="admin-content">
+        <div class="container-fluid">
+            {% if surveys.items %}
+            <div class="surveys-grid">
+                {% for survey in surveys.items %}
+                <div class="survey-card">
+                    <div class="survey-header">
+                        <div class="survey-avatar">
+                            <div class="professional-emoji">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                        </div>
+                        <div class="survey-info">
+                            <h3 class="survey-title">{{ survey.title }}</h3>
+                            <div class="survey-status">
+                                {% if survey.is_active %}
+                                <span class="status-badge active">
+                                    <i class="fas fa-check-circle"></i>
+                                    Active
+                                </span>
+                                {% else %}
+                                <span class="status-badge inactive">
+                                    <i class="fas fa-pause-circle"></i>
+                                    Inactive
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="survey-toggle">
+                            <button class="toggle-btn {{ 'active' if survey.is_active else 'inactive' }} survey-toggle-btn"
+                                    data-survey-id="{{ survey.id }}"
+                                    data-survey-title="{{ survey.title }}"
+                                    data-survey-active="{{ survey.is_active|lower }}">
+                                <i class="fas fa-power-off"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if survey.description %}
+                    <div class="survey-description">
+                        <p>{{ survey.description[:150] }}{% if survey.description|length > 150 %}...{% endif %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="survey-details">
+                        <div class="detail-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>
+                                {% if survey.questions %}
+                                    {% set questions_count = survey.questions.count('},{') + 1 if survey.questions and survey.questions != '[]' else 0 %}
+                                    {{ questions_count }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                                Questions
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-users"></i>
+                            <span>{{ survey.responses.count() }} Responses</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Created {{ survey.created_at.strftime('%b %d, %Y') if survey.created_at else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="survey-actions">
+                        <a href="{{ url_for('admin.survey_detail', survey_id=survey.id) }}" class="survey-btn primary">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                        <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" class="survey-btn secondary">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </a>
+                        <button class="survey-btn danger delete-survey-btn"
+                                data-survey-title="{{ survey.title }}"
+                                data-delete-url="{{ url_for('admin.delete_survey', survey_id=survey.id) }}">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if surveys.pages > 1 %}
+            <div class="pagination-container">
+                <nav class="cosmic-pagination">
+                    {% if surveys.has_prev %}
+                    <a href="{{ url_for('admin.surveys', page=surveys.prev_num) }}" class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    <div class="page-numbers">
+                        {% for page_num in surveys.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != surveys.page %}
+                                <a href="{{ url_for('admin.surveys', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                <span class="page-link active">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="page-link disabled">…</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if surveys.has_next %}
+                    <a href="{{ url_for('admin.surveys', page=surveys.next_num) }}" class="page-link">
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <div class="professional-emoji size-lg">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                </div>
+                <h3>No Surveys Available</h3>
+                <p>No surveys have been created yet. Create your first survey to start collecting data and insights from users.</p>
+                <a href="{{ url_for('admin.new_survey') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create First Survey
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the survey "<span id="surveyTitle"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This will also delete all associated responses and cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete Survey</button>
-                </form>
-            </div>
+<div id="deleteModal" class="cosmic-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirm Deletion
+            </h3>
+            <button onclick="closeModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the survey "<span id="deleteSurveyName"></span>"?</p>
+            <p class="warning-text">This action cannot be undone and will remove all associated responses and data.</p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeModal()" class="cosmic-btn cosmic-btn-ghost">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="cosmic-btn cosmic-btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Delete Survey
+                </button>
+            </form>
         </div>
     </div>
 </div>
 
-<script>
-function confirmDelete(surveyTitle, deleteUrl) {
-    document.getElementById('surveyTitle').textContent = surveyTitle;
-    document.getElementById('deleteForm').action = deleteUrl;
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
-}
-</script>
+<!-- Toggle Survey Modal -->
+<div id="toggleModal" class="cosmic-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-power-off"></i>
+                Toggle Survey Status
+            </h3>
+            <button onclick="closeToggleModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to <span id="toggleAction"></span> the survey "<span id="toggleSurveyName"></span>"?</p>
+            <p id="toggleDescription"></p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeToggleModal()" class="cosmic-btn cosmic-btn-ghost">Cancel</button>
+            <a id="toggleLink" class="cosmic-btn cosmic-btn-primary">
+                <i class="fas fa-power-off"></i>
+                <span id="toggleButtonText">Toggle</span>
+            </a>
+        </div>
+    </div>
+</div>
 
 <style>
-.sidebar {
+/* ===== COSMIC ADMIN STYLES ===== */
+.cosmic-admin-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== ADMIN HERO ===== */
+.admin-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* ===== SURVEYS GRID ===== */
+.admin-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.surveys-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.survey-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.survey-card:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+}
+
+.survey-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.survey-avatar {
+    flex-shrink: 0;
+}
+
+.survey-info {
+    flex: 1;
+}
+
+.survey-title {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.survey-status {
+    margin-bottom: 0.25rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+}
+
+.status-badge.inactive {
+    background: rgba(156, 163, 175, 0.2);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+    color: #9ca3af;
+}
+
+.survey-toggle {
+    flex-shrink: 0;
+}
+
+.toggle-btn {
+    background: none;
+    border: 2px solid;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+    border-color: #4ade80;
+    color: #4ade80;
+}
+
+.toggle-btn.inactive {
+    border-color: #9ca3af;
+    color: #9ca3af;
+}
+
+.toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.survey-description {
+    margin-bottom: 1.5rem;
+}
+
+.survey-description p {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.survey-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+.detail-item i {
+    color: var(--cosmic-purple);
+}
+
+.survey-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.survey-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 100px;
+    border: none;
+    cursor: pointer;
+}
+
+.survey-btn.primary {
+    background: var(--cosmic-gradient);
+    color: white;
+}
+
+.survey-btn.primary:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.survey-btn.secondary {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+}
+
+.survey-btn.secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.survey-btn.danger {
+    background: rgba(220, 38, 127, 0.2);
+    border: 1px solid rgba(220, 38, 127, 0.3);
+    color: #ff6b9d;
+}
+
+.survey-btn.danger:hover {
+    background: rgba(220, 38, 127, 0.3);
+    border-color: #ff6b9d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 38, 127, 0.3);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.cosmic-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 1rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.5rem;
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover:not(.active):not(.disabled) {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.page-link.active {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+    color: white;
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    margin-bottom: 2rem;
+}
+
+.empty-state h3 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.empty-state p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* ===== COSMIC BUTTONS ===== */
+.cosmic-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.3);
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.5);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.cosmic-btn-outline {
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    color: var(--cosmic-purple);
+}
+
+.cosmic-btn-outline:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--cosmic-purple);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.cosmic-btn-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: white;
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.cosmic-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===== MODAL STYLES ===== */
+.cosmic-modal {
+    display: none;
     position: fixed;
-    top: 56px;
-    bottom: 0;
+    z-index: 1000;
     left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    background: var(--dark-space);
+    margin: 15% auto;
+    padding: 0;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+}
+
+.modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    color: var(--star-white);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-header h3 i {
+    color: #f87171;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--star-white);
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.modal-body {
+    padding: 1rem 2rem;
+}
+
+.modal-body p {
+    color: rgba(248, 250, 252, 0.8);
+    margin-bottom: 1rem;
+}
+
+.warning-text {
+    color: #f87171;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    padding: 1rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-title {
+        font-size: 2rem;
+    }
+    
+    .surveys-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cosmic-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
 }
 </style>
-{% endblock %} 
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize animations
+    initSurveyAnimations();
+});
+
+function initSurveyAnimations() {
+    const cards = document.querySelectorAll('.survey-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-survey-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const surveyTitle = this.getAttribute('data-survey-title');
+            const deleteUrl = this.getAttribute('data-delete-url');
+            confirmDelete(surveyTitle, deleteUrl);
+        });
+    });
+
+    // Add event listeners for toggle buttons
+    document.querySelectorAll('.survey-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const surveyId = this.getAttribute('data-survey-id');
+            const surveyTitle = this.getAttribute('data-survey-title');
+            const isActive = this.getAttribute('data-survey-active') === 'true';
+            toggleSurvey(surveyId, surveyTitle, isActive);
+        });
+    });
+}
+
+function confirmDelete(surveyName, deleteUrl) {
+    document.getElementById('deleteSurveyName').textContent = surveyName;
+    document.getElementById('deleteForm').action = deleteUrl;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function toggleSurvey(surveyId, surveyName, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    const description = isActive ? 
+        'Deactivating will hide this survey from public view and prevent new responses.' : 
+        'Activating will make this survey available for public access and responses.';
+    
+    document.getElementById('toggleAction').textContent = action;
+    document.getElementById('toggleSurveyName').textContent = surveyName;
+    document.getElementById('toggleDescription').textContent = description;
+    document.getElementById('toggleButtonText').textContent = action.charAt(0).toUpperCase() + action.slice(1);
+    document.getElementById('toggleLink').href = "{{ url_for('admin.toggle_survey_active', survey_id=0) }}".replace('0', surveyId);
+    document.getElementById('toggleModal').style.display = 'block';
+}
+
+function closeToggleModal() {
+    document.getElementById('toggleModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const deleteModal = document.getElementById('deleteModal');
+    const toggleModal = document.getElementById('toggleModal');
+    if (event.target == deleteModal) {
+        closeModal();
+    }
+    if (event.target == toggleModal) {
+        closeToggleModal();
+    }
+}
+</script>
+{% endblock %}

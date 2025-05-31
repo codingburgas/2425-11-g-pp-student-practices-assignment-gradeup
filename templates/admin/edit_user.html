@@ -1,49 +1,517 @@
 {% extends "base.html" %}
 
+{% block title %}Edit User - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h4>{{ title }}</h4>
+<div class="cosmic-edit-container">
+    <div class="cosmic-edit-content">
+        <div class="cosmic-edit-card">
+            <div class="cosmic-edit-header">
+                <div class="edit-icon">
+                    <i class="fas fa-user-edit"></i>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bio" class="form-label">Bio</label>
-                            <textarea class="form-control" id="bio" name="bio" rows="3">{{ user.bio or '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" class="form-control" id="location" name="location" value="{{ user.location or '' }}">
-                        </div>
-                        {% if user != current_user %}
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin" {% if user.is_admin %}checked{% endif %}>
-                                <label class="form-check-label" for="is_admin">
-                                    Admin User
-                                </label>
+                <h1 class="edit-title">{{ title }}</h1>
+                <p class="edit-subtitle">Modify user account settings and permissions</p>
+            </div>
+            
+            <div class="cosmic-edit-body">
+                <form method="POST" class="cosmic-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-row">
+                        <div class="cosmic-form-group">
+                            {{ form.username.label(class="cosmic-label") }}
+                            <div class="cosmic-input-container">
+                                {{ form.username(class="cosmic-input", placeholder="Enter username") }}
+                                <div class="input-glow"></div>
                             </div>
+                            {% if form.username.errors %}
+                                {% for error in form.username.errors %}
+                                    <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
                         </div>
+                        
+                        <div class="cosmic-form-group">
+                            {{ form.email.label(class="cosmic-label") }}
+                            <div class="cosmic-input-container">
+                                {{ form.email(class="cosmic-input", placeholder="Enter email address") }}
+                                <div class="input-glow"></div>
+                            </div>
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                    <span class="error-message">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="cosmic-form-group">
+                        {{ form.bio.label(class="cosmic-label") }}
+                        <div class="cosmic-input-container">
+                            {{ form.bio(class="cosmic-textarea", rows="4", placeholder="Tell us about yourself...") }}
+                            <div class="input-glow"></div>
+                        </div>
+                        {% if form.bio.errors %}
+                            {% for error in form.bio.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
                         {% endif %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary me-md-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Update User</button>
+                    </div>
+                    
+                    <div class="cosmic-form-group">
+                        {{ form.location.label(class="cosmic-label") }}
+                        <div class="cosmic-input-container">
+                            {{ form.location(class="cosmic-input", placeholder="Enter your location") }}
+                            <div class="input-glow"></div>
                         </div>
-                    </form>
-                </div>
+                        {% if form.location.errors %}
+                            {% for error in form.location.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    {% if user != current_user %}
+                    <div class="cosmic-form-group">
+                        <div class="cosmic-checkbox-container">
+                            {{ form.is_admin(class="cosmic-checkbox") }}
+                            {{ form.is_admin.label(class="cosmic-checkbox-label") }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="cosmic-form-actions">
+                        <a href="{{ url_for('admin.users') }}" class="cosmic-btn cosmic-btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="cosmic-btn cosmic-btn-primary">
+                            <i class="fas fa-save"></i>
+                            Update User
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+    
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 </div>
+
+<style>
+/* ===== COSMIC EDIT CONTAINER ===== */
+.cosmic-edit-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    padding: 2rem 0;
+    overflow: hidden;
+}
+
+.cosmic-edit-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.cosmic-edit-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 2rem;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    overflow: hidden;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+/* ===== HEADER STYLES ===== */
+.cosmic-edit-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.edit-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    animation: iconFloat 6s ease-in-out infinite;
+}
+
+.edit-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.edit-subtitle {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* ===== BODY STYLES ===== */
+.cosmic-edit-body {
+    padding: 3rem 2rem;
+}
+
+.cosmic-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.cosmic-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cosmic-label {
+    color: var(--star-white);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cosmic-label i {
+    color: var(--cosmic-purple);
+    width: 20px;
+}
+
+/* ===== INPUT STYLES ===== */
+.cosmic-input-container {
+    position: relative;
+}
+
+.cosmic-input,
+.cosmic-textarea {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgba(30, 30, 70, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-sizing: border-box;
+}
+
+.cosmic-input:focus,
+.cosmic-textarea:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    background: rgba(30, 30, 70, 0.9);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.cosmic-input::placeholder,
+.cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.cosmic-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.input-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 1rem;
+    background: var(--cosmic-gradient);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.cosmic-input:focus + .input-glow,
+.cosmic-textarea:focus + .input-glow {
+    opacity: 0.1;
+}
+
+/* ===== CHECKBOX STYLES ===== */
+.cosmic-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cosmic-checkbox {
+    display: none;
+}
+
+.cosmic-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    color: var(--star-white);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.checkbox-custom {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 0.5rem;
+    background: rgba(30, 30, 70, 0.8);
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 10px;
+    height: 10px;
+    background: var(--cosmic-gradient);
+    border-radius: 0.25rem;
+    transition: transform 0.3s ease;
+}
+
+.cosmic-checkbox:checked + .cosmic-checkbox-label .checkbox-custom {
+    border-color: var(--cosmic-purple);
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.cosmic-checkbox:checked + .cosmic-checkbox-label .checkbox-custom::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.checkbox-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-text i {
+    color: #F59E0B;
+}
+
+/* ===== ERROR MESSAGES ===== */
+.error-message {
+    color: #EF4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    backdrop-filter: blur(10px);
+}
+
+/* ===== BUTTON STYLES ===== */
+.cosmic-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.cosmic-btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.cosmic-btn-secondary {
+    background: rgba(30, 30, 70, 0.8);
+    color: rgba(248, 250, 252, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.cosmic-btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    transform: translateY(-2px);
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .cosmic-edit-content {
+        padding: 0 0.5rem;
+    }
+    
+    .cosmic-edit-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .cosmic-edit-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .edit-title {
+        font-size: 2rem;
+    }
+    
+    .cosmic-form-actions {
+        flex-direction: column;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form validation and animations
+    const inputs = document.querySelectorAll('.cosmic-input, .cosmic-textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Form submission with animation
+    const form = document.querySelector('.cosmic-form');
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('.cosmic-btn-primary');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
 {% endblock %} 

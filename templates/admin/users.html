@@ -1,200 +1,223 @@
 {% extends "base.html" %}
 
-{% block title %}User Management{% endblock %}
+{% block title %}User Management - GradeUP{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="cosmic-page">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-header animate-fade-in">
+                    <div class="header-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h1 class="page-title">
+                        User Management
+                        <span class="cosmic-badge">Admin Panel</span>
+                    </h1>
+                    <p class="page-subtitle">Manage users, roles, and permissions</p>
+                </div>
             </div>
         </div>
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">User Management</h1>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Search users..." value="{{ search }}">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        {% if search %}
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-danger ms-2">
-                            <i class="fas fa-times"></i>
-                        </a>
-                        {% endif %}
-                    </form>
+        <!-- Search and Controls -->
+        <div class="row mb-4 animate-slide-up" data-delay="200">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6><i class="fas fa-search me-2"></i>Search & Filters</h6>
+                            <div class="admin-nav-links">
+                                <a href="{{ url_for('admin.dashboard') }}" class="btn-cosmic-outline btn-sm me-2">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                                <a href="{{ url_for('admin.surveys') }}" class="btn-cosmic-outline btn-sm">
+                                    <i class="fas fa-poll me-1"></i>Surveys
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-6">
+                                <form method="GET" class="d-flex">
+                                    <input type="text" name="search" class="cosmic-input me-2" placeholder="Search users by name or email..." value="{{ search }}">
+                                    <button type="submit" class="btn-cosmic">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    {% if search %}
+                                    <a href="{{ url_for('admin.users') }}" class="btn-cosmic-outline ms-2">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    {% endif %}
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="total-count">
+                                    <span class="cosmic-badge cosmic-badge-info">
+                                        <i class="fas fa-users me-1"></i>{{ users.total }} Total Users
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Total: {{ users.total }} users</span>
-                </div>
             </div>
+        </div>
 
-            <!-- Users Table -->
-            <div class="card shadow">
-                <div class="card-body">
-                    {% if users.items %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Surveys</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in users.items %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3">
-                                                {{ user.username[0].upper() }}
+        <!-- Users Grid -->
+        <div class="row animate-slide-up" data-delay="400">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-table me-2"></i>User Directory</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if users.items %}
+                        <div class="cosmic-table-responsive">
+                            <table class="cosmic-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user me-2"></i>User Details</th>
+                                        <th><i class="fas fa-shield-alt me-2"></i>Role</th>
+                                        <th><i class="fas fa-chart-bar me-2"></i>Activity</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Joined</th>
+                                        <th><i class="fas fa-cog me-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users.items %}
+                                    <tr class="cosmic-table-row">
+                                        <td>
+                                            <div class="user-profile-cell">
+                                                <div class="cosmic-avatar">
+                                                    {{ user.username[0].upper() }}
+                                                </div>
+                                                <div class="user-details">
+                                                    <strong class="user-name">{{ user.username }}</strong>
+                                                    <div class="user-email">{{ user.email }}</div>
+                                                    {% if user.location %}
+                                                    <div class="user-location">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <strong>{{ user.username }}</strong>
-                                                <br><small class="text-muted">{{ user.email }}</small>
-                                                {% if user.location %}
-                                                <br><small class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="cosmic-badge {{ 'cosmic-badge-warning' if user.is_admin else 'cosmic-badge-primary' }}">
+                                                <i class="fas fa-{{ 'crown' if user.is_admin else 'user' }} me-1"></i>
+                                                {{ 'Admin' if user.is_admin else 'User' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="cosmic-badge cosmic-badge-info">
+                                                <i class="fas fa-poll me-1"></i>{{ user.survey_responses.count() }} responses
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="date-display">{{ user.created_at.strftime('%Y-%m-%d') }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                                                   class="btn-cosmic-outline btn-sm" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                                   class="btn-cosmic btn-sm" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
+                                                   class="btn-cosmic-{{ 'warning' if user.is_admin else 'success' }} btn-sm" 
+                                                   title="{{ 'Remove Admin' if user.is_admin else 'Make Admin' }}"
+                                                   {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
+                                                    <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
+                                                </a>
+                                                <a href="{{ url_for('auth.reset_password_request') }}" 
+                                                   class="btn-cosmic-info btn-sm" title="Reset Password">
+                                                    <i class="fas fa-key"></i>
+                                                </a>
+                                                {% if user != current_user %}
+                                                <button type="button" class="btn-cosmic-danger btn-sm" 
+                                                        data-user-name="{{ user.username }}"
+                                                        data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                                        onclick="confirmDelete(this.dataset.userName, this.dataset.deleteUrl)"
+                                                        title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                                 {% endif %}
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ 'warning' if user.is_admin else 'primary' }}">
-                                            {{ 'Admin' if user.is_admin else 'User' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ user.survey_responses.count() }} responses</span>
-                                    </td>
-                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-info" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-{{ 'warning' if user.is_admin else 'success' }}" 
-                                               title="{{ 'Remove Admin' if user.is_admin else 'Make Admin' }}"
-                                               {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
-                                                <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
-                                            </a>
-                                            {% if user != current_user %}
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-user-name="{{ user.username }}"
-                                                    data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                                                    onclick="confirmDelete(this.dataset.userName, this.dataset.deleteUrl)"
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <!-- Pagination -->
-                    {% if users.pages > 1 %}
-                    <nav aria-label="Users pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if users.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, search=search) }}">Previous</a>
-                            </li>
-                            {% endif %}
-                            
-                            {% for page_num in users.iter_pages() %}
-                                {% if page_num %}
-                                    {% if page_num != users.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.users', page=page_num, search=search) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
+                        <!-- Pagination -->
+                        {% if users.pages > 1 %}
+                        <div class="cosmic-pagination">
+                            <nav aria-label="Users pagination">
+                                <ul class="pagination-list">
+                                    {% if users.has_prev %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('admin.users', page=users.prev_num, search=search) }}">
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </a>
                                     </li>
                                     {% endif %}
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
+                                    
+                                    {% for page_num in users.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != users.page %}
+                                            <li class="pagination-item">
+                                                <a class="pagination-link" href="{{ url_for('admin.users', page=page_num, search=search) }}">{{ page_num }}</a>
+                                            </li>
+                                            {% else %}
+                                            <li class="pagination-item active">
+                                                <span class="pagination-link">{{ page_num }}</span>
+                                            </li>
+                                            {% endif %}
+                                        {% else %}
+                                        <li class="pagination-item disabled">
+                                            <span class="pagination-link">...</span>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if users.has_next %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('admin.users', page=users.next_num, search=search) }}">
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h5>No users found</h5>
+                                {% if search %}
+                                <p>No users match your search criteria.</p>
+                                <a href="{{ url_for('admin.users') }}" class="btn-cosmic">Clear Search</a>
                                 {% endif %}
-                            {% endfor %}
-                            
-                            {% if users.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.users', page=users.next_num, search=search) }}">Next</a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No users found</h5>
-                        {% if search %}
-                        <p class="text-muted">No users match your search criteria.</p>
-                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">Clear Search</a>
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
-                    {% endif %}
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </div>
 
@@ -227,30 +250,355 @@ function confirmDelete(userName, deleteUrl) {
     var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
 }
+
+// Add notification for successful operations
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('deleted') === 'true') {
+        showNotification('User deleted successfully', 'success');
+    }
+    
+    if (urlParams.get('updated') === 'true') {
+        showNotification('User updated successfully', 'success');
+    }
+    
+    if (urlParams.get('admin_toggled') === 'true') {
+        showNotification('User role updated successfully', 'success');
+    }
+});
 </script>
 
 <style>
-.sidebar {
-    position: fixed;
-    top: 56px;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+/* ===== COSMIC PAGE STYLES ===== */
+.cosmic-page {
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
 }
 
-.avatar-circle {
-    width: 40px;
-    height: 40px;
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--cosmic-gradient);
     border-radius: 50%;
-    background-color: #007bff;
-    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* ===== USER PROFILE CELLS ===== */
+.user-profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cosmic-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    color: var(--star-white);
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.user-email {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.user-location {
+    color: rgba(248, 250, 252, 0.5);
+    font-size: 0.8rem;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+/* ===== COSMIC PAGINATION ===== */
+.cosmic-pagination {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.pagination-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pagination-item {
+    margin: 0;
+}
+
+.pagination-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.5rem;
+    color: var(--star-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.pagination-link:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    transform: translateY(-2px);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.pagination-item.active .pagination-link {
+    background: var(--cosmic-gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.pagination-item.disabled .pagination-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: var(--cosmic-purple);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.empty-state h5 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: rgba(248, 250, 252, 0.6);
+    margin-bottom: 1.5rem;
+}
+
+/* ===== DATE DISPLAY ===== */
+.date-display {
+    color: rgba(248, 250, 252, 0.8);
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.9rem;
+}
+
+/* ===== TOTAL COUNT ===== */
+.total-count {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* ===== ADMIN NAV LINKS ===== */
+.admin-nav-links {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .user-profile-cell {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .admin-nav-links {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .admin-nav-links .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .pagination-list {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .pagination-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+.btn-cosmic-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-cosmic-info {
+    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+}
+
+.btn-cosmic-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(6, 182, 212, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-cosmic-danger {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    cursor: pointer;
+}
+
+.btn-cosmic-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===== COSMIC BADGE STYLES ===== */
+.cosmic-badge {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: var(--star-white);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-left: 1rem;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    border: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+}
+
+.cosmic-badge-primary {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #A78BFA;
+}
+
+.cosmic-badge-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #FCD34D;
+}
+
+.cosmic-badge-info {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(8, 145, 178, 0.2) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    color: #67E8F9;
+}
+
+.cosmic-badge-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #6EE7B7;
 }
 </style>
 {% endblock %} 

@@ -1,151 +1,1077 @@
 {% extends "base.html" %}
 
+{% block title %}Survey Details - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>{{ title }}</h4>
-                    <div>
-                        <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-edit"></i> Edit Survey
-                        </a>
-                        <a href="{{ url_for('admin.toggle_survey_active', survey_id=survey.id) }}" 
-                           class="btn btn-outline-{{ 'warning' if survey.is_active else 'success' }} btn-sm">
-                            <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
-                            {{ 'Deactivate' if survey.is_active else 'Activate' }}
-                        </a>
-                        <a href="{{ url_for('admin.surveys') }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
+<div class="cosmic-admin-container">
+    <!-- Admin Survey Detail Hero Section -->
+    <div class="admin-hero enhanced">
+        <div class="container-fluid">
+            <div class="admin-header-enhanced">
+                <div class="admin-icon-large">
+                    <div class="professional-emoji size-xxl rotating-glow">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="admin-glow-large"></div>
+                </div>
+                <div class="admin-info-enhanced">
+                    <h1 class="admin-title-large">{{ survey.title }}</h1>
+                    <p class="admin-subtitle-enhanced">Survey Details & Comprehensive Analytics</p>
+                    <div class="survey-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Created {{ survey.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>{{ survey.responses.count() }} Total Responses</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>{{ survey.get_questions()|length }} Questions</span>
+                        </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <h5>{{ survey.title }}</h5>
-                    <span class="badge bg-{{ 'success' if survey.is_active else 'secondary' }} mb-3">
-                        {{ 'Active' if survey.is_active else 'Inactive' }}
-                    </span>
-                    
-                    {% if survey.description %}
-                    <div class="mb-3">
-                        <strong>Description:</strong>
-                        <p>{{ survey.description }}</p>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong>Created:</strong>
-                            <p>{{ survey.created_at.strftime('%B %d, %Y') }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Last Updated:</strong>
-                            <p>{{ survey.updated_at.strftime('%B %d, %Y') }}</p>
-                        </div>
-                    </div>
+                <div class="admin-actions-enhanced">
+                    <a href="{{ url_for('admin.edit_survey', survey_id=survey.id) }}" class="cosmic-btn-enhanced primary">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit Survey</span>
+                    </a>
+                    <a href="{{ url_for('admin.toggle_survey_active', survey_id=survey.id) }}" 
+                       class="cosmic-btn-enhanced {{ 'warning' if survey.is_active else 'success' }}">
+                        <i class="fas fa-{{ 'pause' if survey.is_active else 'play' }}"></i>
+                        <span>{{ 'Deactivate' if survey.is_active else 'Activate' }}</span>
+                    </a>
+                    <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn-enhanced secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Surveys</span>
+                    </a>
                 </div>
             </div>
-            
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5>Survey Questions</h5>
-                </div>
-                <div class="card-body">
-                    {% for question in survey.get_questions() %}
-                    <div class="mb-4 p-3 border rounded">
-                        <h6>Question {{ question.id }}: {{ question.text }}</h6>
-                        <span class="badge bg-info">{{ question.type }}</span>
-                        {% if question.required %}
-                        <span class="badge bg-danger">Required</span>
-                        {% endif %}
-                        
-                        {% if question.type == 'multiple_choice' or question.type == 'multiple_select' %}
-                        <div class="mt-2">
-                            <strong>Options:</strong>
-                            <ul class="mt-1">
-                                {% for option in question.options %}
-                                <li>{{ option }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% elif question.type == 'rating' %}
-                        <div class="mt-2">
-                            <strong>Rating Scale:</strong>
-                            <p>{{ question.scale.min }} to {{ question.scale.max }}</p>
-                            {% if question.scale.labels %}
-                            <small class="text-muted">
-                                {{ question.scale.labels['1'] }} - {{ question.scale.labels['5'] }}
-                            </small>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h6>Survey Statistics</h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3 text-center">
-                        <h3 class="text-primary">{{ survey.responses.count() }}</h3>
-                        <p class="text-muted">Total Responses</p>
-                    </div>
-                    
-                    {% if survey.responses.count() > 0 %}
-                    <div class="mb-3">
-                        <strong>Latest Response:</strong>
-                        <p class="text-muted">{{ survey.responses.order_by('-created_at').first().created_at.strftime('%B %d, %Y') }}</p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Average Recommendations:</strong>
-                        {% set total_recs = namespace(value=0) %}
-                        {% for response in survey.responses %}
-                            {% set total_recs.value = total_recs.value + response.recommendations.count() %}
-                        {% endfor %}
-                        <p class="text-muted">
-                            {% if survey.responses.count() > 0 %}
-                                {{ "%.1f"|format(total_recs.value / survey.responses.count()) }} per response
-                            {% else %}
-                                0 per response
-                            {% endif %}
-                        </p>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-grid">
-                        <a href="{{ url_for('admin.survey_responses', survey_id=survey.id) }}" class="btn btn-outline-primary">
-                            <i class="fas fa-chart-bar"></i> View All Responses
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            {% if survey.responses.count() > 0 %}
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h6>Recent Responses</h6>
-                </div>
-                <div class="card-body">
-                    {% for response in survey.responses.order_by('-created_at').limit(5) %}
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <small><strong>{{ response.user.username }}</strong></small>
-                            <br><small class="text-muted">{{ response.created_at.strftime('%m/%d/%Y') }}</small>
-                        </div>
-                        <span class="badge bg-info">{{ response.recommendations.count() }} recs</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="admin-main-content-enhanced">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Survey Information -->
+                <div class="col-lg-8">
+                    <!-- Status Card -->
+                    <div class="cosmic-card-enhanced status-card animate-on-scroll">
+                        <div class="status-indicator {{ 'active' if survey.is_active else 'inactive' }}">
+                            <div class="status-pulse"></div>
+                            <div class="status-text">
+                                <i class="fas fa-{{ 'power-off' if survey.is_active else 'pause' }}"></i>
+                                {{ 'Active Survey' if survey.is_active else 'Inactive Survey' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Survey Info Card -->
+                    <div class="cosmic-card-enhanced animate-on-scroll">
+                        <div class="cosmic-card-header-enhanced">
+                            <div class="card-title-enhanced">
+                                <i class="fas fa-info-circle rotating-icon"></i>
+                                Survey Information
+                            </div>
+                        </div>
+                        <div class="cosmic-card-body-enhanced">
+                            <div class="info-grid-enhanced">
+                                <div class="info-item-enhanced">
+                                    <div class="info-label">Title</div>
+                                    <div class="info-value">{{ survey.title }}</div>
+                                </div>
+                                {% if survey.description %}
+                                <div class="info-item-enhanced full-width">
+                                    <div class="info-label">Description</div>
+                                    <div class="info-value">{{ survey.description }}</div>
+                                </div>
+                                {% endif %}
+                                <div class="info-item-enhanced">
+                                    <div class="info-label">Created Date</div>
+                                    <div class="info-value">{{ survey.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                                </div>
+                                <div class="info-item-enhanced">
+                                    <div class="info-label">Last Updated</div>
+                                    <div class="info-value">{{ survey.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Survey Questions Card -->
+                    <div class="cosmic-card-enhanced animate-on-scroll">
+                        <div class="cosmic-card-header-enhanced">
+                            <div class="card-title-enhanced">
+                                <i class="fas fa-question-circle rotating-icon"></i>
+                                Survey Questions
+                                <span class="question-count">({{ survey.get_questions()|length }})</span>
+                            </div>
+                        </div>
+                        <div class="cosmic-card-body-enhanced">
+                            {% for question in survey.get_questions() %}
+                            <div class="question-card-enhanced">
+                                <div class="question-header-enhanced">
+                                    <div class="question-number-enhanced">{{ loop.index }}</div>
+                                    <div class="question-info-enhanced">
+                                        <h6>{{ question['text'] }}</h6>
+                                        <div class="question-meta-enhanced">
+                                            <span class="question-type-enhanced">{{ question['type'].replace('_', ' ').title() }}</span>
+                                            {% if question.get('required') %}
+                                            <span class="required-badge-enhanced">Required</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if question['type'] == 'multiple_choice' or question['type'] == 'multiple_select' %}
+                                <div class="question-options-enhanced">
+                                    <strong>Options:</strong>
+                                    {% if question.get('options') %}
+                                    <ul class="options-list-enhanced">
+                                        {% for option in question['options'] %}
+                                        <li>{{ option }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="no-options-enhanced">No options defined</p>
+                                    {% endif %}
+                                </div>
+                                {% elif question['type'] == 'rating' %}
+                                <div class="question-options-enhanced">
+                                    <strong>Rating Scale:</strong>
+                                    {% if question.get('scale') %}
+                                    <div class="rating-scale-enhanced">
+                                        <span class="scale-range-enhanced">{{ question['scale'].get('min', 1) }} to {{ question['scale'].get('max', 5) }}</span>
+                                        {% if question['scale'].get('labels') %}
+                                        <div class="scale-labels-enhanced">
+                                            {{ question['scale']['labels'].get('1', '') }} - {{ question['scale']['labels'].get('5', '') }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <span class="scale-range-enhanced">1 to 5 (default scale)</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Statistics Card -->
+                    <div class="cosmic-card-enhanced animate-on-scroll">
+                        <div class="cosmic-card-header-enhanced">
+                            <div class="card-title-enhanced">
+                                <i class="fas fa-chart-line rotating-icon"></i>
+                                Survey Analytics
+                            </div>
+                        </div>
+                        <div class="cosmic-card-body-enhanced text-center">
+                            <div class="stat-highlight-enhanced">
+                                <div class="stat-circle">
+                                    <div class="stat-number-enhanced">{{ survey.responses.count() }}</div>
+                                </div>
+                                <div class="stat-label-enhanced">Total Responses</div>
+                            </div>
+                            
+                            {% if survey.responses.count() > 0 %}
+                            <div class="stats-grid-enhanced">
+                                <div class="stat-item-enhanced">
+                                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                    <div class="stat-content">
+                                        <label>Latest Response</label>
+                                        {% if latest_response %}
+                                            <p>{{ latest_response.created_at.strftime('%B %d, %Y') }}</p>
+                                        {% else %}
+                                            <p>No responses yet</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-item-enhanced">
+                                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                                    <div class="stat-content">
+                                        <label>Avg. Recommendations</label>
+                                        {% set total_recs = namespace(value=0) %}
+                                        {% for response in survey.responses %}
+                                            {% set total_recs.value = total_recs.value + response.recommendations.count() %}
+                                        {% endfor %}
+                                        <p>
+                                            {% if survey.responses.count() > 0 %}
+                                                {{ "%.1f"|format(total_recs.value / survey.responses.count()) }} per response
+                                            {% else %}
+                                                0 per response
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="action-buttons-enhanced">
+                                <a href="{{ url_for('admin.survey_responses', survey_id=survey.id) }}" class="cosmic-btn-enhanced primary full-width">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>View All Responses</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Responses Card -->
+                    {% if recent_responses %}
+                    <div class="cosmic-card-enhanced animate-on-scroll">
+                        <div class="cosmic-card-header-enhanced">
+                            <div class="card-title-enhanced">
+                                <i class="fas fa-history rotating-icon"></i>
+                                Recent Activity
+                            </div>
+                        </div>
+                        <div class="cosmic-card-body-enhanced">
+                            <div class="response-list-enhanced">
+                                {% for response in recent_responses %}
+                                <div class="response-item-enhanced">
+                                    <div class="response-user-enhanced">
+                                        <div class="user-avatar-enhanced">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="user-info-enhanced">
+                                            <strong>{{ response.user.username }}</strong>
+                                            <small>{{ response.created_at.strftime('%m/%d/%Y at %I:%M %p') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="response-count-enhanced">
+                                        <span class="rec-count-enhanced">{{ response.recommendations.count() }}</span>
+                                        <small>recommendations</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="floating-particles-enhanced">
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+        <div class="particle-enhanced"></div>
+    </div>
 </div>
+
+<style>
+/* Enhanced Survey Detail Styles */
+.admin-hero.enhanced {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #1e40af 50%, #1e3a8a 75%, #1e1b4b 100%);
+    min-height: 350px;
+    padding: 2rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-hero.enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 100, 100, 0.2) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.admin-header-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+}
+
+.admin-icon-large {
+    position: relative;
+}
+
+.professional-emoji.size-xxl {
+    width: 120px;
+    height: 120px;
+    font-size: 3.5rem;
+}
+
+.rotating-glow {
+    animation: rotateGlow 4s ease-in-out infinite;
+}
+
+@keyframes rotateGlow {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+}
+
+.admin-glow-large {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(20px);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.admin-info-enhanced {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-title-large {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff, #e2e8f0, #cbd5e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.admin-subtitle-enhanced {
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+}
+
+.survey-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+}
+
+.meta-item i {
+    color: #60a5fa;
+}
+
+.admin-actions-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 200px;
+}
+
+.cosmic-btn-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    justify-content: center;
+}
+
+.cosmic-btn-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.cosmic-btn-enhanced:hover::before {
+    left: 100%;
+}
+
+.cosmic-btn-enhanced.primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.cosmic-btn-enhanced.primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.cosmic-btn-enhanced.warning:hover {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.cosmic-btn-enhanced.success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    color: white;
+}
+
+.cosmic-btn-enhanced.secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+}
+
+.cosmic-btn-enhanced.secondary:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.6);
+    color: white;
+}
+
+.admin-main-content-enhanced {
+    padding: 2rem 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%);
+    min-height: calc(100vh - 350px);
+}
+
+.cosmic-card-enhanced {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 0;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.cosmic-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.cosmic-card-enhanced:hover {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.status-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+}
+
+.status-card.inactive {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.1));
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+.status-pulse {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-indicator.active .status-pulse {
+    background: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+}
+
+.status-indicator.inactive .status-pulse {
+    background: #6b7280;
+    box-shadow: 0 0 20px rgba(107, 114, 128, 0.6);
+}
+
+@keyframes statusPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+.status-text {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cosmic-card-header-enhanced {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+}
+
+.card-title-enhanced {
+    color: #e2e8f0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rotating-icon {
+    animation: rotateIcon 3s linear infinite;
+}
+
+@keyframes rotateIcon {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.question-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.cosmic-card-body-enhanced {
+    padding: 2rem;
+}
+
+.info-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.info-item-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(148, 163, 184, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    transition: all 0.3s ease;
+}
+
+.info-item-enhanced:hover {
+    background: rgba(148, 163, 184, 0.1);
+    transform: translateY(-2px);
+}
+
+.info-item-enhanced.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.info-value {
+    color: #e2e8f0;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.question-card-enhanced {
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.question-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+    border-radius: 2px 0 0 2px;
+}
+
+.question-card-enhanced:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.3);
+    transform: translateX(5px);
+}
+
+.question-header-enhanced {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.question-number-enhanced {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.question-info-enhanced h6 {
+    color: #e2e8f0;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.question-meta-enhanced {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.question-type-enhanced {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.required-badge-enhanced {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.question-options-enhanced {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.question-options-enhanced strong {
+    color: #e2e8f0;
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.options-list-enhanced {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.options-list-enhanced li {
+    background: rgba(148, 163, 184, 0.1);
+    color: #cbd5e1;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+.options-list-enhanced li:hover {
+    background: rgba(148, 163, 184, 0.15);
+    transform: translateX(5px);
+}
+
+.no-options-enhanced {
+    color: #9ca3af;
+    font-style: italic;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+    background: rgba(107, 114, 128, 0.1);
+    border-radius: 8px;
+}
+
+.rating-scale-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.scale-range-enhanced {
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.scale-labels-enhanced {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.stat-highlight-enhanced {
+    margin-bottom: 2rem;
+}
+
+.stat-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.stat-number-enhanced {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label-enhanced {
+    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.stats-grid-enhanced {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(148, 163, 184, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stat-item-enhanced:hover {
+    background: rgba(148, 163, 184, 0.12);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    text-align: left;
+    flex: 1;
+}
+
+.stat-content label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.stat-content p {
+    color: #e2e8f0;
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.action-buttons-enhanced {
+    margin-top: 2rem;
+}
+
+.cosmic-btn-enhanced.full-width {
+    width: 100%;
+}
+
+.response-list-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.response-item-enhanced {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    background: rgba(148, 163, 184, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.3s ease;
+}
+
+.response-item-enhanced:hover {
+    background: rgba(148, 163, 184, 0.12);
+    transform: translateX(5px);
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.response-user-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar-enhanced {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.user-info-enhanced strong {
+    color: #e2e8f0;
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.user-info-enhanced small {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.response-count-enhanced {
+    text-align: center;
+}
+
+.rec-count-enhanced {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: block;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+
+.response-count-enhanced small {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    display: block;
+    font-weight: 500;
+}
+
+.floating-particles-enhanced {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.particle-enhanced {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    border-radius: 50%;
+    animation: floatParticle 8s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+
+.particle-enhanced:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.particle-enhanced:nth-child(2) { top: 80%; left: 20%; animation-delay: 1s; }
+.particle-enhanced:nth-child(3) { top: 40%; right: 30%; animation-delay: 2s; }
+.particle-enhanced:nth-child(4) { bottom: 30%; right: 10%; animation-delay: 3s; }
+.particle-enhanced:nth-child(5) { top: 60%; left: 50%; animation-delay: 4s; }
+.particle-enhanced:nth-child(6) { bottom: 60%; left: 70%; animation-delay: 5s; }
+
+@keyframes floatParticle {
+    0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-20px) rotate(180deg) scale(1.2); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-header-enhanced {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-actions-enhanced {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .admin-title-large {
+        font-size: 2rem;
+    }
+    
+    .survey-meta {
+        justify-content: center;
+    }
+    
+    .info-grid-enhanced {
+        grid-template-columns: 1fr;
+    }
+    
+    .question-header-enhanced {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .question-number-enhanced {
+        align-self: flex-start;
+    }
+    
+    .stat-item-enhanced {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .stat-content {
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Enhanced animations when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on scroll with enhanced effects
+    const cards = document.querySelectorAll('.animate-on-scroll');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0) scale(1)';
+                }, index * 150);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px) scale(0.95)';
+        card.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        observer.observe(card);
+    });
+
+    // Enhanced floating animation for particles
+    const particles = document.querySelectorAll('.particle-enhanced');
+    particles.forEach((particle, index) => {
+        particle.style.animationDelay = `${index * 0.8}s`;
+        particle.style.animationDuration = `${8 + (index * 2)}s`;
+    });
+
+    // Add smooth scroll behavior for action buttons
+    const actionButtons = document.querySelectorAll('.cosmic-btn-enhanced');
+    actionButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+});
+</script>
 {% endblock %} 

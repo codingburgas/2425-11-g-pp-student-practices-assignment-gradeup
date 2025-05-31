@@ -1,118 +1,131 @@
 {% extends "base.html" %}
 
+{% block title %}{% if survey %}Edit Survey{% else %}New Survey{% endif %} - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
+<div class="cosmic-admin-container">
+    <!-- Admin Survey Form Hero Section -->
+    <div class="admin-hero">
+        <div class="container-fluid">
+            <div class="admin-header">
+                <div class="admin-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="admin-glow"></div>
+                </div>
+                <div class="admin-info">
+                    <h1 class="admin-title">{% if survey %}Edit Survey: {{ survey.title }}{% else %}New Survey{% endif %}</h1>
+                    <p class="admin-subtitle">{% if survey %}Update survey details and questions{% else %}Create a new survey for data collection{% endif %}</p>
+                    {% if survey and survey.responses.count() > 0 %}
+                    <div class="admin-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-chart-bar"></i>
+                            {{ survey.responses.count() }} Responses
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-calendar"></i>
+                            Created {{ survey.created_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn cosmic-btn-ghost">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Surveys
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">{{ title }}</h1>
-                <a href="{{ url_for('admin.surveys') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Surveys
-                </a>
-            </div>
-
+    <!-- Survey Form Content -->
+    <div class="admin-content">
+        <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <form method="POST">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <div class="mb-3">
-                                            <label for="title" class="form-label">Survey Title <span class="text-danger">*</span></label>
-                                            <input type="text" 
-                                                   class="form-control" 
-                                                   id="title" 
-                                                   name="title" 
-                                                   value="{{ survey.title if survey else '' }}" 
-                                                   required 
-                                                   placeholder="Enter survey title">
-                                        </div>
+                    <!-- Main Form Card -->
+                    <div class="cosmic-form-card">
+                        <div class="cosmic-form-header">
+                            <h3>
+                                <i class="fas fa-poll"></i>
+                                Survey Details
+                            </h3>
+                            <p>Configure survey settings and questions</p>
+                        </div>
+                        
+                        <div class="cosmic-form-body">
+                            <form method="POST" class="cosmic-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-md-8">
+                                        <label for="title" class="cosmic-label">
+                                            <i class="fas fa-heading"></i>
+                                            Survey Title <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="cosmic-input" 
+                                               id="title" 
+                                               name="title" 
+                                               value="{{ survey.title if survey else '' }}" 
+                                               required 
+                                               placeholder="Enter survey title">
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="is_active" class="form-label">Status</label>
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" 
-                                                       type="checkbox" 
-                                                       id="is_active" 
-                                                       name="is_active" 
-                                                       {% if survey and survey.is_active %}checked{% endif %}>
-                                                <label class="form-check-label" for="is_active">
-                                                    Active Survey
-                                                </label>
-                                            </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="is_active" class="cosmic-label">
+                                            <i class="fas fa-toggle-on"></i>
+                                            Status
+                                        </label>
+                                        <div class="cosmic-switch-container">
+                                            <input class="cosmic-switch" 
+                                                   type="checkbox" 
+                                                   id="is_active" 
+                                                   name="is_active" 
+                                                   {% if survey and survey.is_active %}checked{% endif %}>
+                                            <label class="cosmic-switch-label" for="is_active">
+                                                <span class="switch-text">Active Survey</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea class="form-control" 
+                                <div class="form-group">
+                                    <label for="description" class="cosmic-label">
+                                        <i class="fas fa-align-left"></i>
+                                        Description
+                                    </label>
+                                    <textarea class="cosmic-textarea" 
                                               id="description" 
                                               name="description" 
                                               rows="3" 
                                               placeholder="Enter survey description">{{ survey.description if survey else '' }}</textarea>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="questions" class="form-label">Questions (JSON Format) <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" 
+                                <div class="form-group">
+                                    <label for="questions" class="cosmic-label">
+                                        <i class="fas fa-list-ul"></i>
+                                        Questions (JSON Format) <span class="required">*</span>
+                                    </label>
+                                    <textarea class="cosmic-textarea code-editor" 
                                               id="questions" 
                                               name="questions" 
                                               rows="15" 
                                               required 
                                               placeholder="Enter questions in JSON format">{{ survey.questions if survey else sample_questions }}</textarea>
-                                    <div class="form-text">
-                                        Define survey questions in JSON format. See the example below for structure.
+                                    <div class="form-help">
+                                        <i class="fas fa-info-circle"></i>
+                                        Define survey questions in JSON format. Click the help section below for examples.
                                     </div>
                                 </div>
 
-                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <a href="{{ url_for('admin.surveys') }}" class="btn btn-secondary me-md-2">Cancel</a>
-                                    <button type="submit" class="btn btn-primary">
+                                <div class="form-actions">
+                                    <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn cosmic-btn-ghost">
+                                        <i class="fas fa-times"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="cosmic-btn cosmic-btn-primary">
                                         <i class="fas fa-save"></i> 
                                         {% if survey %}Update Survey{% else %}Create Survey{% endif %}
                                     </button>
@@ -122,27 +135,40 @@
                     </div>
 
                     <!-- Question Format Help -->
-                    <div class="card shadow mt-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#questionHelp">
-                                    <i class="fas fa-question-circle"></i> Question Format Help
-                                </button>
-                            </h5>
+                    <div class="cosmic-help-card">
+                        <div class="help-header" onclick="toggleHelp()">
+                            <h4>
+                                <i class="fas fa-question-circle"></i>
+                                Question Format Help
+                            </h4>
+                            <i class="fas fa-chevron-down help-toggle"></i>
                         </div>
-                        <div id="questionHelp" class="collapse">
-                            <div class="card-body">
-                                <h6>Supported Question Types:</h6>
-                                <ul>
-                                    <li><strong>text:</strong> Free text input</li>
-                                    <li><strong>multiple_choice:</strong> Single selection from options</li>
-                                    <li><strong>multiple_select:</strong> Multiple selections from options</li>
-                                    <li><strong>rating:</strong> Rating scale (1-5 or 1-10)</li>
-                                    <li><strong>yes_no:</strong> Simple yes/no question</li>
-                                </ul>
+                        <div id="questionHelp" class="help-content">
+                            <div class="help-section">
+                                <h5><i class="fas fa-list"></i> Supported Question Types:</h5>
+                                <div class="question-types">
+                                    <div class="type-item">
+                                        <strong>text:</strong> Free text input
+                                    </div>
+                                    <div class="type-item">
+                                        <strong>multiple_choice:</strong> Single selection from options
+                                    </div>
+                                    <div class="type-item">
+                                        <strong>multiple_select:</strong> Multiple selections from options
+                                    </div>
+                                    <div class="type-item">
+                                        <strong>rating:</strong> Rating scale (1-5 or 1-10)
+                                    </div>
+                                    <div class="type-item">
+                                        <strong>yes_no:</strong> Simple yes/no question
+                                    </div>
+                                </div>
+                            </div>
 
-                                <h6>Example Question Structure:</h6>
-                                <pre><code>[
+                            <div class="help-section">
+                                <h5><i class="fas fa-code"></i> Example Question Structure:</h5>
+                                <div class="code-example">
+                                    <pre><code>[
   {
     "id": 1,
     "type": "multiple_choice",
@@ -178,39 +204,54 @@
     "placeholder": "Enter program names..."
   }
 ]</code></pre>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {% if survey and survey.responses.count() > 0 %}
-                    <div class="card shadow mt-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Survey Statistics</h5>
+                    <!-- Survey Statistics -->
+                    <div class="cosmic-stats-card">
+                        <div class="stats-header">
+                            <h4>
+                                <i class="fas fa-chart-pie"></i>
+                                Survey Statistics
+                            </h4>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="text-center">
-                                        <h3 class="text-primary">{{ survey.responses.count() }}</h3>
-                                        <p class="text-muted">Total Responses</p>
+                        <div class="stats-content">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>{{ survey.responses.count() }}</h3>
+                                        <p>Total Responses</p>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-center">
-                                        <h3 class="text-success">{{ survey.created_at.strftime('%Y-%m-%d') }}</h3>
-                                        <p class="text-muted">Created Date</p>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>{{ survey.created_at.strftime('%Y-%m-%d') }}</h3>
+                                        <p>Created Date</p>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-center">
-                                        <h3 class="text-info">{{ survey.updated_at.strftime('%Y-%m-%d') }}</h3>
-                                        <p class="text-muted">Last Updated</p>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>{{ survey.updated_at.strftime('%Y-%m-%d') }}</h3>
+                                        <p>Last Updated</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-center mt-3">
-                                <a href="{{ url_for('admin.survey_responses', survey_id=survey.id) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-chart-bar"></i> View All Responses
+                            <div class="stats-actions">
+                                <a href="{{ url_for('admin.survey_responses', survey_id=survey.id) }}" class="cosmic-btn cosmic-btn-primary">
+                                    <i class="fas fa-chart-bar"></i> 
+                                    View All Responses
                                 </a>
                             </div>
                         </div>
@@ -218,33 +259,642 @@
                     {% endif %}
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 </div>
 
 <style>
-.sidebar {
-    position: fixed;
-    top: 56px;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+/* ===== COSMIC ADMIN STYLES ===== */
+.cosmic-admin-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
 }
 
-pre {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 0.375rem;
-    padding: 1rem;
-    font-size: 0.875rem;
+/* ===== ADMIN HERO ===== */
+.admin-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* ===== FORM STYLES ===== */
+.admin-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.cosmic-form-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.cosmic-form-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 2rem;
+    text-align: center;
+}
+
+.cosmic-form-header h3 {
+    color: var(--star-white);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.cosmic-form-header p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+}
+
+.cosmic-form-body {
+    padding: 2rem;
+}
+
+.cosmic-form {
+    max-width: none;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    flex: 1;
+    min-width: 250px;
+}
+
+.cosmic-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.cosmic-label i {
+    color: var(--cosmic-purple);
+}
+
+.required {
+    color: #ff6b9d;
+}
+
+.cosmic-input,
+.cosmic-textarea {
+    width: 100%;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    resize: vertical;
+}
+
+.cosmic-input:focus,
+.cosmic-textarea:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(30, 30, 70, 0.7);
+}
+
+.cosmic-input::placeholder,
+.cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.code-editor {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    min-height: 400px;
+}
+
+.cosmic-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cosmic-switch {
+    appearance: none;
+    width: 60px;
+    height: 30px;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cosmic-switch:checked {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+}
+
+.cosmic-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 24px;
+    height: 24px;
+    background: var(--star-white);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.cosmic-switch:checked::before {
+    transform: translateX(30px);
+}
+
+.cosmic-switch-label {
+    color: var(--star-white);
+    cursor: pointer;
+}
+
+.switch-text {
+    font-weight: 500;
+}
+
+.form-help {
+    margin-top: 0.5rem;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-help i {
+    color: var(--cosmic-purple);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* ===== HELP CARD ===== */
+.cosmic-help-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    animation: cardSlideIn 0.8s ease-out 0.2s both;
+}
+
+.help-header {
+    background: rgba(139, 92, 246, 0.1);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    padding: 1.5rem 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.help-header:hover {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.help-header h4 {
+    color: var(--star-white);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.help-header h4 i {
+    color: var(--cosmic-purple);
+}
+
+.help-toggle {
+    color: var(--cosmic-purple);
+    transition: transform 0.3s ease;
+}
+
+.help-toggle.rotated {
+    transform: rotate(180deg);
+}
+
+.help-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.help-content.expanded {
+    max-height: 1000px;
+}
+
+.help-section {
+    padding: 2rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.help-section:last-child {
+    border-bottom: none;
+}
+
+.help-section h5 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.help-section h5 i {
+    color: var(--cosmic-purple);
+}
+
+.question-types {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.type-item {
+    background: rgba(30, 30, 70, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.type-item strong {
+    color: var(--cosmic-purple);
+}
+
+.code-example {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.code-example pre {
+    margin: 0;
+    padding: 1.5rem;
+    background: transparent;
+    border: none;
+    color: rgba(248, 250, 252, 0.9);
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+/* ===== STATS CARD ===== */
+.cosmic-stats-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    animation: cardSlideIn 0.8s ease-out 0.4s both;
+}
+
+.stats-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 1.5rem 2rem;
+}
+
+.stats-header h4 {
+    color: var(--star-white);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.stats-header h4 i {
+    color: var(--cosmic-purple);
+}
+
+.stats-content {
+    padding: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(30, 30, 70, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--cosmic-gradient);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-info h3 {
+    color: var(--star-white);
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.stat-info p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.stats-actions {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* ===== COSMIC BUTTONS ===== */
+.cosmic-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.3);
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.5);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-title {
+        font-size: 2rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        min-width: auto;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
 }
 </style>
+{% endblock %}
 
+{% block scripts %}
 <script>
-// Format JSON in textarea for better readability
 document.addEventListener('DOMContentLoaded', function() {
+    // Format JSON in textarea for better readability
     const questionsTextarea = document.getElementById('questions');
     if (questionsTextarea.value.trim()) {
         try {
@@ -286,6 +936,45 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         questionsTextarea.value = JSON.stringify(sampleQuestions, null, 2);
     }
+    
+    // Initialize animations
+    initFormAnimations();
+});
+
+function initFormAnimations() {
+    const cards = document.querySelectorAll('.cosmic-form-card, .cosmic-help-card, .cosmic-stats-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+}
+
+function toggleHelp() {
+    const helpContent = document.getElementById('questionHelp');
+    const helpToggle = document.querySelector('.help-toggle');
+    
+    helpContent.classList.toggle('expanded');
+    helpToggle.classList.toggle('rotated');
+}
+
+// Add syntax highlighting effect for JSON textarea
+document.getElementById('questions').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.max(400, this.scrollHeight) + 'px';
 });
 </script>
 {% endblock %} 

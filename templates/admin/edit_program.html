@@ -1,81 +1,571 @@
 {% extends "base.html" %}
 
+{% block title %}{{ title }} - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>{{ title }}</h4>
+<div class="cosmic-form-container">
+    <!-- Form Header -->
+    <div class="form-header">
+        <div class="container-fluid">
+            <div class="form-header-content">
+                <div class="form-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="form-glow"></div>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Program Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ program.name if program else '' }}" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="school_id" class="form-label">University <span class="text-danger">*</span></label>
-                            <select class="form-select" id="school_id" name="school_id" required>
-                                <option value="">Select University</option>
-                                {% for university in universities %}
-                                <option value="{{ university.id }}" {% if program and program.school_id == university.id %}selected{% endif %}>
-                                    {{ university.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="degree_type" class="form-label">Degree Type <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="degree_type" name="degree_type" required>
-                                        <option value="">Select Degree Type</option>
-                                        <option value="Bachelor's" {% if program and program.degree_type == "Bachelor's" %}selected{% endif %}>Bachelor's</option>
-                                        <option value="Master's" {% if program and program.degree_type == "Master's" %}selected{% endif %}>Master's</option>
-                                        <option value="PhD" {% if program and program.degree_type == "PhD" %}selected{% endif %}>PhD</option>
-                                        <option value="Diploma" {% if program and program.degree_type == "Diploma" %}selected{% endif %}>Diploma</option>
-                                        <option value="Certificate" {% if program and program.degree_type == "Certificate" %}selected{% endif %}>Certificate</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="duration" class="form-label">Duration</label>
-                                    <input type="text" class="form-control" id="duration" name="duration" 
-                                           value="{{ program.duration if program else '' }}" placeholder="e.g., 4 years, 2 semesters">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="4">{{ program.description if program else '' }}</textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="tuition_fee" class="form-label">Tuition Fee (USD)</label>
-                            <input type="number" class="form-control" id="tuition_fee" name="tuition_fee" 
-                                   value="{{ program.tuition_fee if program else '' }}" step="0.01" min="0">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="admission_requirements" class="form-label">Admission Requirements</label>
-                            <textarea class="form-control" id="admission_requirements" name="admission_requirements" rows="6">{{ program.admission_requirements if program else '' }}</textarea>
-                        </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('admin.programs') }}" class="btn btn-secondary me-md-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                {% if program %}Update Program{% else %}Create Program{% endif %}
-                            </button>
-                        </div>
-                    </form>
+                <div class="form-title-section">
+                    <h1 class="form-title">{{ title }}</h1>
+                    <p class="form-subtitle">
+                        {% if program %}
+                        Modify program details and requirements
+                        {% else %}
+                        Create a new academic program
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="form-actions">
+                    <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Programs
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Form Content -->
+    <div class="form-content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="cosmic-card">
+                        <div class="card-content">
+                            <form method="POST" class="cosmic-form">
+                                <!-- Program Name -->
+                                <div class="form-group">
+                                    <label for="name" class="form-label">
+                                        Program Name
+                                        <span class="required-indicator">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="cosmic-input" 
+                                           id="name" 
+                                           name="name" 
+                                           value="{{ program.name if program else '' }}" 
+                                           required 
+                                           placeholder="Enter program name">
+                                    <div class="input-description">The official name of the academic program</div>
+                                </div>
+
+                                <!-- University Selection -->
+                                <div class="form-group">
+                                    <label for="school_id" class="form-label">
+                                        University
+                                        <span class="required-indicator">*</span>
+                                    </label>
+                                    <select class="cosmic-select" id="school_id" name="school_id" required>
+                                        <option value="">Select University</option>
+                                        {% for university in universities %}
+                                        <option value="{{ university.id }}" 
+                                                {% if program and program.school_id == university.id %}selected{% endif %}
+                                                {% if request.args.get('university_id') == university.id|string %}selected{% endif %}>
+                                            {{ university.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="input-description">Select the university offering this program</div>
+                                </div>
+
+                                <!-- Degree Type and Duration -->
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="degree_type" class="form-label">
+                                            Degree Type
+                                            <span class="required-indicator">*</span>
+                                        </label>
+                                        <select class="cosmic-select" id="degree_type" name="degree_type" required>
+                                            <option value="">Select Degree Type</option>
+                                            <option value="Bachelor's" {% if program and program.degree_type == "Bachelor's" %}selected{% endif %}>Bachelor's</option>
+                                            <option value="Master's" {% if program and program.degree_type == "Master's" %}selected{% endif %}>Master's</option>
+                                            <option value="PhD" {% if program and program.degree_type == "PhD" %}selected{% endif %}>PhD</option>
+                                            <option value="Diploma" {% if program and program.degree_type == "Diploma" %}selected{% endif %}>Diploma</option>
+                                            <option value="Certificate" {% if program and program.degree_type == "Certificate" %}selected{% endif %}>Certificate</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="duration" class="form-label">Duration</label>
+                                        <input type="text" 
+                                               class="cosmic-input" 
+                                               id="duration" 
+                                               name="duration" 
+                                               value="{{ program.duration if program else '' }}" 
+                                               placeholder="e.g., 4 years, 2 semesters">
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="form-group">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="cosmic-textarea" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="4" 
+                                              placeholder="Study of computer hardware, networking, and system design">{{ program.description if program else '' }}</textarea>
+                                    <div class="input-description">Brief overview of the program content and focus</div>
+                                </div>
+
+                                <!-- Tuition Fee -->
+                                <div class="form-group">
+                                    <label for="tuition_fee" class="form-label">Tuition Fee (USD)</label>
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-dollar-sign input-icon"></i>
+                                        <input type="number" 
+                                               class="cosmic-input with-icon" 
+                                               id="tuition_fee" 
+                                               name="tuition_fee" 
+                                               value="{{ program.tuition_fee if program else '' }}" 
+                                               step="0.01" 
+                                               min="0" 
+                                               placeholder="15000">
+                                    </div>
+                                    <div class="input-description">Annual tuition fee in USD (optional)</div>
+                                </div>
+
+                                <!-- Admission Requirements -->
+                                <div class="form-group">
+                                    <label for="admission_requirements" class="form-label">Admission Requirements</label>
+                                    <textarea class="cosmic-textarea" 
+                                              id="admission_requirements" 
+                                              name="admission_requirements" 
+                                              rows="6" 
+                                              placeholder="Mathematics entrance exam">{{ program.admission_requirements if program else '' }}</textarea>
+                                    <div class="input-description">Specific requirements for admission to this program</div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="form-actions-bottom">
+                                    <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-ghost">
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="cosmic-btn cosmic-btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if program %}Update Program{% else %}Create Program{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 </div>
+
+<style>
+/* ===== COSMIC FORM STYLES ===== */
+.cosmic-form-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== FORM HEADER ===== */
+.form-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.form-header-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 20;
+}
+
+.form-icon {
+    position: relative;
+    flex-shrink: 0;
+    z-index: 5;
+}
+
+.form-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.form-title-section {
+    flex: 1;
+    min-width: 300px;
+    position: relative;
+    z-index: 15;
+}
+
+.form-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 30;
+}
+
+/* ===== FORM CONTENT ===== */
+.form-content {
+    padding: 3rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.cosmic-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.card-content {
+    padding: 2.5rem;
+}
+
+/* ===== FORM ELEMENTS ===== */
+.cosmic-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-label {
+    color: var(--star-white);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.required-indicator {
+    color: #EF4444;
+    font-weight: 700;
+}
+
+.cosmic-input, .cosmic-select, .cosmic-textarea {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-input:focus, .cosmic-select:focus, .cosmic-textarea:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(30, 30, 70, 0.7);
+}
+
+.cosmic-input::placeholder, .cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.cosmic-select option {
+    background: rgba(15, 15, 35, 0.95);
+    color: var(--star-white);
+    padding: 0.5rem;
+}
+
+.cosmic-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 1;
+}
+
+.cosmic-input.with-icon {
+    padding-left: 3rem;
+}
+
+.input-description {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions-bottom {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.cosmic-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-secondary {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.3);
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.5);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .form-header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 2rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .form-actions-bottom {
+        flex-direction: column;
+    }
+    
+    .cosmic-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .card-content {
+        padding: 1.5rem;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pre-select university if passed in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const universityId = urlParams.get('university_id');
+    if (universityId) {
+        const universitySelect = document.getElementById('school_id');
+        if (universitySelect) {
+            universitySelect.value = universityId;
+        }
+    }
+    
+    // Initialize form animations
+    initFormAnimations();
+});
+
+function initFormAnimations() {
+    const formGroups = document.querySelectorAll('.form-group');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    formGroups.forEach(group => {
+        group.style.opacity = '0';
+        group.style.transform = 'translateY(20px)';
+        group.style.transition = 'all 0.6s ease';
+        observer.observe(group);
+    });
+}
+</script>
 {% endblock %} 

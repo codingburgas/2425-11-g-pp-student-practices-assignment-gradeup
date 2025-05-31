@@ -1,242 +1,942 @@
 {% extends "base.html" %}
 
+{% block title %}Programs Management - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Admin Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Admin Panel</span>
-                </h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users"></i> User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.universities') }}">
-                            <i class="fas fa-university"></i> Universities
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('admin.programs') }}">
-                            <i class="fas fa-graduation-cap"></i> Programs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.surveys') }}">
-                            <i class="fas fa-poll"></i> Survey Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.survey_responses') }}">
-                            <i class="fas fa-chart-pie"></i> Survey Responses
-                        </a>
-                    </li>
-                </ul>
+<div class="cosmic-admin-container">
+    <!-- Admin Programs Hero Section -->
+    <div class="admin-hero">
+        <div class="container-fluid">
+            <div class="admin-header">
+                <div class="admin-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="admin-glow"></div>
+                </div>
+                <div class="admin-info">
+                    <h1 class="admin-title">Programs Management</h1>
+                    <p class="admin-subtitle">Manage academic programs and specializations across all universities.</p>
+                    <div class="admin-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-list"></i>
+                            {{ programs.total }} Total Programs
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-university"></i>
+                            {{ universities|length }} Universities
+                        </span>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.dashboard') }}" class="cosmic-btn cosmic-btn-ghost">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.new_program') }}" class="cosmic-btn cosmic-btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add New Program
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Program Management</h1>
-                <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Program
-                </a>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-2" placeholder="Search programs..." value="{{ search }}">
-                        <button type="submit" class="btn btn-outline-secondary">
+    <!-- Search and Filter Section -->
+    <div class="admin-filters">
+        <div class="container-fluid">
+            <div class="filters-container">
+                <form method="GET" class="filters-form">
+                    <div class="filter-group">
+                        <div class="filter-input-wrapper">
+                            <i class="fas fa-search filter-icon"></i>
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ search }}"
+                                   placeholder="Search programs by name or degree type..."
+                                   class="cosmic-filter-input">
+                        </div>
+                        <div class="filter-select-wrapper">
+                            <i class="fas fa-university filter-icon"></i>
+                            <select name="university_id" class="cosmic-filter-select">
+                                <option value="">All Universities</option>
+                                {% for university in universities %}
+                                <option value="{{ university.id }}" 
+                                        {% if university.id == selected_university %}selected{% endif %}>
+                                    {{ university.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="cosmic-btn cosmic-btn-primary">
                             <i class="fas fa-search"></i>
+                            Search
                         </button>
-                        {% if search %}
-                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-danger ms-2">
+                        {% if search or selected_university %}
+                        <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-ghost">
                             <i class="fas fa-times"></i>
+                            Clear
                         </a>
                         {% endif %}
-                    </form>
-                </div>
-                <div class="col-md-4">
-                    <form method="GET" class="d-flex">
-                        <input type="hidden" name="search" value="{{ search }}">
-                        <select name="university_id" class="form-select me-2" onchange="this.form.submit()">
-                            <option value="">All Universities</option>
-                            {% for university in universities %}
-                            <option value="{{ university.id }}" {% if selected_university == university.id %}selected{% endif %}>
-                                {{ university.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="text-muted">Total: {{ programs.total }} programs</span>
-                </div>
-            </div>
-
-            <!-- Programs Table -->
-            <div class="card shadow">
-                <div class="card-body">
-                    {% if programs.items %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Program</th>
-                                    <th>University</th>
-                                    <th>Degree Type</th>
-                                    <th>Duration</th>
-                                    <th>Tuition</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for program in programs.items %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ program.name }}</strong>
-                                        {% if program.description %}
-                                        <br><small class="text-muted">{{ program.description[:80] }}...</small>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ program.school.name }}</td>
-                                    <td><span class="badge bg-primary">{{ program.degree_type }}</span></td>
-                                    <td>{{ program.duration or 'N/A' }}</td>
-                                    <td>
-                                        {% if program.tuition_fee %}
-                                        ${{ "{:,.0f}".format(program.tuition_fee) }}
-                                        {% else %}
-                                        N/A
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                    data-program-name="{{ program.name }}"
-                                                    data-delete-url="{{ url_for('admin.delete_program', program_id=program.id) }}"
-                                                    onclick="confirmDelete(this.dataset.programName, this.dataset.deleteUrl)"
-                                                    title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
-
-                    <!-- Pagination -->
-                    {% if programs.pages > 1 %}
-                    <nav aria-label="Programs pagination">
-                        <ul class="pagination justify-content-center">
-                            {% if programs.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.prev_num, search=search, university_id=selected_university) }}">Previous</a>
-                            </li>
-                            {% endif %}
-                            
-                            {% for page_num in programs.iter_pages() %}
-                                {% if page_num %}
-                                    {% if page_num != programs.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}">{{ page_num }}</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                    {% endif %}
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            {% if programs.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.programs', page=programs.next_num, search=search, university_id=selected_university) }}">Next</a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No programs found</h5>
-                        {% if search or selected_university %}
-                        <p class="text-muted">No programs match your criteria.</p>
-                        <a href="{{ url_for('admin.programs') }}" class="btn btn-outline-primary">Clear Filters</a>
-                        {% else %}
-                        <p class="text-muted">Start by adding your first program.</p>
-                        <a href="{{ url_for('admin.new_program') }}" class="btn btn-primary">Add Program</a>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </main>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the program "<span id="programName"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete Program</button>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Programs Content -->
+    <div class="admin-content">
+        <div class="container-fluid">
+            {% if programs.items %}
+            <div class="programs-grid">
+                {% for program in programs.items %}
+                <div class="program-card">
+                    <div class="program-header">
+                        <div class="program-avatar">
+                            <div class="professional-emoji">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                        </div>
+                        <div class="program-info">
+                            <h3 class="program-name">{{ program.name }}</h3>
+                            <div class="program-university">
+                                <i class="fas fa-university"></i>
+                                <span>{{ program.school.name }}</span>
+                            </div>
+                            <div class="program-degree">
+                                <i class="fas fa-certificate"></i>
+                                <span>{{ program.degree_type }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if program.description %}
+                    <div class="program-description">
+                        <p>{{ program.description[:120] }}{% if program.description|length > 120 %}...{% endif %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="program-details">
+                        {% if program.duration %}
+                        <div class="detail-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ program.duration }}</span>
+                        </div>
+                        {% endif %}
+                        {% if program.tuition_fee %}
+                        <div class="detail-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>${{ "{:,.0f}".format(program.tuition_fee) }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Created {{ program.created_at.strftime('%b %d, %Y') if program.created_at else 'N/A' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="program-actions">
+                        <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" class="program-btn primary">
+                            <i class="fas fa-edit"></i>
+                            Edit Program
+                        </a>
+                        <button class="program-btn danger delete-btn" 
+                                data-program-name="{{ program.name }}" 
+                                data-delete-url="{{ url_for('admin.delete_program', program_id=program.id) }}">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if programs.pages > 1 %}
+            <div class="pagination-container">
+                <nav class="cosmic-pagination">
+                    {% if programs.has_prev %}
+                    <a href="{{ url_for('admin.programs', page=programs.prev_num, search=search, university_id=selected_university) }}" 
+                       class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    <div class="page-numbers">
+                        {% for page_num in programs.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != programs.page %}
+                                <a href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}" 
+                                   class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                <span class="page-link active">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="page-link disabled">…</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if programs.has_next %}
+                    <a href="{{ url_for('admin.programs', page=programs.next_num, search=search, university_id=selected_university) }}" 
+                       class="page-link">
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <div class="professional-emoji size-lg">
+                        {% if search or selected_university %}
+                        <i class="fas fa-search"></i>
+                        {% else %}
+                        <i class="fas fa-graduation-cap"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <h3>{% if search or selected_university %}No Programs Found{% else %}No Programs Available{% endif %}</h3>
+                <p>
+                    {% if search or selected_university %}
+                    No programs match your search criteria. Try different keywords or clear your filters.
+                    {% else %}
+                    No programs have been added to the system yet. Create your first program to get started.
+                    {% endif %}
+                </p>
+                {% if search or selected_university %}
+                <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-times"></i>
+                    Clear Filters
+                </a>
+                {% else %}
+                <a href="{{ url_for('admin.new_program') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add First Program
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 </div>
 
-<script>
-function confirmDelete(programName, deleteUrl) {
-    document.getElementById('programName').textContent = programName;
-    document.getElementById('deleteForm').action = deleteUrl;
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
-}
-</script>
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="cosmic-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirm Deletion
+            </h3>
+            <button onclick="closeModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the program "<span id="deleteProgramName"></span>"?</p>
+            <p class="warning-text">This action cannot be undone and will remove all associated data.</p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeModal()" class="cosmic-btn cosmic-btn-ghost">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="cosmic-btn cosmic-btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Delete Program
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
-.sidebar {
+/* ===== COSMIC ADMIN STYLES ===== */
+.cosmic-admin-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== ADMIN HERO ===== */
+.admin-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* ===== FILTERS SECTION ===== */
+.admin-filters {
+    padding: 2rem 0;
+    position: relative;
+    z-index: 5;
+}
+
+.filters-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.filters-form {
+    width: 100%;
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-input-wrapper,
+.filter-select-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 1;
+}
+
+.cosmic-filter-input,
+.cosmic-filter-select {
+    width: 100%;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem 1rem 3rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-filter-input:focus,
+.cosmic-filter-select:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(30, 30, 70, 0.7);
+}
+
+.cosmic-filter-input::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.cosmic-filter-select option {
+    background: var(--dark-space);
+    color: var(--star-white);
+}
+
+/* ===== PROGRAMS GRID ===== */
+.admin-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.programs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.program-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.program-card:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+}
+
+.program-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.program-avatar {
+    flex-shrink: 0;
+}
+
+.program-info {
+    flex: 1;
+}
+
+.program-name {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.program-university,
+.program-degree {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.program-university i,
+.program-degree i {
+    color: var(--cosmic-purple);
+}
+
+.program-description {
+    margin-bottom: 1.5rem;
+}
+
+.program-description p {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.program-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+.detail-item i {
+    color: var(--cosmic-purple);
+}
+
+.program-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.program-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    border: none;
+    cursor: pointer;
+}
+
+.program-btn.primary {
+    background: var(--cosmic-gradient);
+    color: white;
+}
+
+.program-btn.primary:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.program-btn.danger {
+    background: rgba(220, 38, 127, 0.2);
+    border: 1px solid rgba(220, 38, 127, 0.3);
+    color: #ff6b9d;
+}
+
+.program-btn.danger:hover {
+    background: rgba(220, 38, 127, 0.3);
+    border-color: #ff6b9d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 38, 127, 0.3);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.cosmic-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 1rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.5rem;
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover:not(.active):not(.disabled) {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.page-link.active {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+    color: white;
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    margin-bottom: 2rem;
+}
+
+.empty-state h3 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.empty-state p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* ===== COSMIC BUTTONS ===== */
+.cosmic-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.3);
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.5);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.cosmic-btn-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: white;
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.cosmic-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===== MODAL STYLES ===== */
+.cosmic-modal {
+    display: none;
     position: fixed;
-    top: 56px;
-    bottom: 0;
+    z-index: 1000;
     left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-content {
+    background: var(--dark-space);
+    margin: 15% auto;
+    padding: 0;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+}
+
+.modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    color: var(--star-white);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-header h3 i {
+    color: #f87171;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--star-white);
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.modal-body {
+    padding: 1rem 2rem;
+}
+
+.modal-body p {
+    color: rgba(248, 250, 252, 0.8);
+    margin-bottom: 1rem;
+}
+
+.warning-text {
+    color: #f87171;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    padding: 1rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-title {
+        font-size: 2rem;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+    }
+    
+    .filter-input-wrapper,
+    .filter-select-wrapper {
+        min-width: auto;
+    }
+    
+    .programs-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cosmic-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
 }
 </style>
-{% endblock %} 
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize animations
+    initProgramAnimations();
+});
+
+function initProgramAnimations() {
+    const cards = document.querySelectorAll('.program-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const programName = this.getAttribute('data-program-name');
+            const deleteUrl = this.getAttribute('data-delete-url');
+            confirmDelete(programName, deleteUrl);
+        });
+    });
+}
+
+function confirmDelete(programName, deleteUrl) {
+    document.getElementById('deleteProgramName').textContent = programName;
+    document.getElementById('deleteForm').action = deleteUrl;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+{% endblock %}
