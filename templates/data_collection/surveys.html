@@ -1,83 +1,88 @@
 {% extends "base.html" %}
 
+{% block title %}Survey Management - GradeUP{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="h3 mb-4"><i class="fas fa-poll"></i> Survey Management</h1>
-        </div>
-    </div>
-
-    <!-- Survey Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title" id="total-surveys">0</h4>
-                            <p class="card-text">Total Surveys</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-poll fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title" id="active-surveys">0</h4>
-                            <p class="card-text">Active Surveys</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title" id="total-responses">0</h4>
-                            <p class="card-text">Total Responses</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-poll me-2"></i>
+                        Survey Management
+                    </h1>
+                    <p class="dashboard-subtitle">Manage and analyze surveys</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Surveys Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <div class="container-fluid">
+            <!-- Survey Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon surveys">
+                            <i class="fas fa-poll"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4 id="total-surveys">0</h4>
+                            <p>Total Surveys</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4 id="active-surveys">0</h4>
+                            <p>Active Surveys</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon responses">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4 id="total-responses">0</h4>
+                            <p>Total Responses</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surveys Table -->
+            <div class="dashboard-card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5><i class="fas fa-list"></i> Available Surveys</h5>
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-primary btn-sm" onclick="refreshSurveys()">
-                                <i class="fas fa-sync-alt"></i> Refresh
+                        <h3>
+                            <i class="fas fa-list me-2"></i>
+                            Available Surveys
+                        </h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-cosmic-outline" onclick="refreshSurveys()">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Refresh
                             </button>
-                            <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-file-export"></i> Export Data
+                            <a href="{{ url_for('data_collection.export_center') }}" class="btn btn-cosmic">
+                                <i class="fas fa-file-export me-2"></i>
+                                Export Data
                             </a>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover" id="surveys-table">
-                            <thead class="table-dark">
+                <div class="card-content">
+                    <div class="table-container">
+                        <table class="cosmic-table" id="surveys-table">
+                            <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Title</th>
@@ -90,10 +95,10 @@
                             <tbody>
                                 <tr>
                                     <td colspan="6" class="text-center">
-                                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                                            <span class="visually-hidden">Loading...</span>
+                                        <div class="loading-state">
+                                            <div class="cosmic-spinner"></div>
+                                            <p>Loading surveys...</p>
                                         </div>
-                                        Loading surveys...
                                     </td>
                                 </tr>
                             </tbody>
@@ -105,31 +110,281 @@
     </div>
 
     <!-- Survey Details Modal -->
-    <div class="modal fade" id="surveyModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="surveyModalTitle">Survey Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="surveyModalBody">
-                    <!-- Survey details will be loaded here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="viewResponsesBtn">
-                        <i class="fas fa-chart-bar"></i> View Responses
-                    </button>
-                    <button type="button" class="btn btn-success" id="exportSurveyBtn">
-                        <i class="fas fa-download"></i> Export Data
-                    </button>
-                </div>
+    <div class="cosmic-modal" id="surveyModal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="surveyModalTitle">Survey Details</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="surveyModalBody">
+                <!-- Survey details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cosmic-outline" onclick="closeModal()">Close</button>
+                <button class="btn btn-cosmic" id="viewResponsesBtn">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    View Responses
+                </button>
+                <button class="btn btn-cosmic" id="exportSurveyBtn">
+                    <i class="fas fa-download me-2"></i>
+                    Export Data
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* ===== SURVEY MANAGEMENT STYLES ===== */
+.admin-stat-card .stat-icon.active {
+    background: var(--cosmic-gradient);
+}
+
+.admin-stat-card .stat-icon.responses {
+    background: var(--cosmic-gradient);
+}
+
+/* ===== COSMIC TABLE STYLES ===== */
+.table-container {
+    background: rgba(30, 30, 70, 0.5);
+    border-radius: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.cosmic-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--star-white);
+}
+
+.cosmic-table th {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--star-white);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.cosmic-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    transition: all 0.3s ease;
+}
+
+.cosmic-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: scale(1.01);
+}
+
+.cosmic-table .badge {
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.cosmic-table .badge.bg-success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+}
+
+.cosmic-table .badge.bg-primary {
+    background: var(--cosmic-gradient) !important;
+}
+
+.cosmic-table .btn-group .btn {
+    margin: 0 0.125rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: transparent;
+    color: var(--cosmic-purple);
+    transition: all 0.3s ease;
+}
+
+.cosmic-table .btn-group .btn:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    transform: translateY(-2px);
+}
+
+/* ===== LOADING STATE ===== */
+.loading-state {
+    padding: 3rem;
+    text-align: center;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.cosmic-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(139, 92, 246, 0.3);
+    border-top: 3px solid var(--cosmic-purple);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== COSMIC MODAL STYLES ===== */
+.cosmic-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.cosmic-modal.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.modal-container {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 10001;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    color: var(--star-white);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--star-white);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.modal-body {
+    padding: 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+    color: var(--star-white);
+}
+
+.modal-body h4 {
+    color: var(--cosmic-purple);
+    margin-bottom: 1rem;
+}
+
+.modal-body .question-list {
+    background: rgba(30, 30, 70, 0.5);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.modal-body .question-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.modal-body .question-item:last-child {
+    border-bottom: none;
+}
+
+.modal-footer {
+    padding: 1rem 2rem 2rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.3);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    0% { transform: translateY(-50px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .modal-container {
+        margin: 1rem;
+        max-height: 90vh;
+    }
+    
+    .modal-header, .modal-body, .modal-footer {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .cosmic-table {
+        font-size: 0.9rem;
+    }
+    
+    .cosmic-table th, .cosmic-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
 <script>
+// Load initial data
 document.addEventListener('DOMContentLoaded', function() {
     loadSurveys();
 });
@@ -143,7 +398,7 @@ function loadSurveys() {
         })
         .catch(error => {
             console.error('Error loading surveys:', error);
-            showError('Failed to load surveys');
+            showToast('Failed to load surveys', 'error');
         });
 }
 
@@ -153,8 +408,6 @@ function updateStatistics(data) {
     
     document.getElementById('total-surveys').textContent = totalSurveys;
     document.getElementById('active-surveys').textContent = activeSurveys;
-    
-    // TODO: Get actual response count from API
     document.getElementById('total-responses').textContent = '-';
 }
 
@@ -165,9 +418,11 @@ function displaySurveys(surveys) {
     if (surveys.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center text-muted py-4">
-                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
-                    No surveys found
+                <td colspan="6" class="text-center">
+                    <div class="loading-state">
+                        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--cosmic-purple); opacity: 0.5; margin-bottom: 1rem;"></i>
+                        <p>No surveys found</p>
+                    </div>
                 </td>
             </tr>
         `;
@@ -180,17 +435,17 @@ function displaySurveys(surveys) {
             <tr>
                 <td><strong>#${survey.id}</strong></td>
                 <td>
-                    <div class="fw-bold">${survey.title}</div>
+                    <div style="font-weight: 600; color: var(--star-white);">${survey.title}</div>
                 </td>
                 <td>
-                    <small class="text-muted">
+                    <div style="color: rgba(248, 250, 252, 0.7); font-size: 0.9rem;">
                         ${survey.description ? 
                           (survey.description.length > 80 ? 
                             survey.description.substring(0, 80) + '...' : 
                             survey.description) : 
                           'No description'
                         }
-                    </small>
+                    </div>
                 </td>
                 <td>
                     <span class="badge bg-success">Active</span>
@@ -199,14 +454,14 @@ function displaySurveys(surveys) {
                     <span class="badge bg-primary">${questionCount} questions</span>
                 </td>
                 <td>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button class="btn btn-outline-info" onclick="viewSurvey(${survey.id}, '${survey.title}')" title="View Details">
+                    <div class="btn-group" role="group">
+                        <button class="btn" onclick="viewSurvey(${survey.id}, '${survey.title}')" title="View Details">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-outline-primary" onclick="viewResponses(${survey.id})" title="View Responses">
+                        <button class="btn" onclick="viewResponses(${survey.id})" title="View Responses">
                             <i class="fas fa-chart-bar"></i>
                         </button>
-                        <button class="btn btn-outline-success" onclick="exportSurvey(${survey.id})" title="Export Data">
+                        <button class="btn" onclick="exportSurvey(${survey.id})" title="Export Data">
                             <i class="fas fa-download"></i>
                         </button>
                     </div>
@@ -228,34 +483,34 @@ function viewSurvey(surveyId, title) {
         })
         .catch(error => {
             console.error('Error loading survey details:', error);
-            showError('Failed to load survey details');
+            showNotification('Failed to load survey details', 'error');
         });
 }
 
 function showSurveyModal(survey) {
     document.getElementById('surveyModalTitle').textContent = survey.title;
     
-    let questionsHtml = '<div class="alert alert-info">No questions available</div>';
+    let questionsHtml = '<div style="color: rgba(248, 250, 252, 0.7); padding: 1rem; text-align: center;">No questions available</div>';
     if (survey.questions && survey.questions.length > 0) {
-        questionsHtml = '<ol class="list-group list-group-numbered">';
-        survey.questions.forEach(question => {
-            questionsHtml += `<li class="list-group-item">${question.text || question}</li>`;
+        questionsHtml = '<div class="question-list">';
+        survey.questions.forEach((question, index) => {
+            questionsHtml += `<div class="question-item">${index + 1}. ${question.text || question}</div>`;
         });
-        questionsHtml += '</ol>';
+        questionsHtml += '</div>';
     }
     
     document.getElementById('surveyModalBody').innerHTML = `
-        <div class="mb-3">
-            <strong>Description:</strong>
-            <p class="mt-1">${survey.description || 'No description available'}</p>
+        <div style="margin-bottom: 1.5rem;">
+            <h4>Description:</h4>
+            <p style="color: rgba(248, 250, 252, 0.8); margin: 0;">${survey.description || 'No description available'}</p>
         </div>
-        <div class="mb-3">
-            <strong>Questions:</strong>
-            <div class="mt-2">${questionsHtml}</div>
+        <div style="margin-bottom: 1.5rem;">
+            <h4>Questions:</h4>
+            ${questionsHtml}
         </div>
-        <div class="mb-3">
-            <strong>Status:</strong>
-            <span class="badge bg-success ms-2">Active</span>
+        <div>
+            <h4>Status:</h4>
+            <span class="badge bg-success">Active</span>
         </div>
     `;
     
@@ -263,16 +518,21 @@ function showSurveyModal(survey) {
     document.getElementById('viewResponsesBtn').onclick = () => viewResponses(survey.id);
     document.getElementById('exportSurveyBtn').onclick = () => exportSurvey(survey.id);
     
-    new bootstrap.Modal(document.getElementById('surveyModal')).show();
+    document.getElementById('surveyModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('surveyModal').classList.remove('show');
 }
 
 function viewResponses(surveyId) {
+    closeModal();
     window.location.href = `/data/surveys/${surveyId}/responses/view`;
 }
 
 function exportSurvey(surveyId) {
-    // Redirect to export center with survey pre-selected
-    window.location.href = `/data/export?survey=${surveyId}`;
+    closeModal();
+    showNotification('Export feature coming soon!', 'info');
 }
 
 function refreshSurveys() {
@@ -291,27 +551,16 @@ function refreshSurveys() {
         icon.classList.remove('fa-spinner', 'fa-spin');
         icon.classList.add('fa-sync-alt');
         refreshBtn.disabled = false;
+        
+        showNotification('Surveys refreshed successfully!', 'success');
     }, 1000);
 }
 
-function showError(message) {
-    const alert = `
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alert);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        const alertElement = container.querySelector('.alert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }, 5000);
-}
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
 </script>
 {% endblock %} 
