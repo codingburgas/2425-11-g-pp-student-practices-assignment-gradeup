@@ -1,86 +1,192 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - School Recommendation System{% endblock %}
+{% block title %}Student Dashboard - GradeUP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="mb-4">Student Dashboard</h1>
-    
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="list-group">
-                <a href="{{ url_for('main.dashboard') }}" class="list-group-item list-group-item-action active">
-                    Dashboard
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                    Take Survey
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                    My Recommendations
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                    Favorite Schools
-                </a>
-                <a href="{{ url_for('auth.profile') }}" class="list-group-item list-group-item-action">
-                    My Profile
-                </a>
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Student Dashboard
+                    </h1>
+                    <p class="dashboard-subtitle">Welcome back! Here's your cosmic journey overview.</p>
+                </div>
+                <div class="col-auto">
+                    <div class="dashboard-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>Progress: 25%</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="col-md-9">
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <div class="container-fluid">
+            <!-- Main Content -->
             <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h5>Your Recommendations</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="text-center py-4">
-                                <i class="bi bi-search display-4 text-muted mb-3"></i>
-                                <p>You haven't taken our survey yet. Take the survey to get personalized school recommendations.</p>
-                                <a href="#" class="btn btn-primary mt-2">Take Survey</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h5>Favorite Schools</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="text-center py-4">
-                                <i class="bi bi-star display-4 text-muted mb-3"></i>
-                                <p>You haven't saved any schools to your favorites yet.</p>
-                                <a href="#" class="btn btn-primary mt-2">Explore Schools</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5>Popular Schools</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
+                <div class="col-12">
+                    <!-- Quick Actions Row -->
+                    <div class="row mb-4">
                         <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Example University</h5>
-                                    <p class="card-text">A top-ranked university known for its excellent programs in science and technology.</p>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Learn More</a>
+                            <div class="dashboard-card action-card">
+                                <div class="card-icon">
+                                    <i class="fas fa-search cosmic-icon"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Get Recommendations</h3>
+                                    <p>Take our AI-powered survey to discover universities that match your profile and goals.</p>
+                                    <a href="{{ url_for('main.start_survey') }}" class="btn btn-cosmic">
+                                        Take Survey
+                                        <i class="fas fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                                <div class="card-glow"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="dashboard-card action-card">
+                                <div class="card-icon">
+                                    <i class="fas fa-star cosmic-icon"></i>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Explore Schools</h3>
+                                    <p>Browse our comprehensive database of universities and find your perfect match.</p>
+                                    <a href="{{ url_for('main.universities') }}" class="btn btn-cosmic-outline">
+                                        Explore Schools
+                                        <i class="fas fa-external-link-alt ms-2"></i>
+                                    </a>
+                                </div>
+                                <div class="card-glow"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>0</h4>
+                                    <p>Recommendations</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Sample College</h5>
-                                    <p class="card-text">A liberal arts college with strong programs in humanities and social sciences.</p>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Learn More</a>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>0</h4>
+                                    <p>Favorites</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>15</h4>
+                                    <p>Minutes Left</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>25%</h4>
+                                    <p>Complete</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Universities -->
+                    <div class="dashboard-card featured-section">
+                        <div class="card-header">
+                            <h3>
+                                <i class="fas fa-fire me-2"></i>
+                                Featured Universities
+                            </h3>
+                            <p>Popular choices among students like you</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="university-card">
+                                        <div class="university-header">
+                                            <div class="university-logo">
+                                                <i class="fas fa-graduation-cap"></i>
+                                            </div>
+                                            <div class="university-info">
+                                                <h5>American University in Bulgaria</h5>
+                                                <span class="university-type">Private University</span>
+                                            </div>
+                                        </div>
+                                        <div class="university-stats">
+                                            <div class="stat">
+                                                <i class="fas fa-users"></i>
+                                                <span>2,500 Students</span>
+                                            </div>
+                                            <div class="stat">
+                                                <i class="fas fa-globe"></i>
+                                                <span>50+ Countries</span>
+                                            </div>
+                                        </div>
+                                        <div class="university-actions">
+                                            <a href="#" class="btn btn-sm btn-cosmic-outline">Learn More</a>
+                                            <button class="btn btn-sm btn-favorite" onclick="toggleFavorite(this)">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="university-card">
+                                        <div class="university-header">
+                                            <div class="university-logo">
+                                                <i class="fas fa-graduation-cap"></i>
+                                            </div>
+                                            <div class="university-info">
+                                                <h5>Technical University of Sofia</h5>
+                                                <span class="university-type">Public University</span>
+                                            </div>
+                                        </div>
+                                        <div class="university-stats">
+                                            <div class="stat">
+                                                <i class="fas fa-users"></i>
+                                                <span>12,000 Students</span>
+                                            </div>
+                                            <div class="stat">
+                                                <i class="fas fa-cogs"></i>
+                                                <span>Engineering Focus</span>
+                                            </div>
+                                        </div>
+                                        <div class="university-actions">
+                                            <a href="#" class="btn btn-sm btn-cosmic-outline">Learn More</a>
+                                            <button class="btn btn-sm btn-favorite" onclick="toggleFavorite(this)">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -90,4 +196,427 @@
         </div>
     </div>
 </div>
+
+<style>
+/* ===== DASHBOARD STYLES ===== */
+.dashboard-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+}
+
+.dashboard-header {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--star-white);
+    background: linear-gradient(135deg, var(--star-white) 0%, var(--cosmic-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.dashboard-subtitle {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.dashboard-stats .stat-badge {
+    background: var(--cosmic-gradient);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* ===== DASHBOARD CARDS ===== */
+.dashboard-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.2);
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2.5rem;
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+}
+
+.card-content h3 {
+    color: var(--star-white);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.card-content p {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    animation: rotate 20s linear infinite;
+    z-index: -1;
+}
+
+/* ===== BUTTONS ===== */
+.btn-cosmic {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.btn-cosmic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.btn-cosmic-outline {
+    background: transparent;
+    color: var(--cosmic-purple);
+    border: 2px solid var(--cosmic-purple);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-cosmic-outline:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--cosmic-purple);
+    transform: translateY(-2px);
+}
+
+/* ===== STATISTICS CARDS ===== */
+.stat-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.2);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+.stat-info h4 {
+    color: var(--star-white);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-info p {
+    color: rgba(248, 250, 252, 0.8);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ===== FEATURED SECTION ===== */
+.featured-section .card-header {
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.featured-section .card-header h3 {
+    color: var(--star-white);
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.featured-section .card-header p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+}
+
+/* ===== UNIVERSITY CARDS ===== */
+.university-card {
+    background: rgba(30, 30, 70, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.university-card:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.2);
+}
+
+.university-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.university-logo {
+    width: 50px;
+    height: 50px;
+    background: var(--cosmic-gradient);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.university-info h5 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+}
+
+.university-type {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.85rem;
+}
+
+.university-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.university-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.9rem;
+}
+
+.university-stats .stat i {
+    color: var(--cosmic-purple);
+}
+
+.university-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-favorite {
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--cosmic-purple);
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-favorite:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+}
+
+.btn-favorite.favorited {
+    background: var(--cosmic-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .university-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .university-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Dashboard JavaScript functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize dashboard animations
+    initDashboardAnimations();
+    
+    // Initialize navigation
+    initDashboardNavigation();
+});
+
+// Dashboard Animations
+function initDashboardAnimations() {
+    const cards = document.querySelectorAll('.dashboard-card, .stat-card, .university-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+}
+
+// Navigation functionality
+function initDashboardNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            
+            // Check if it's a hash link or placeholder
+            if (href === '#' || href.includes('#')) {
+                e.preventDefault();
+                
+                // Show coming soon message for placeholder links
+                if (href === '#') {
+                    showComingSoonMessage();
+                }
+            }
+        });
+    });
+}
+
+// Toggle favorite functionality
+function toggleFavorite(button) {
+    const icon = button.querySelector('i');
+    
+    if (button.classList.contains('favorited')) {
+        button.classList.remove('favorited');
+        icon.className = 'far fa-heart';
+        showNotification('Removed from favorites', 'info');
+    } else {
+        button.classList.add('favorited');
+        icon.className = 'fas fa-heart';
+        showNotification('Added to favorites', 'success');
+    }
+}
+
+// Coming soon message
+function showComingSoonMessage() {
+    showNotification('Feature coming soon!', 'info');
+}
+</script>
 {% endblock %} 
