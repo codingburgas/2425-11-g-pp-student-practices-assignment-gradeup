@@ -1,0 +1,727 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - GradeUP{% endblock %}
+
+{% block content %}
+<div class="cosmic-universities-container">
+    <!-- Universities Hero Section -->
+    <div class="universities-hero">
+        <div class="container-fluid">
+            <div class="universities-header">
+                <div class="universities-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="universities-glow"></div>
+                </div>
+                <div class="universities-info">
+                    <h1 class="universities-title">Universities</h1>
+                    <p class="universities-subtitle">Explore universities from around the world and discover your perfect academic destination.</p>
+                    <div class="universities-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-graduation-cap"></i>
+                            {{ universities.total }} Universities Available
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="search-section">
+        <div class="container-fluid">
+            <div class="search-container">
+                <form method="GET" class="search-form">
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ search }}"
+                                   placeholder="Search universities by name or location..."
+                                   class="cosmic-search-input">
+                        </div>
+                        <button type="submit" class="cosmic-btn cosmic-btn-primary">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                        {% if search %}
+                        <a href="{{ url_for('main.universities') }}" class="cosmic-btn cosmic-btn-ghost">
+                            <i class="fas fa-times"></i>
+                            Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Universities Grid -->
+    <div class="universities-content">
+        <div class="container-fluid">
+            {% if universities.items %}
+            <div class="universities-grid">
+                {% for university in universities.items %}
+                <div class="university-card">
+                    <div class="university-header">
+                        <div class="university-avatar">
+                            <div class="professional-emoji">
+                                <i class="fas fa-university"></i>
+                            </div>
+                        </div>
+                        <div class="university-info">
+                            <h3 class="university-name">{{ university.name }}</h3>
+                            {% if university.location %}
+                            <div class="university-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ university.location }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if university.description %}
+                    <div class="university-description">
+                        <p>{{ university.description[:150] }}{% if university.description|length > 150 %}...{% endif %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="university-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>{{ university.programs.count() }} Programs</span>
+                        </div>
+                        {% if university.website %}
+                        <div class="stat-item">
+                            <i class="fas fa-globe"></i>
+                            <span>Website Available</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="university-actions">
+                        <a href="{{ url_for('main.specialties', university_id=university.id) }}" class="university-btn primary">
+                            <i class="fas fa-eye"></i>
+                            View Programs
+                        </a>
+                        {% if university.website %}
+                        <a href="{{ university.website }}" target="_blank" class="university-btn secondary">
+                            <i class="fas fa-external-link-alt"></i>
+                            Website
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if universities.pages > 1 %}
+            <div class="pagination-container">
+                <nav class="cosmic-pagination">
+                    {% if universities.has_prev %}
+                    <a href="{{ url_for('main.universities', page=universities.prev_num, search=search) }}" class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    <div class="page-numbers">
+                        {% for page_num in universities.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != universities.page %}
+                                <a href="{{ url_for('main.universities', page=page_num, search=search) }}" class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                <span class="page-link active">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="page-link disabled">…</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if universities.has_next %}
+                    <a href="{{ url_for('main.universities', page=universities.next_num, search=search) }}" class="page-link">
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <div class="professional-emoji size-lg">
+                        {% if search %}
+                        <i class="fas fa-search"></i>
+                        {% else %}
+                        <i class="fas fa-university"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <h3>{% if search %}No Universities Found{% else %}No Universities Available{% endif %}</h3>
+                <p>
+                    {% if search %}
+                    No universities match your search criteria. Try different keywords or clear your search.
+                    {% else %}
+                    No universities have been added to the system yet.
+                    {% endif %}
+                </p>
+                {% if search %}
+                <a href="{{ url_for('main.universities') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-times"></i>
+                    Clear Search
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+</div>
+
+<style>
+/* ===== COSMIC UNIVERSITIES STYLES ===== */
+.cosmic-universities-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== UNIVERSITIES HERO ===== */
+.universities-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.universities-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.universities-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.universities-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.universities-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.universities-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.universities-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.universities-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+/* ===== SEARCH SECTION ===== */
+.search-section {
+    padding: 2rem 0;
+    position: relative;
+    z-index: 5;
+}
+
+.search-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-form {
+    width: 100%;
+}
+
+.search-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 1;
+}
+
+.cosmic-search-input {
+    width: 100%;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem 1rem 3rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-search-input:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(30, 30, 70, 0.7);
+}
+
+.cosmic-search-input::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+/* ===== UNIVERSITIES GRID ===== */
+.universities-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.universities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.university-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    animation: cardSlideIn 0.8s ease-out;
+}
+
+.university-card:hover {
+    border-color: var(--cosmic-purple);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+}
+
+.university-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.university-avatar {
+    flex-shrink: 0;
+}
+
+.university-info {
+    flex: 1;
+}
+
+.university-name {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.university-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+.university-location i {
+    color: var(--cosmic-purple);
+}
+
+.university-description {
+    margin-bottom: 1.5rem;
+}
+
+.university-description p {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.university-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+.stat-item i {
+    color: var(--cosmic-purple);
+}
+
+.university-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.university-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.university-btn.primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+}
+
+.university-btn.primary:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.university-btn.secondary {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+}
+
+.university-btn.secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.cosmic-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem 1rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.5rem;
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover:not(.active):not(.disabled) {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.page-link.active {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+    color: white;
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    margin-bottom: 2rem;
+}
+
+.empty-state h3 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.empty-state p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* ===== COSMIC BUTTONS ===== */
+.cosmic-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.3);
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(248, 250, 252, 0.1);
+    border-color: rgba(248, 250, 252, 0.5);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .universities-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .universities-title {
+        font-size: 2rem;
+    }
+    
+    .search-group {
+        flex-direction: column;
+    }
+    
+    .search-input-wrapper {
+        min-width: auto;
+    }
+    
+    .universities-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cosmic-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize animations
+    initUniversityAnimations();
+});
+
+function initUniversityAnimations() {
+    const cards = document.querySelectorAll('.university-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+}
+</script>
+{% endblock %} 
