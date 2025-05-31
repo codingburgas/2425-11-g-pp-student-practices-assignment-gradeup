@@ -1,56 +1,539 @@
 {% extends "base.html" %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Join the Cosmos - GradeUP{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center">Register</h2>
-            </div>
-            <div class="card-body">
-                <form method="post" novalidate>
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
-                        {% for error in form.username.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="Enter your email") }}
-                        {% for error in form.email.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Create a password (min. 8 characters)") }}
-                        {% for error in form.password.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password2.label(class="form-label") }}
-                        {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else ""), placeholder="Confirm your password") }}
-                        {% for error in form.password2.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer text-center">
-                <div class="small">
-                    Already have an account? <a href="{{ url_for('auth.login') }}">Sign in here</a>
+<div class="auth-page">
+    <!-- Spider Web Particles Background -->
+    <div class="web-particles-container" id="webParticles"></div>
+    
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-rocket"></i>
                 </div>
+                <h2>Join the Cosmos</h2>
+                <p>Start your educational journey with us</p>
+            </div>
+            
+            {% if error %}
+            <div class="cosmic-alert error">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" class="auth-form">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form.username(class="auth-input", placeholder="Username") }}
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="field-errors">
+                            {% for error in form.username.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-envelope input-icon"></i>
+                        {{ form.email(class="auth-input", placeholder="Email address") }}
+                    </div>
+                    {% if form.email.errors %}
+                        <div class="field-errors">
+                            {% for error in form.email.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form.password(class="auth-input", placeholder="Password") }}
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="field-errors">
+                            {% for error in form.password.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form.password2(class="auth-input", placeholder="Confirm password") }}
+                        <button type="button" class="password-toggle" onclick="togglePassword('password2')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="field-errors">
+                            {% for error in form.password2.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-cosmic-primary">
+                    Create Account
+                    <i class="fas fa-rocket ms-2"></i>
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p class="auth-switch">
+                    Already have an account? 
+                    <a href="{{ url_for('auth.login') }}" class="auth-link">Sign in here</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* ===== AUTH PAGE STYLES ===== */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 2rem 1rem;
+}
+
+/* ===== SPIDER WEB PARTICLES ===== */
+.web-particles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.web-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: webFloat 15s linear infinite;
+}
+
+.web-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+    animation: webPulse 3s ease-in-out infinite;
+}
+
+@keyframes webFloat {
+    0% { transform: translate(0, 100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(0, -100px) rotate(360deg); opacity: 0; }
+}
+
+@keyframes webPulse {
+    0%, 100% { opacity: 0.2; transform: scaleX(0.8); }
+    50% { opacity: 0.6; transform: scaleX(1.2); }
+}
+
+/* ===== AUTH CONTAINER ===== */
+.auth-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), transparent);
+}
+
+.auth-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    animation: rotate 20s linear infinite;
+    z-index: -1;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== AUTH HEADER ===== */
+.auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.auth-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 
+        0 10px 30px rgba(139, 92, 246, 0.4),
+        0 0 0 4px rgba(139, 92, 246, 0.1);
+    animation: iconPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes iconPulse {
+    0% { transform: scale(1); box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4), 0 0 0 4px rgba(139, 92, 246, 0.1); }
+    100% { transform: scale(1.05); box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6), 0 0 0 8px rgba(139, 92, 246, 0.2); }
+}
+
+.auth-header h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #F8FAFC 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.auth-header p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ===== FORM STYLES ===== */
+.auth-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    color: #8B5CF6;
+    z-index: 10;
+    font-size: 1rem;
+}
+
+.auth-input {
+    width: 100%;
+    background: rgba(15, 15, 35, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 1rem 1rem 1rem 3rem;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    background: rgba(15, 15, 35, 0.95);
+}
+
+.auth-input::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: rgba(248, 250, 252, 0.6);
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #8B5CF6;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btn-cosmic-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-cosmic-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+}
+
+/* ===== AUTH FOOTER ===== */
+.auth-footer {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.auth-switch {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.auth-link {
+    color: #8B5CF6;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+    color: #06B6D4;
+}
+
+.field-errors {
+    margin-top: 0.5rem;
+}
+
+.error-text {
+    color: #ff6b6b;
+    font-size: 0.875rem;
+    display: block;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .auth-page {
+        padding: 1rem;
+    }
+    
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .auth-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .auth-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+}
+
+/* ===== COSMIC ALERTS ===== */
+.cosmic-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    animation: slideInDown 0.3s ease;
+}
+
+.cosmic-alert.error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+}
+
+.cosmic-alert.success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #6EE7B7;
+}
+
+.cosmic-alert.info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #93C5FD;
+}
+
+@keyframes slideInDown {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Password toggle functionality
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId) || document.querySelector(`input[name="${fieldId}"]`);
+    const toggleBtn = passwordField.parentNode.querySelector('.password-toggle i');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleBtn.classList.remove('fa-eye');
+        toggleBtn.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        toggleBtn.classList.remove('fa-eye-slash');
+        toggleBtn.classList.add('fa-eye');
+    }
+}
+
+// Initialize spider web particles and form validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize spider web particles
+    initWebParticles();
+
+    // Form validation
+    const authForm = document.querySelector('.auth-form');
+    if (authForm) {
+        authForm.addEventListener('submit', function(e) {
+            const inputs = this.querySelectorAll('.auth-input');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.style.borderColor = '#ff6b6b';
+                    isValid = false;
+                } else {
+                    input.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                }
+            });
+        });
+    }
+});
+
+// Spider Web Particles System
+function initWebParticles() {
+    const container = document.getElementById('webParticles');
+    if (!container) return;
+    
+    // Create floating particles
+    for (let i = 0; i < 15; i++) {
+        createWebParticle(container);
+    }
+    
+    // Create connecting lines
+    for (let i = 0; i < 8; i++) {
+        createWebLine(container);
+    }
+}
+
+function createWebParticle(container) {
+    const particle = document.createElement('div');
+    particle.className = 'web-particle';
+    
+    // Random horizontal position
+    particle.style.left = Math.random() * 100 + '%';
+    
+    // Random animation delay
+    particle.style.animationDelay = Math.random() * 15 + 's';
+    
+    // Random animation duration
+    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    
+    // Random opacity
+    particle.style.opacity = Math.random() * 0.5 + 0.3;
+    
+    container.appendChild(particle);
+    
+    // Recreate particle after animation
+    setTimeout(() => {
+        if (particle.parentNode) {
+            particle.parentNode.removeChild(particle);
+            createWebParticle(container);
+        }
+    }, (Math.random() * 10 + 10) * 1000);
+}
+
+function createWebLine(container) {
+    const line = document.createElement('div');
+    line.className = 'web-line';
+    
+    // Random position and size
+    line.style.left = Math.random() * 100 + '%';
+    line.style.top = Math.random() * 100 + '%';
+    line.style.width = (Math.random() * 200 + 50) + 'px';
+    line.style.transform = `rotate(${Math.random() * 360}deg)`;
+    
+    // Random animation delay
+    line.style.animationDelay = Math.random() * 3 + 's';
+    
+    container.appendChild(line);
+    
+    // Recreate line after a random interval
+    setTimeout(() => {
+        if (line.parentNode) {
+            line.parentNode.removeChild(line);
+            createWebLine(container);
+        }
+    }, (Math.random() * 8 + 5) * 1000);
+}
+</script>
 {% endblock %} 

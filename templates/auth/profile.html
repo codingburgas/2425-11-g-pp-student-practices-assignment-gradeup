@@ -1,87 +1,503 @@
 {% extends "base.html" %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Your Cosmic Profile - GradeUP{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-center">Your Profile</h2>
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="profile-page">
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header animate-fade-in">
+            <div class="profile-avatar">
+                {% if current_user.profile_picture %}
+                    <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_picture) }}" 
+                         alt="Profile Picture" 
+                         class="avatar-image">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                {% endif %}
+                <div class="avatar-ring"></div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-4">
-                        <div class="profile-image-container mb-3">
-                            {% if current_user.profile_picture %}
-                                <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_picture) }}" 
-                                     alt="Profile Picture" 
-                                     class="rounded-circle" 
-                                     style="width: 150px; height: 150px; object-fit: cover;">
-                            {% else %}
-                                <i class="bi bi-person-circle display-1 text-primary"></i>
-                            {% endif %}
-                        </div>
-                        <div>
-                            <h4>{{ current_user.username }}</h4>
-                            <p class="text-muted">{{ 'Admin' if current_user.is_admin else 'Student' }}</p>
-                            <p class="small text-muted">Joined: {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <form method="post" enctype="multipart/form-data" novalidate>
-                            {{ form.hidden_tag() }}
-                            <div class="mb-3">
-                                {{ form.username.label(class="form-label") }}
-                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
-                                {% for error in form.username.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.email.label(class="form-label") }}
-                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
-                                {% for error in form.email.errors %}
-                                    <div class="invalid-feedback">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.bio.label(class="form-label") }}
-                                {{ form.bio(class="form-control", rows=4) }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.location.label(class="form-label") }}
-                                {{ form.location(class="form-control") }}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.picture.label(class="form-label") }}
-                                {{ form.picture(class="form-control") }}
-                                <small class="form-text text-muted">Allowed formats: jpg, jpeg, png</small>
-                                {% for error in form.picture.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <div class="d-grid gap-2">
-                                {{ form.submit(class="btn btn-primary") }}
-                            </div>
-                        </form>
-                    </div>
+            <div class="profile-info">
+                <h1 class="profile-name">{{ current_user.username }}</h1>
+                <div class="profile-role">
+                    <i class="fas fa-{{ 'crown' if current_user.is_admin else 'graduation-cap' }} me-2"></i>
+                    {{ 'Admin' if current_user.is_admin else 'Student' }}
+                </div>
+                <div class="profile-meta">
+                    <span class="joined-date">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Joined {{ current_user.created_at.strftime('%B %d, %Y') }}
+                    </span>
                 </div>
             </div>
-            <div class="card-footer">
-                <div class="row">
-                    <div class="col-md-4">
-                        <a href="{{ url_for('auth.reset_password_request') }}" class="btn btn-outline-secondary">Change Password</a>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <div class="row">
+                <!-- Profile Form -->
+                <div class="col-lg-8 mb-4">
+                    <div class="cosmic-card animate-slide-up" data-delay="200">
+                        <div class="card-header">
+                            <h3><i class="fas fa-user-edit me-2"></i>Edit Profile</h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data" novalidate class="cosmic-form">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        {{ form.username.label(class="form-label") }}
+                                        <div class="input-container">
+                                            <i class="fas fa-user input-icon"></i>
+                                            {{ form.username(class="cosmic-input" + (" error" if form.username.errors else "")) }}
+                                        </div>
+                                        {% for error in form.username.errors %}
+                                            <div class="field-error">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form.email.label(class="form-label") }}
+                                        <div class="input-container">
+                                            <i class="fas fa-envelope input-icon"></i>
+                                            {{ form.email(class="cosmic-input" + (" error" if form.email.errors else "")) }}
+                                        </div>
+                                        {% for error in form.email.errors %}
+                                            <div class="field-error">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.bio.label(class="form-label") }}
+                                    <div class="input-container">
+                                        <i class="fas fa-pen input-icon"></i>
+                                        {{ form.bio(class="cosmic-textarea", rows=4, placeholder="Tell us about yourself...") }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.location.label(class="form-label") }}
+                                    <div class="input-container">
+                                        <i class="fas fa-map-marker-alt input-icon"></i>
+                                        {{ form.location(class="cosmic-input", placeholder="Your location") }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.picture.label(class="form-label") }}
+                                    <div class="file-upload-container">
+                                        <div class="file-upload-area">
+                                            <i class="fas fa-camera"></i>
+                                            <span>Choose photo or drag and drop</span>
+                                            {{ form.picture(class="file-input") }}
+                                        </div>
+                                        <small class="file-help">Allowed formats: jpg, jpeg, png</small>
+                                        {% for error in form.picture.errors %}
+                                            <div class="field-error">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    {{ form.submit(class="btn-cosmic") }}
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="col-md-4 text-center">
-                        <a href="{{ url_for('auth.preferences') }}" class="btn btn-outline-info">Manage Preferences</a>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
+                </div>
+
+                <!-- Profile Actions -->
+                <div class="col-lg-4 mb-4">
+                    <div class="cosmic-card animate-slide-up" data-delay="400">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cog me-2"></i>Account Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="action-buttons">
+                                <a href="{{ url_for('auth.change_password') }}" class="action-btn">
+                                    <i class="fas fa-key"></i>
+                                    <span>Change Password</span>
+                                </a>
+                                <a href="{{ url_for('auth.preferences') }}" class="action-btn">
+                                    <i class="fas fa-sliders-h"></i>
+                                    <span>Manage Preferences</span>
+                                </a>
+                                <a href="{{ url_for('main.dashboard') }}" class="action-btn primary">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Back to Dashboard</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* ===== PROFILE PAGE STYLES ===== */
+.profile-page {
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ===== PROFILE HEADER ===== */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: rgba(15, 15, 35, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.profile-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.avatar-image,
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--cosmic-purple);
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+}
+
+.avatar-placeholder {
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+}
+
+.avatar-ring {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 140px;
+    height: 140px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 50%;
+    animation: rotate 10s linear infinite;
+}
+
+.profile-info h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.profile-role {
+    color: var(--cosmic-purple);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.profile-meta {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.95rem;
+}
+
+/* ===== COSMIC CARD ===== */
+.cosmic-card {
+    background: rgba(15, 15, 35, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.cosmic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    border-color: var(--cosmic-purple);
+}
+
+.cosmic-card .card-header {
+    background: rgba(139, 92, 246, 0.1);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 1.5rem 2rem;
+}
+
+.cosmic-card .card-header h3 {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cosmic-card .card-body {
+    padding: 2rem;
+}
+
+/* ===== COSMIC FORM ===== */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.input-container {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 2;
+}
+
+.cosmic-input,
+.cosmic-textarea {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.cosmic-input:focus,
+.cosmic-textarea:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    background: rgba(30, 30, 70, 0.7);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.cosmic-input::placeholder,
+.cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.cosmic-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.field-error {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* ===== FILE UPLOAD ===== */
+.file-upload-container {
+    margin-bottom: 1rem;
+}
+
+.file-upload-area {
+    position: relative;
+    border: 2px dashed rgba(139, 92, 246, 0.5);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    background: rgba(30, 30, 70, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: var(--cosmic-purple);
+    background: rgba(30, 30, 70, 0.5);
+}
+
+.file-upload-area i {
+    font-size: 2rem;
+    color: var(--cosmic-purple);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.file-upload-area span {
+    color: var(--star-white);
+    font-weight: 500;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-help {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.btn-cosmic {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.btn-cosmic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.action-btn:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    transform: translateX(5px);
+}
+
+.action-btn.primary {
+    background: var(--cosmic-gradient);
+    border-color: transparent;
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-2px) translateX(0);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.action-btn i {
+    font-size: 1.2rem;
+    color: var(--cosmic-purple);
+}
+
+.action-btn.primary i {
+    color: white;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .profile-info h1 {
+        font-size: 2rem;
+    }
+    
+    .cosmic-card .card-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-container {
+        padding: 0 0.5rem;
+    }
+    
+    .profile-header {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .avatar-image,
+    .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .avatar-ring {
+        width: 120px;
+        height: 120px;
+        top: -10px;
+        left: -10px;
+    }
+}
+</style>
 {% endblock %} 

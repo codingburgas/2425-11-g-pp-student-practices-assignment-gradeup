@@ -1,70 +1,544 @@
 {% extends "base.html" %}
 
-{% block title %}Preferences{% endblock %}
+{% block title %}Manage Preferences - GradeUP{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="preferences-page">
+    <div class="preferences-container">
+        <!-- Header -->
+        <div class="page-header animate-fade-in">
+            <div class="header-icon">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+            <h1 class="page-title">Manage Preferences</h1>
+            <p class="page-subtitle">Customize your university recommendations based on your preferences</p>
+        </div>
+
+        <!-- Preferences Form -->
+        <div class="cosmic-card animate-slide-up" data-delay="200">
             <div class="card-header">
-                <h2 class="text-center">Your Preferences</h2>
+                <h3><i class="fas fa-cog me-2"></i>Your Academic Preferences</h3>
             </div>
             <div class="card-body">
-                <form method="post" novalidate>
+                <form method="post" novalidate class="cosmic-form">
                     {{ form.hidden_tag() }}
                     
-                    <div class="mb-3">
-                        {{ form.preferred_degree_types.label(class="form-label") }}
-                        {{ form.preferred_degree_types(class="form-select", size=5, multiple=true) }}
-                        <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple options</small>
-                        {% for error in form.preferred_degree_types.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Degree Types -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h4>Preferred Degree Types</h4>
+                        </div>
+                        <div class="form-group">
+                            {{ form.preferred_degree_types.label(class="form-label visually-hidden") }}
+                            <div class="degree-types-grid">
+                                {% for value, label in form.preferred_degree_types.choices %}
+                                    <div class="degree-type-card">
+                                        <input type="checkbox" 
+                                               id="degree_{{ value }}" 
+                                               name="preferred_degree_types" 
+                                               value="{{ value }}"
+                                               class="degree-checkbox"
+                                               {% if value in (form.preferred_degree_types.data or []) %}checked{% endif %}>
+                                        <label for="degree_{{ value }}" class="degree-label">
+                                            <div class="degree-icon">
+                                                {% if value == 'bachelors' %}
+                                                    <i class="fas fa-user-graduate"></i>
+                                                {% elif value == 'masters' %}
+                                                    <i class="fas fa-medal"></i>
+                                                {% elif value == 'phd' %}
+                                                    <i class="fas fa-crown"></i>
+                                                {% elif value == 'associate' %}
+                                                    <i class="fas fa-certificate"></i>
+                                                {% else %}
+                                                    <i class="fas fa-award"></i>
+                                                {% endif %}
+                                            </div>
+                                            <span>{{ label }}</span>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <small class="form-help">Select the degree types you're interested in pursuing</small>
+                            {% for error in form.preferred_degree_types.errors %}
+                                <div class="field-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        {{ form.preferred_locations.label(class="form-label") }}
-                        {{ form.preferred_locations(class="form-control", rows=3) }}
-                        <small class="form-text text-muted">{{ form.preferred_locations.description }}</small>
-                        {% for error in form.preferred_locations.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Preferred Locations -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h4>Preferred Locations</h4>
+                        </div>
+                        <div class="form-group">
+                            {{ form.preferred_locations.label(class="form-label") }}
+                            <div class="input-container">
+                                <i class="fas fa-globe input-icon"></i>
+                                {{ form.preferred_locations(class="cosmic-textarea", rows=4, placeholder="Enter preferred locations, one per line\nExample:\nNew York\nCalifornia\nTexas") }}
+                            </div>
+                            <small class="form-help">{{ form.preferred_locations.description }}</small>
+                            {% for error in form.preferred_locations.errors %}
+                                <div class="field-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        {{ form.max_tuition.label(class="form-label") }}
-                        {{ form.max_tuition(class="form-control") }}
-                        <small class="form-text text-muted">{{ form.max_tuition.description }}</small>
-                        {% for error in form.max_tuition.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Maximum Tuition -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-dollar-sign"></i>
+                            <h4>Budget Preferences</h4>
+                        </div>
+                        <div class="form-group">
+                            {{ form.max_tuition.label(class="form-label") }}
+                            <div class="input-container">
+                                <i class="fas fa-money-bill input-icon"></i>
+                                {{ form.max_tuition(class="cosmic-input", placeholder="Enter maximum tuition (e.g., $50,000)") }}
+                            </div>
+                            <small class="form-help">{{ form.max_tuition.description }}</small>
+                            {% for error in form.max_tuition.errors %}
+                                <div class="field-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        {{ form.preferred_programs.label(class="form-label") }}
-                        {{ form.preferred_programs(class="form-control", rows=3) }}
-                        <small class="form-text text-muted">{{ form.preferred_programs.description }}</small>
-                        {% for error in form.preferred_programs.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Preferred Programs -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-book"></i>
+                            <h4>Academic Interests</h4>
+                        </div>
+                        <div class="form-group">
+                            {{ form.preferred_programs.label(class="form-label") }}
+                            <div class="input-container">
+                                <i class="fas fa-list input-icon"></i>
+                                {{ form.preferred_programs(class="cosmic-textarea", rows=4, placeholder="Enter preferred programs or fields of study, one per line\nExample:\nComputer Science\nBusiness Administration\nEngineering") }}
+                            </div>
+                            <small class="form-help">{{ form.preferred_programs.description }}</small>
+                            {% for error in form.preferred_programs.errors %}
+                                <div class="field-error">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="form-actions">
+                        {{ form.submit(class="btn-cosmic") }}
                     </div>
                 </form>
             </div>
-            <div class="card-footer">
-                <div class="row">
-                    <div class="col-md-6">
-                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">Back to Profile</a>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">Back to Dashboard</a>
-                    </div>
-                </div>
-            </div>
+        </div>
+
+        <!-- Navigation Actions -->
+        <div class="navigation-actions animate-slide-up" data-delay="400">
+            <a href="{{ url_for('auth.profile') }}" class="nav-btn">
+                <i class="fas fa-user"></i>
+                <span>Back to Profile</span>
+            </a>
+            <a href="{{ url_for('main.dashboard') }}" class="nav-btn primary">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Back to Dashboard</span>
+            </a>
         </div>
     </div>
 </div>
+
+<style>
+/* ===== PREFERENCES PAGE STYLES ===== */
+.preferences-page {
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.preferences-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin: 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ===== COSMIC CARD ===== */
+.cosmic-card {
+    background: var(--card-gradient);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.card-header h3 {
+    color: var(--star-white);
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* ===== FORM SECTIONS ===== */
+.form-section {
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: rgba(15, 15, 35, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.section-header i {
+    color: var(--cosmic-purple);
+    font-size: 1.2rem;
+}
+
+.section-header h4 {
+    color: var(--star-white);
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* ===== DEGREE TYPES GRID ===== */
+.degree-types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.degree-type-card {
+    position: relative;
+}
+
+.degree-checkbox {
+    display: none;
+}
+
+.degree-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    background: rgba(15, 15, 35, 0.5);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.degree-label:hover {
+    border-color: var(--cosmic-purple);
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.degree-checkbox:checked + .degree-label {
+    border-color: var(--cosmic-purple);
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.degree-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--cosmic-purple);
+    transition: all var(--transition-speed) ease;
+}
+
+.degree-checkbox:checked + .degree-label .degree-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.degree-label span {
+    font-weight: 600;
+    color: var(--star-white);
+    font-size: 0.95rem;
+}
+
+.degree-checkbox:checked + .degree-label span {
+    color: white;
+}
+
+/* ===== FORM INPUTS ===== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.95rem;
+}
+
+.input-container {
+    position: relative;
+}
+
+.cosmic-input, .cosmic-textarea {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background: rgba(15, 15, 35, 0.5);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all var(--transition-speed) ease;
+    backdrop-filter: blur(10px);
+    font-family: inherit;
+    resize: vertical;
+}
+
+.cosmic-textarea {
+    min-height: 120px;
+}
+
+.cosmic-input:focus, .cosmic-textarea:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: rgba(15, 15, 35, 0.7);
+}
+
+.cosmic-input::placeholder, .cosmic-textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    color: var(--cosmic-purple);
+    font-size: 1.1rem;
+    z-index: 2;
+}
+
+.form-help {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.field-error {
+    color: #EF4444;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.field-error::before {
+    content: '⚠';
+    font-size: 1rem;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-cosmic {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.btn-cosmic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===== NAVIGATION ACTIONS ===== */
+.navigation-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(15, 15, 35, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    text-decoration: none;
+    transition: all var(--transition-speed) ease;
+    backdrop-filter: blur(20px);
+}
+
+.nav-btn:hover {
+    border-color: var(--cosmic-purple);
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.nav-btn.primary {
+    background: var(--cosmic-gradient);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.nav-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .preferences-container {
+        padding: 0 0.5rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .degree-types-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .degree-label {
+        padding: 1rem;
+    }
+    
+    .navigation-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .nav-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .degree-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .degree-label span {
+        font-size: 0.9rem;
+    }
+}
+</style>
 {% endblock %} 
