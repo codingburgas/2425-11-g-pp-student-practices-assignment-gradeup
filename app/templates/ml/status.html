@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}ML Model Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">ML Model Status</h1>
+            
+            <!-- Model Information Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Model Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Model Status:</strong> 
+                                {% if model_info.is_trained %}
+                                    <span class="badge badge-success">Trained</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Not Trained</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Model File Exists:</strong> 
+                                {% if model_info.model_exists %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-danger">No</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Model Path:</strong></p>
+                            <code>{{ model_info.model_path }}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Statistics Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Training Data Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.surveys }}</h3>
+                                <p class="mb-0">Survey Responses</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ stats.programs }}</h3>
+                                <p class="mb-0">Available Programs</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="text-info">{{ stats.recommendations }}</h3>
+                                <p class="mb-0">Generated Recommendations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Model Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('ml.train_model') }}" class="btn btn-primary btn-block">
+                                <i class="fas fa-play"></i> Train Model
+                            </a>
+                            <p class="text-muted mt-2">Train the model with current survey data</p>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('ml.test_model') }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-flask"></i> Test Model
+                            </a>
+                            <p class="text-muted mt-2">Test the model with sample data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Architecture Info -->
+            {% if model_info.is_trained %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Model Architecture</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Algorithm:</strong> Custom Multi-Layer Perceptron Neural Network</p>
+                            <p><strong>Implementation:</strong> Built from scratch without ML libraries</p>
+                            <p><strong>Features:</strong></p>
+                            <ul>
+                                <li>Multiple activation functions (ReLU, Sigmoid, Tanh, Softmax)</li>
+                                <li>Configurable hidden layers</li>
+                                <li>Mini-batch gradient descent</li>
+                                <li>Comprehensive evaluation metrics</li>
+                                <li>Model persistence and loading</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="text-center">
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

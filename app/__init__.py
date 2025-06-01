@@ -25,6 +25,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
+    login.login_view = 'auth.login'
+    login.login_message = 'Please log in to access this page.'
     mail.init_app(app)
     bootstrap.init_app(app)
     csrf.init_app(app)
@@ -39,8 +41,12 @@ def create_app(config_class=Config):
     from app.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
     
-    from app.data_collection import data_collection as data_collection_bp
+    from app.data_collection import bp as data_collection_bp
     app.register_blueprint(data_collection_bp, url_prefix='/data')
+
+    # Register ML blueprint from the new modular structure
+    from app.ml.blueprint import ml_bp
+    app.register_blueprint(ml_bp)
 
     # Create a static folder if it doesn't exist
     import os
