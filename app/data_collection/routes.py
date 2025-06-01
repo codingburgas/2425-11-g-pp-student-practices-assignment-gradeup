@@ -6,39 +6,39 @@ Handles the API endpoints for survey data collection.
 
 from flask import request, jsonify, render_template
 from flask_login import current_user
-from . import data_collection
+from . import bp
 from .validators import SurveyValidator, ResponseValidator
 from .models import DataStorageManager, SurveyData
 from .exporters import ExportManager
 
 # HTML Template Routes
-@data_collection.route('/')
-@data_collection.route('/dashboard')
+@bp.route('/')
+@bp.route('/dashboard')
 def dashboard():
     """Data collection dashboard page."""
     return render_template('data_collection/dashboard.html')
 
-@data_collection.route('/validation')
+@bp.route('/validation')
 def data_validation():
     """Data validation testing page."""
     return render_template('data_collection/validation.html')
 
-@data_collection.route('/export')
+@bp.route('/export')
 def export_center():
     """Data export center page."""
     return render_template('data_collection/export.html')
 
-@data_collection.route('/history')
+@bp.route('/history')
 def export_history():
     """Export history page."""
     return render_template('data_collection/history.html')
 
-@data_collection.route('/surveys/list')
+@bp.route('/surveys/list')
 def survey_list():
     """Survey list page."""
     return render_template('data_collection/surveys.html')
 
-@data_collection.route('/surveys', methods=['GET'])
+@bp.route('/surveys', methods=['GET'])
 def get_surveys():
     """Retrieve list of available surveys."""
     from app.models import Survey
@@ -59,7 +59,7 @@ def get_surveys():
         'message': 'Data collection system active'
     })
 
-@data_collection.route('/surveys/submit', methods=['POST'])
+@bp.route('/surveys/submit', methods=['POST'])
 def submit_survey():
     """Submit survey response with data storage."""
     try:
@@ -149,7 +149,7 @@ def submit_survey():
             'valid': False
         }), 500
 
-@data_collection.route('/surveys/validate', methods=['POST'])
+@bp.route('/surveys/validate', methods=['POST'])
 def validate_survey_data():
     """Endpoint to validate survey data without submitting."""
     try:
@@ -185,7 +185,7 @@ def validate_survey_data():
             'valid': False
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/statistics', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/statistics', methods=['GET'])
 def get_survey_statistics(survey_id):
     """Get statistics for a specific survey."""
     try:
@@ -200,7 +200,7 @@ def get_survey_statistics(survey_id):
             'error': f'Error retrieving statistics: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/responses', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/responses', methods=['GET'])
 def get_survey_responses(survey_id):
     """Get responses for a specific survey."""
     try:
@@ -243,12 +243,12 @@ def get_survey_responses(survey_id):
             'error': f'Error retrieving responses: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/responses/view')
+@bp.route('/surveys/<int:survey_id>/responses/view')
 def view_survey_responses(survey_id):
     """HTML page for viewing survey responses."""
     return render_template('data_collection/responses.html', survey_id=survey_id)
 
-@data_collection.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
 def export_survey_data(survey_id, export_format):
     """Export survey data in specified format (csv, json, excel)."""
     try:
@@ -291,7 +291,7 @@ def export_survey_data(survey_id, export_format):
             'error': f'Export error: {str(e)}'
         }), 500
 
-@data_collection.route('/exports/history', methods=['GET'])
+@bp.route('/exports/history', methods=['GET'])
 def get_export_history():
     """Get history of data exports."""
     try:
@@ -309,7 +309,7 @@ def get_export_history():
             'error': f'Error retrieving export history: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/export/preview', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/export/preview', methods=['GET'])
 def preview_export_data(survey_id):
     """Preview data that would be exported for a survey."""
     try:

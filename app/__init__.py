@@ -26,7 +26,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login.init_app(app)
     login.login_view = 'auth.login'
-    login.login_message = _('Please log in to access this page.')
+    login.login_message = 'Please log in to access this page.'
     mail.init_app(app)
     bootstrap.init_app(app)
     csrf.init_app(app)
@@ -43,9 +43,6 @@ def create_app(config_class=Config):
     
     from app.data_collection import bp as data_collection_bp
     app.register_blueprint(data_collection_bp, url_prefix='/data')
-
-    from app.preprocessing import bp as preprocessing_bp
-    app.register_blueprint(preprocessing_bp, url_prefix='/preprocessing')
 
     # Register ML blueprint from the new modular structure
     from app.ml.blueprint import ml_bp

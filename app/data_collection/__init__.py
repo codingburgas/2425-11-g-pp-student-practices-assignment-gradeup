@@ -6,6 +6,6 @@ This module handles survey data collection, validation, storage, and export func
 
 from flask import Blueprint
 
-data_collection = Blueprint('data_collection', __name__)
+bp = Blueprint('data_collection', __name__)
 
 from . import routes, models, validators, exporters 
