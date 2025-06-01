@@ -10,10 +10,10 @@ import os
 
 from .service import MLModelService
 
-# Create blueprint
+
 ml_bp = Blueprint('ml', __name__, url_prefix='/ml')
 
-# Initialize the ML service
+
 ml_service = MLModelService()
 
 
@@ -27,7 +27,7 @@ def initialize_ml_service(app):
         app.logger.error(f"Error initializing ML service: {e}")
 
 
-# Initialize ML service when blueprint is registered
+
 @ml_bp.record_once
 def on_register(state):
     """Called when the blueprint is registered with the app."""
@@ -45,10 +45,10 @@ def train_model():
     if request.method == 'POST':
         force_retrain = request.form.get('force_retrain', False, type=bool)
         
-        # Get all survey responses (would integrate with actual database)
-        survey_responses = []  # Placeholder - would be SurveyResponse.query.all()
         
-        # Train the model
+        survey_responses = []  
+        
+        
         result = ml_service.train_model(survey_responses, force_retrain=force_retrain)
         
         if result['status'].startswith('Training completed'):
@@ -58,8 +58,8 @@ def train_model():
         
         return redirect(url_for('ml.model_status'))
     
-    # GET request - show training form
-    survey_count = 0  # Placeholder - would be SurveyResponse.query.count()
+    
+    survey_count = 0  
     return render_template('ml/train.html', survey_count=survey_count)
 
 
@@ -72,7 +72,7 @@ def predict_programs():
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
-        # Get predictions
+        
         predictions = ml_service.predict_programs(data, top_k=5)
         
         return jsonify({
@@ -89,16 +89,16 @@ def predict_programs():
 @login_required
 def get_recommendations(survey_response_id):
     """Get recommendations for a specific survey response."""
-    # This would integrate with actual database models
-    # For now, return a placeholder response
     
-    # Placeholder survey response data
+    
+    
+    
     survey_response = {
         'id': survey_response_id,
         'user_id': current_user.id
     }
     
-    # Sample survey answers
+    
     answers = {
         'math_interest': 7,
         'science_interest': 8,
@@ -114,10 +114,10 @@ def get_recommendations(survey_response_id):
         'grades_average': 5.5
     }
     
-    # Get predictions
+    
     predictions = ml_service.predict_programs(answers, top_k=10)
     
-    # Format recommendations
+    
     recommendations = []
     for pred in predictions:
         recommendations.append({
@@ -146,13 +146,13 @@ def model_status():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('main.index'))
     
-    # Load model if not loaded
+    
     if not ml_service.is_trained:
         ml_service.load_model()
     
-    # Get statistics (placeholders - would integrate with actual database)
+    
     survey_count = 0
-    program_count = 4  # Based on our synthetic data
+    program_count = 4  
     recommendation_count = 0
     
     model_info = {
@@ -179,7 +179,7 @@ def test_model():
         return redirect(url_for('main.index'))
     
     if request.method == 'POST':
-        # Get form data
+        
         test_data = {
             'math_interest': request.form.get('math_interest', type=int),
             'science_interest': request.form.get('science_interest', type=int),
@@ -195,10 +195,10 @@ def test_model():
             'grades_average': request.form.get('grades_average', type=float)
         }
         
-        # Get predictions
+        
         predictions = ml_service.predict_programs(test_data, top_k=5)
         
-        # Format recommendations
+        
         recommendations = []
         for pred in predictions:
             recommendations.append({

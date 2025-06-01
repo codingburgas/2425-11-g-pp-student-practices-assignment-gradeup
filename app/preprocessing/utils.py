@@ -39,7 +39,7 @@ def load_survey_responses_to_dataframe(survey_id: Optional[int] = None,
     """
     logger.info(f"Loading survey responses (survey_id={survey_id}, user_id={user_id})")
     
-    # Build query
+    
     query = db.session.query(SurveyResponse)
     
     if survey_id:
@@ -48,14 +48,14 @@ def load_survey_responses_to_dataframe(survey_id: Optional[int] = None,
     if user_id:
         query = query.filter(SurveyResponse.user_id == user_id)
     
-    # Execute query
+    
     responses = query.all()
     
     if not responses:
         logger.warning("No survey responses found")
         return pd.DataFrame()
     
-    # Convert to DataFrame
+    
     data_records = []
     
     for response in responses:
@@ -65,26 +65,26 @@ def load_survey_responses_to_dataframe(survey_id: Optional[int] = None,
             'survey_id': response.survey_id
         }
         
-        # Add timestamp info
+        
         if include_timestamps:
             record['created_at'] = response.created_at
         
-        # Add user info
+        
         if include_user_info and response.user:
             record['user_username'] = response.user.username
             record['user_email'] = response.user.email
             record['user_location'] = response.user.location
             record['user_bio'] = response.user.bio
             
-            # Parse user preferences
+            
             user_prefs = response.user.get_preferences()
             for pref_key, pref_value in user_prefs.items():
                 record[f'user_pref_{pref_key}'] = pref_value
         
-        # Parse survey answers
+        
         answers = response.get_answers()
         for question_key, answer_value in answers.items():
-            # Clean question key to be DataFrame column friendly
+            
             clean_key = question_key.replace(' ', '_').replace('?', '').replace('(', '').replace(')', '').lower()
             record[f'q_{clean_key}'] = answer_value
         
@@ -111,31 +111,31 @@ def load_survey_data_with_recommendations(survey_id: Optional[int] = None,
     """
     logger.info(f"Loading survey data with recommendations (survey_id={survey_id})")
     
-    # Start with survey responses
+    
     df = load_survey_responses_to_dataframe(survey_id=survey_id)
     
     if df.empty:
         return df
     
-    # Add recommendation data
+    
     recommendation_records = []
     
     for _, row in df.iterrows():
         response_id = row['response_id']
         
-        # Get recommendations for this response
+        
         from app.models import Recommendation
         recommendations = Recommendation.query.filter_by(survey_response_id=response_id).all()
         
         for rec in recommendations:
-            rec_record = row.to_dict()  # Start with survey data
+            rec_record = row.to_dict()  
             
-            # Add recommendation info
+            
             rec_record['recommendation_id'] = rec.id
             rec_record['recommendation_score'] = rec.score
             rec_record['program_id'] = rec.program_id
             
-            # Add program and school info
+            
             if include_school_program_info and rec.program:
                 program = rec.program
                 rec_record['program_name'] = program.name
@@ -178,14 +178,14 @@ def prepare_survey_data_for_ml(survey_id: Optional[int] = None,
     """
     logger.info(f"Preparing survey data for ML (survey_id={survey_id})")
     
-    # Load data with recommendations
+    
     df = load_survey_data_with_recommendations(survey_id=survey_id)
     
     if df.empty:
         logger.warning("No data available for ML preparation")
         return pd.DataFrame(), None
     
-    # Filter users with minimum responses
+    
     user_response_counts = df['user_id'].value_counts()
     valid_users = user_response_counts[user_response_counts >= min_responses_per_user].index
     
@@ -193,7 +193,7 @@ def prepare_survey_data_for_ml(survey_id: Optional[int] = None,
     
     logger.info(f"Filtered data: {len(df_filtered)} records from {len(valid_users)} users")
     
-    # Check if target column exists
+    
     if target_column not in df_filtered.columns:
         logger.warning(f"Target column '{target_column}' not found. Available columns: {df_filtered.columns.tolist()}")
         target_column = None
@@ -249,7 +249,7 @@ def create_sample_survey_data(num_responses: int = 100,
     """
     logger.info(f"Creating sample survey data ({num_responses} responses, {num_questions} questions)")
     
-    np.random.seed(42)  # For reproducibility
+    np.random.seed(42)  
     
     data_records = []
     
@@ -261,38 +261,38 @@ def create_sample_survey_data(num_responses: int = 100,
             'created_at': datetime.now()
         }
         
-        # Add user info
+        
         record['user_age'] = np.random.randint(18, 65)
         record['user_location'] = np.random.choice(['New York', 'California', 'Texas', 'Florida', 'Illinois'])
         record['user_education'] = np.random.choice(['High School', 'Bachelor', 'Master', 'PhD'])
         
-        # Add survey questions with different types
+        
         for q in range(1, num_questions + 1):
             if q <= 3:
-                # Rating questions (1-5 scale)
+                
                 record[f'q_rating_{q}'] = np.random.randint(1, 6)
             elif q <= 6:
-                # Yes/No questions
+                
                 record[f'q_binary_{q}'] = np.random.choice(['Yes', 'No'])
             elif q <= 8:
-                # Multiple choice questions
+                
                 record[f'q_choice_{q}'] = np.random.choice(['Option A', 'Option B', 'Option C', 'Option D'])
             else:
-                # Satisfaction scores (1-10 scale)
+                
                 record[f'q_satisfaction_{q}'] = np.random.randint(1, 11)
         
-        # Add some missing values randomly
+        
         missing_fields = np.random.choice(list(record.keys()), size=max(1, len(record) // 10), replace=False)
         for field in missing_fields:
-            if not field.endswith('_id') and field != 'created_at':  # Don't remove IDs or timestamps
+            if not field.endswith('_id') and field != 'created_at':  
                 record[field] = np.nan
         
         data_records.append(record)
     
     df = pd.DataFrame(data_records)
     
-    # Add a target variable (recommendation score)
-    # Make it somewhat correlated with the rating questions
+    
+    
     rating_cols = [col for col in df.columns if 'rating' in col or 'satisfaction' in col]
     if rating_cols:
         df['recommendation_score'] = df[rating_cols].mean(axis=1) + np.random.normal(0, 0.5, len(df))
@@ -324,7 +324,7 @@ def validate_dataframe_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
         'recommendations': []
     }
     
-    # Check basic requirements
+    
     if df.empty:
         validation_report['errors'].append("DataFrame is empty")
         validation_report['is_valid'] = False
@@ -333,23 +333,23 @@ def validate_dataframe_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
     if len(df) < 10:
         validation_report['warnings'].append(f"Very small dataset: only {len(df)} rows")
     
-    # Check column types
+    
     if len(df.select_dtypes(include=[np.number]).columns) == 0:
         validation_report['warnings'].append("No numerical columns found")
     
-    # Check for high missing value percentage
+    
     missing_percentage = (df.isnull().sum().sum() / (df.shape[0] * df.shape[1])) * 100
     if missing_percentage > 50:
         validation_report['warnings'].append(f"High missing value percentage: {missing_percentage:.1f}%")
     
-    # Check for high cardinality categorical columns
+    
     categorical_cols = df.select_dtypes(include=['object']).columns
     for col in categorical_cols:
         unique_count = df[col].nunique()
         if unique_count > 0.8 * len(df):
             validation_report['warnings'].append(f"High cardinality column: {col} ({unique_count} unique values)")
     
-    # Check for constant columns
+    
     constant_cols = []
     for col in df.columns:
         if df[col].nunique() <= 1:
@@ -358,14 +358,14 @@ def validate_dataframe_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
     if constant_cols:
         validation_report['warnings'].append(f"Constant columns found: {constant_cols}")
     
-    # Recommendations
+    
     if len(df) < 100:
         validation_report['recommendations'].append("Consider collecting more data for better preprocessing results")
     
     if missing_percentage > 20:
         validation_report['recommendations'].append("Consider investigating data collection process to reduce missing values")
     
-    # Summary
+    
     validation_report['summary'] = {
         'total_rows': len(df),
         'total_columns': len(df.columns),
@@ -406,7 +406,7 @@ def get_column_info(df: pd.DataFrame) -> pd.DataFrame:
             'unique_percentage': (df[col].nunique() / len(df)) * 100
         }
         
-        # Add type-specific info
+        
         if df[col].dtype in ['int64', 'float64']:
             info.update({
                 'min_value': df[col].min(),
@@ -415,7 +415,7 @@ def get_column_info(df: pd.DataFrame) -> pd.DataFrame:
                 'std_value': df[col].std()
             })
         elif df[col].dtype == 'object':
-            # Most common value
+            
             if df[col].count() > 0:
                 mode_value = df[col].mode()
                 info['most_common'] = mode_value[0] if not mode_value.empty else None

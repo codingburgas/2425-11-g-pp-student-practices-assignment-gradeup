@@ -57,24 +57,24 @@ class DataNormalizer:
         """
         logger.info("Starting data normalization process")
         
-        # Create a copy to avoid modifying original data
+        
         normalized_data = data.copy()
         
-        # Track original info
+        
         original_shape = normalized_data.shape
         self.normalization_report['original_shape'] = original_shape
         self.normalization_report['original_columns'] = list(normalized_data.columns)
         
-        # Step 1: Normalize numerical columns
+        
         normalized_data = self._normalize_numerical_data(normalized_data, fit=fit)
         
-        # Step 2: Encode categorical columns
+        
         normalized_data = self._encode_categorical_data(normalized_data, fit=fit)
         
-        # Step 3: Handle boolean columns
+        
         normalized_data = self._handle_boolean_data(normalized_data)
         
-        # Track final info
+        
         final_shape = normalized_data.shape
         self.normalization_report['final_shape'] = final_shape
         self.normalization_report['final_columns'] = list(normalized_data.columns)
@@ -88,7 +88,7 @@ class DataNormalizer:
         """Normalize numerical columns."""
         numerical_columns = data.select_dtypes(include=[np.number]).columns.tolist()
         
-        # Remove boolean columns (they should be handled separately)
+        
         boolean_columns = []
         for col in numerical_columns:
             if data[col].nunique() == 2 and set(data[col].unique()) <= {0, 1, True, False}:
@@ -104,7 +104,7 @@ class DataNormalizer:
         
         for column in numerical_columns:
             if fit:
-                # Initialize scaler based on method
+                
                 if self.numerical_method == 'standard':
                     scaler = StandardScaler()
                 elif self.numerical_method == 'minmax':
@@ -117,14 +117,14 @@ class DataNormalizer:
                     logger.warning(f"Unknown normalization method: {self.numerical_method}. Using standard.")
                     scaler = StandardScaler()
                 
-                # Fit and transform
+                
                 data[[column]] = scaler.fit_transform(data[[column]])
                 
-                # Save scaler
+                
                 if self.save_scalers:
                     self.scalers[column] = scaler
                 
-                # Record info
+                
                 normalization_info[column] = {
                     'method': self.numerical_method,
                     'original_mean': float(data[column].mean()) if self.numerical_method == 'unit' else None,
@@ -132,7 +132,7 @@ class DataNormalizer:
                     'scaler_params': self._get_scaler_params(scaler)
                 }
             else:
-                # Transform using existing scaler
+                
                 if column in self.scalers:
                     data[[column]] = self.scalers[column].transform(data[[column]])
                     normalization_info[column] = {
@@ -163,26 +163,26 @@ class DataNormalizer:
             
             if fit:
                 if self.categorical_method == 'onehot':
-                    # One-hot encoding
+                    
                     encoded_df = pd.get_dummies(data[column], prefix=column, drop_first=True)
                     
-                    # Store the columns created for this feature
+                    
                     self.encoders[column] = {
                         'method': 'onehot',
                         'columns': encoded_df.columns.tolist(),
                         'original_categories': data[column].unique().tolist()
                     }
                     
-                    # Drop original column and add encoded columns
+                    
                     data = data.drop(columns=[column])
                     data = pd.concat([data, encoded_df], axis=1)
                     
                 elif self.categorical_method == 'label':
-                    # Label encoding
+                    
                     encoder = LabelEncoder()
                     data[column] = encoder.fit_transform(data[column].astype(str))
                     
-                    # Save encoder
+                    
                     if self.save_scalers:
                         self.encoders[column] = {
                             'method': 'label',
@@ -191,7 +191,7 @@ class DataNormalizer:
                         }
                 
                 elif self.categorical_method == 'target':
-                    # Target encoding (requires target variable - placeholder for now)
+                    
                     logger.warning(f"Target encoding not implemented. Using label encoding for {column}")
                     encoder = LabelEncoder()
                     data[column] = encoder.fit_transform(data[column].astype(str))
@@ -203,46 +203,46 @@ class DataNormalizer:
                             'classes': encoder.classes_.tolist()
                         }
                 
-                # Record encoding info
+                
                 new_column_count = len(data.columns)
                 encoding_info[column] = {
                     'method': self.categorical_method,
                     'original_unique_values': len(self.encoders[column].get('original_categories', [])),
-                    'columns_created': new_column_count - original_column_count + 1,  # +1 for dropped original
+                    'columns_created': new_column_count - original_column_count + 1,  
                     'new_columns': self.encoders[column].get('columns', [column])
                 }
                 
             else:
-                # Transform using existing encoder
+                
                 if column in self.encoders:
                     encoder_info = self.encoders[column]
                     
                     if encoder_info['method'] == 'onehot':
-                        # Apply one-hot encoding with same structure
+                        
                         encoded_df = pd.get_dummies(data[column], prefix=column, drop_first=True)
                         
-                        # Ensure all expected columns are present
+                        
                         for expected_col in encoder_info['columns']:
                             if expected_col not in encoded_df.columns:
                                 encoded_df[expected_col] = 0
                         
-                        # Keep only the expected columns
+                        
                         encoded_df = encoded_df[encoder_info['columns']]
                         
-                        # Drop original and add encoded
+                        
                         data = data.drop(columns=[column])
                         data = pd.concat([data, encoded_df], axis=1)
                         
                     elif encoder_info['method'] == 'label':
-                        # Apply label encoding
+                        
                         encoder = encoder_info['encoder']
-                        # Handle unseen categories
+                        
                         data[column] = data[column].astype(str)
                         unseen_categories = set(data[column]) - set(encoder.classes_)
                         if unseen_categories:
                             logger.warning(f"Unseen categories in {column}: {unseen_categories}. Assigning -1.")
                             data[column] = data[column].map(lambda x: x if x in encoder.classes_ else 'UNKNOWN')
-                            # Add 'UNKNOWN' to encoder classes temporarily
+                            
                             if 'UNKNOWN' not in encoder.classes_:
                                 encoder.classes_ = np.append(encoder.classes_, 'UNKNOWN')
                         
@@ -267,11 +267,11 @@ class DataNormalizer:
         
         for column in data.columns:
             if data[column].dtype == 'bool':
-                # Convert boolean to 0/1
+                
                 data[column] = data[column].astype(int)
                 boolean_info[column] = 'converted to int (0/1)'
             elif data[column].nunique() == 2 and set(data[column].unique()) <= {0, 1}:
-                # Already in 0/1 format
+                
                 boolean_info[column] = 'already in 0/1 format'
         
         if boolean_info:
@@ -350,7 +350,7 @@ class DataNormalizer:
         """Save normalization report to a file."""
         import json
         
-        # Convert numpy types to native Python types for JSON serialization
+        
         def convert_numpy_types(obj):
             if isinstance(obj, np.integer):
                 return int(obj)
@@ -364,7 +364,7 @@ class DataNormalizer:
                 return {key: convert_numpy_types(value) for key, value in obj.items()}
             return obj
         
-        # Create a JSON-serializable version of the report
+        
         serializable_report = convert_numpy_types(self.normalization_report)
         
         with open(filepath, 'w') as f:

@@ -86,7 +86,7 @@ def favorites():
 @bp.route('/survey/start')
 @login_required
 def start_survey():
-    # Redirect to data collection survey list
+    
     return redirect(url_for('data_collection.survey_list'))
 
 @bp.route('/survey/take/<int:survey_id>')
@@ -111,7 +111,7 @@ def submit_survey_response(survey_id):
     
     survey = Survey.query.get_or_404(survey_id)
     
-    # Check if user already submitted this survey
+    
     existing_response = SurveyResponse.query.filter_by(
         user_id=current_user.id, 
         survey_id=survey_id
@@ -121,7 +121,7 @@ def submit_survey_response(survey_id):
         flash('You have already submitted this survey.', 'info')
         return redirect(url_for('main.survey'))
     
-    # Collect answers from form
+    
     answers = {}
     questions = survey.get_questions()
     
@@ -136,7 +136,7 @@ def submit_survey_response(survey_id):
         else:
             answers[q_id] = request.form.get(f'question_{q_id}')
     
-    # Create and save response
+    
     response = SurveyResponse(
         user_id=current_user.id,
         survey_id=survey_id,
@@ -161,12 +161,12 @@ def data_preprocessing():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('main.index'))
     
-    # Get available surveys
+    
     surveys = Survey.query.filter_by(is_active=True).all()
     
-    # Get preprocessing statistics
+    
     try:
-        # Load a sample of survey data for preview
+        
         sample_df = load_survey_responses_to_dataframe()
         
         stats = {
@@ -197,12 +197,12 @@ def api_preprocess_data():
         return jsonify({'error': 'Access denied'}), 403
     
     try:
-        # Get parameters from request
+        
         data = request.get_json()
         survey_id = data.get('survey_id')
         preprocessing_config = data.get('config', {})
         
-        # Load survey data
+        
         if survey_id:
             df = load_survey_responses_to_dataframe(survey_id=survey_id)
         else:
@@ -211,7 +211,7 @@ def api_preprocess_data():
         if df.empty:
             return jsonify({'error': 'No survey data found'}), 400
         
-        # Initialize preprocessing pipeline
+        
         pipeline = PreprocessingPipeline(
             missing_threshold=preprocessing_config.get('missing_threshold', 0.3),
             outlier_method=preprocessing_config.get('outlier_method', 'iqr'),
@@ -225,18 +225,18 @@ def api_preprocess_data():
             artifacts_dir=os.path.join(current_app.root_path, '..', 'preprocessing_artifacts')
         )
         
-        # Run preprocessing
+        
         processed_df = pipeline.fit_transform(df, target_column='recommendation_score')
         
-        # Get pipeline report
+        
         report = pipeline.get_pipeline_report()
         
-        # Export processed data
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         export_filename = f"processed_survey_data_{timestamp}.csv"
         export_path = os.path.join(current_app.root_path, '..', 'exports', export_filename)
         
-        # Create exports directory if it doesn't exist
+        
         os.makedirs(os.path.dirname(export_path), exist_ok=True)
         
         export_processed_data(processed_df, export_path, format='csv')
@@ -270,10 +270,10 @@ def api_create_preprocessing_sample():
         num_responses = data.get('num_responses', 100)
         num_questions = data.get('num_questions', 10)
         
-        # Create sample data
+        
         sample_df = create_sample_survey_data(num_responses, num_questions)
         
-        # Export sample data
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         sample_filename = f"sample_survey_data_{timestamp}.csv"
         sample_path = os.path.join(current_app.root_path, '..', 'exports', sample_filename)
@@ -281,7 +281,7 @@ def api_create_preprocessing_sample():
         os.makedirs(os.path.dirname(sample_path), exist_ok=True)
         export_processed_data(sample_df, sample_path, format='csv')
         
-        # Get validation report
+        
         validation_report = validate_dataframe_for_preprocessing(sample_df)
         
         return jsonify({
@@ -304,7 +304,7 @@ def api_preprocessing_status(survey_id):
         return jsonify({'error': 'Access denied'}), 403
     
     try:
-        # Load survey data
+        
         df = load_survey_responses_to_dataframe(survey_id=int(survey_id))
         
         if df.empty:
@@ -313,10 +313,10 @@ def api_preprocessing_status(survey_id):
                 'message': 'No survey responses found'
             })
         
-        # Get validation report
+        
         validation_report = validate_dataframe_for_preprocessing(df)
         
-        # Calculate basic statistics
+        
         stats = {
             'has_data': True,
             'shape': df.shape,

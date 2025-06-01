@@ -63,13 +63,13 @@ class ResponseValidator:
         """
         errors = []
         
-        # Check required fields
+        
         required_fields = self.schema.get('required_fields', [])
         missing_fields = self.validator.validate_required_fields(response_data, required_fields)
         if missing_fields:
             errors.extend([f"Missing required field: {field}" for field in missing_fields])
         
-        # Validate specific field types
+        
         for field_name, field_config in self.schema.get('fields', {}).items():
             if field_name in response_data:
                 field_errors = self._validate_field(field_name, response_data[field_name], field_config)

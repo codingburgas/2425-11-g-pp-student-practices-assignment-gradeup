@@ -13,14 +13,14 @@ def create_sample_dataset(n_samples: int = 1000, n_features: int = 10, n_classes
     """Create a sample dataset for testing the ML pipeline."""
     np.random.seed(42)
     
-    # Generate synthetic features
+    
     X = np.random.randn(n_samples, n_features)
     
-    # Create synthetic target based on feature combinations
+    
     weights = np.random.randn(n_features)
     linear_combination = np.dot(X, weights)
     
-    # Convert to class labels
+    
     if n_classes == 2:
         y = (linear_combination > 0).astype(int)
     else:
@@ -45,17 +45,17 @@ def extract_features_from_survey_response(survey_response: Dict[str, Any]) -> np
     """
     features = []
     
-    # Example feature extraction (customize based on actual survey structure)
+    
     for key, value in survey_response.items():
         if isinstance(value, (int, float)):
             features.append(value)
         elif isinstance(value, str):
-            # Convert categorical to numerical (simple hash-based encoding)
+            
             features.append(hash(value) % 100)
         elif isinstance(value, bool):
             features.append(int(value))
         elif isinstance(value, list):
-            # For multiple choice questions
+            
             features.append(len(value))
     
     return np.array(features).reshape(1, -1) 

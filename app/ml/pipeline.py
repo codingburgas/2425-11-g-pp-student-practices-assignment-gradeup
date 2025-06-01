@@ -38,7 +38,7 @@ class MLTrainingPipeline:
         Returns:
             Preprocessed X and y
         """
-        # Feature scaling (standardization)
+        
         if fit_scalers:
             self.scaler_params = {
                 'mean': np.mean(X, axis=0),
@@ -46,13 +46,13 @@ class MLTrainingPipeline:
             }
         
         if self.scaler_params is not None:
-            # Avoid division by zero
+            
             std_safe = np.where(self.scaler_params['std'] == 0, 1, self.scaler_params['std'])
             X_scaled = (X - self.scaler_params['mean']) / std_safe
         else:
             X_scaled = X
         
-        # Label encoding for y
+        
         if y is not None:
             if fit_scalers:
                 unique_labels = np.unique(y)
@@ -62,13 +62,13 @@ class MLTrainingPipeline:
                 }
             
             if self.label_encoder_params is not None and len(self.label_encoder_params['classes']) > 2:
-                # One-hot encode for multi-class
+                
                 y_encoded = np.zeros((len(y), self.label_encoder_params['num_classes']))
                 for i, label in enumerate(y):
                     class_idx = np.where(self.label_encoder_params['classes'] == label)[0][0]
                     y_encoded[i, class_idx] = 1
             else:
-                # Binary classification
+                
                 y_encoded = y.reshape(-1, 1).astype(float)
             
             return X_scaled, y_encoded
@@ -92,19 +92,19 @@ class MLTrainingPipeline:
         np.random.seed(self.random_seed)
         n_samples = X.shape[0]
         
-        # Shuffle indices
+        
         indices = np.random.permutation(n_samples)
         
-        # Calculate split points
+        
         test_split = int(n_samples * (1 - test_size))
         val_split = int(test_split * (1 - val_size))
         
-        # Split indices
+        
         train_indices = indices[:val_split]
         val_indices = indices[val_split:test_split]
         test_indices = indices[test_split:]
         
-        # Split data
+        
         X_train, X_val, X_test = X[train_indices], X[val_indices], X[test_indices]
         y_train, y_val, y_test = y[train_indices], y[val_indices], y[test_indices]
         
@@ -137,20 +137,20 @@ class MLTrainingPipeline:
         Returns:
             Training results and evaluation metrics
         """
-        # Preprocess data
+        
         X_processed, y_processed = self.preprocess_data(X, y, fit_scalers=True)
         
-        # Split data
+        
         X_train, X_val, X_test, y_train, y_val, y_test = self.split_data(
             X_processed, y_processed, test_size, val_size
         )
         
-        # Determine network architecture
+        
         input_size = X_train.shape[1]
         output_size = y_train.shape[1] if y_train.ndim > 1 else 1
         output_activation = 'softmax' if output_size > 2 else 'sigmoid'
         
-        # Create and train model
+        
         self.model = CustomNeuralNetwork(
             input_size=input_size,
             hidden_sizes=hidden_sizes,
@@ -166,13 +166,13 @@ class MLTrainingPipeline:
             print(f"Activation: {activation}, Output activation: {output_activation}")
             print(f"Training samples: {X_train.shape[0]}, Validation samples: {X_val.shape[0]}, Test samples: {X_test.shape[0]}")
         
-        # Train the model
+        
         training_history = self.model.train(
             X_train, y_train, X_val, y_val,
             epochs=epochs, batch_size=batch_size, verbose=verbose
         )
         
-        # Evaluate on test set
+        
         test_metrics = ModelEvaluator.evaluate_model(self.model, X_test, y_test)
         
         if verbose:

@@ -19,7 +19,7 @@ class ActivationFunctions:
     @staticmethod
     def sigmoid(x: np.ndarray) -> np.ndarray:
         """Sigmoid activation function."""
-        # Clip x to prevent overflow
+        
         x_clipped = np.clip(x, -500, 500)
         return 1 / (1 + np.exp(-x_clipped))
     
@@ -52,7 +52,7 @@ class ActivationFunctions:
     @staticmethod
     def softmax(x: np.ndarray) -> np.ndarray:
         """Softmax activation function for multiclass classification."""
-        # Subtract max for numerical stability
+        
         exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
         return exp_x / np.sum(exp_x, axis=1, keepdims=True)
 
@@ -73,14 +73,14 @@ class LossFunctions:
     @staticmethod
     def binary_crossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Binary crossentropy loss function."""
-        # Clip predictions to prevent log(0)
+        
         y_pred_clipped = np.clip(y_pred, 1e-15, 1 - 1e-15)
         return -np.mean(y_true * np.log(y_pred_clipped) + (1 - y_true) * np.log(1 - y_pred_clipped))
     
     @staticmethod
     def categorical_crossentropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Categorical crossentropy loss function."""
-        # Clip predictions to prevent log(0)
+        
         y_pred_clipped = np.clip(y_pred, 1e-15, 1 - 1e-15)
         return -np.mean(np.sum(y_true * np.log(y_pred_clipped), axis=1))
 
@@ -115,22 +115,22 @@ class CustomNeuralNetwork:
         self.activation = activation
         self.output_activation = output_activation
         
-        # Initialize layers
+        
         self.layers = []
         layer_sizes = [input_size] + hidden_sizes + [output_size]
         
-        # Initialize weights and biases using Xavier initialization
+        
         for i in range(len(layer_sizes) - 1):
             weight = np.random.randn(layer_sizes[i], layer_sizes[i + 1]) * np.sqrt(2.0 / layer_sizes[i])
             bias = np.zeros((1, layer_sizes[i + 1]))
             self.layers.append({
                 'weight': weight,
                 'bias': bias,
-                'z': None,  # Pre-activation values
-                'a': None   # Post-activation values
+                'z': None,  
+                'a': None   
             })
         
-        # Training history
+        
         self.training_history = {
             'loss': [],
             'accuracy': [],
@@ -138,7 +138,7 @@ class CustomNeuralNetwork:
             'val_accuracy': []
         }
         
-        # Get activation functions
+        
         self.activation_func = getattr(ActivationFunctions, activation)
         self.activation_derivative = getattr(ActivationFunctions, f"{activation}_derivative")
         self.output_activation_func = getattr(ActivationFunctions, output_activation)
@@ -156,13 +156,13 @@ class CustomNeuralNetwork:
         current_input = X
         
         for i, layer in enumerate(self.layers):
-            # Linear transformation
+            
             layer['z'] = np.dot(current_input, layer['weight']) + layer['bias']
             
-            # Apply activation function
-            if i == len(self.layers) - 1:  # Output layer
+            
+            if i == len(self.layers) - 1:  
                 layer['a'] = self.output_activation_func(layer['z'])
-            else:  # Hidden layers
+            else:  
                 layer['a'] = self.activation_func(layer['z'])
             
             current_input = layer['a']
@@ -178,37 +178,37 @@ class CustomNeuralNetwork:
             y: True labels
             y_pred: Predicted values
         """
-        m = X.shape[0]  # Number of samples
+        m = X.shape[0]  
         
-        # Initialize error for output layer
+        
         if self.output_activation == 'softmax':
-            # For softmax with categorical crossentropy
+            
             error = y_pred - y
         else:
-            # For sigmoid/other activations
+            
             error = LossFunctions.mse_derivative(y, y_pred)
             if self.output_activation == 'sigmoid':
                 error *= ActivationFunctions.sigmoid_derivative(self.layers[-1]['z'])
         
-        # Backpropagate through layers
+        
         for i in reversed(range(len(self.layers))):
             layer = self.layers[i]
             
-            # Get input to this layer
+            
             if i == 0:
                 layer_input = X
             else:
                 layer_input = self.layers[i - 1]['a']
             
-            # Compute gradients
+            
             weight_gradient = np.dot(layer_input.T, error) / m
             bias_gradient = np.mean(error, axis=0, keepdims=True)
             
-            # Update weights and biases
+            
             layer['weight'] -= self.learning_rate * weight_gradient
             layer['bias'] -= self.learning_rate * bias_gradient
             
-            # Compute error for previous layer (if not first layer)
+            
             if i > 0:
                 error = np.dot(error, layer['weight'].T)
                 error *= self.activation_derivative(self.layers[i - 1]['z'])
@@ -234,29 +234,29 @@ class CustomNeuralNetwork:
         n_samples = X_train.shape[0]
         
         for epoch in range(epochs):
-            # Shuffle data
+            
             indices = np.random.permutation(n_samples)
             X_shuffled = X_train[indices]
             y_shuffled = y_train[indices]
             
-            # Mini-batch training
+            
             total_loss = 0
             for i in range(0, n_samples, batch_size):
                 batch_X = X_shuffled[i:i + batch_size]
                 batch_y = y_shuffled[i:i + batch_size]
                 
-                # Forward and backward propagation
+                
                 y_pred = self.forward_propagation(batch_X)
                 self.backward_propagation(batch_X, batch_y, y_pred)
                 
-                # Calculate loss
+                
                 if self.output_activation == 'softmax':
                     loss = LossFunctions.categorical_crossentropy(batch_y, y_pred)
                 else:
                     loss = LossFunctions.mean_squared_error(batch_y, y_pred)
                 total_loss += loss
             
-            # Calculate epoch metrics
+            
             train_pred = self.predict(X_train)
             train_accuracy = self.calculate_accuracy(y_train, train_pred)
             avg_loss = total_loss / (n_samples // batch_size + 1)
@@ -264,7 +264,7 @@ class CustomNeuralNetwork:
             self.training_history['loss'].append(avg_loss)
             self.training_history['accuracy'].append(train_accuracy)
             
-            # Validation metrics
+            
             if X_val is not None and y_val is not None:
                 val_pred = self.predict(X_val)
                 val_accuracy = self.calculate_accuracy(y_val, val_pred)
@@ -334,7 +334,7 @@ class CustomNeuralNetwork:
         with open(filepath, 'rb') as f:
             model_data = pickle.load(f)
         
-        # Create new instance
+        
         model = cls(
             input_size=model_data['input_size'],
             hidden_sizes=model_data['hidden_sizes'],
@@ -344,7 +344,7 @@ class CustomNeuralNetwork:
             learning_rate=model_data['learning_rate']
         )
         
-        # Restore trained weights and history
+        
         model.layers = model_data['layers']
         model.training_history = model_data['training_history']
         

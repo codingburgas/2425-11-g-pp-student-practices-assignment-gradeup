@@ -18,7 +18,7 @@ csrf = CSRFProtect()
 
 def create_app(config_class=Config):
     app = Flask(__name__, 
-                template_folder='../templates',  # Look for templates in the root templates directory
+                template_folder='../templates',  
                 static_folder='static')
     app.config.from_object(config_class)
 
@@ -31,7 +31,7 @@ def create_app(config_class=Config):
     bootstrap.init_app(app)
     csrf.init_app(app)
 
-    # Register blueprints here
+    
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
     
@@ -44,20 +44,20 @@ def create_app(config_class=Config):
     from app.data_collection import bp as data_collection_bp
     app.register_blueprint(data_collection_bp, url_prefix='/data')
 
-    # Register ML blueprint from the new modular structure
+    
     from app.ml.blueprint import ml_bp
     app.register_blueprint(ml_bp)
 
-    # Create a static folder if it doesn't exist
+    
     import os
     static_folder = os.path.join(app.root_path, 'static')
     if not os.path.exists(static_folder):
         os.makedirs(static_folder)
-        # Create css folder
+        
         css_folder = os.path.join(static_folder, 'css')
         if not os.path.exists(css_folder):
             os.makedirs(css_folder)
-        # Create js folder
+        
         js_folder = os.path.join(static_folder, 'js')
         if not os.path.exists(js_folder):
             os.makedirs(js_folder)

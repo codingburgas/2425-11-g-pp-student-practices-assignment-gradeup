@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 Demo script for the custom ML model implementation.
 This script demonstrates all the features of the ML pipeline including:
@@ -13,7 +13,7 @@ import os
 import sys
 from datetime import datetime
 
-# Add app directory to path for imports
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = os.path.dirname(current_dir)
 sys.path.append(app_dir)
@@ -30,13 +30,13 @@ def demo_basic_neural_network():
     print("DEMO 1: Basic Neural Network")
     print("=" * 60)
     
-    # Create sample data
+    
     print("Creating sample dataset...")
     X, y = create_sample_dataset(n_samples=1000, n_features=8, n_classes=3)
     print(f"Dataset shape: X={X.shape}, y={y.shape}")
     print(f"Classes: {np.unique(y)}")
     
-    # Initialize and train neural network
+    
     print("\nInitializing neural network...")
     nn = CustomNeuralNetwork(
         input_size=8,
@@ -48,7 +48,7 @@ def demo_basic_neural_network():
         random_seed=42
     )
     
-    # Prepare data for training (one-hot encode labels)
+    
     y_onehot = np.zeros((len(y), 3))
     for i, label in enumerate(y):
         y_onehot[i, label] = 1
@@ -56,7 +56,7 @@ def demo_basic_neural_network():
     print("Training neural network...")
     history = nn.train(X, y_onehot, epochs=50, batch_size=32, verbose=True)
     
-    # Evaluate model
+    
     print("\nEvaluating model...")
     test_metrics = ModelEvaluator.evaluate_model(nn, X, y_onehot)
     
@@ -66,13 +66,13 @@ def demo_basic_neural_network():
     print(f"F1-score (macro): {test_metrics['f1_macro']:.4f}")
     print(f"Confusion Matrix:\n{test_metrics['confusion_matrix']}")
     
-    # Save model
+    
     model_path = "saved_models/demo_neural_network.pkl"
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     nn.save_model(model_path)
     print(f"\nModel saved to: {model_path}")
     
-    # Load and test saved model
+    
     print("Loading saved model...")
     loaded_nn = CustomNeuralNetwork.load_model(model_path)
     loaded_predictions = loaded_nn.predict(X[:5])
@@ -89,16 +89,16 @@ def demo_ml_pipeline():
     print("DEMO 2: Complete ML Training Pipeline")
     print("=" * 60)
     
-    # Create sample data
+    
     print("Creating sample dataset...")
     X, y = create_sample_dataset(n_samples=1500, n_features=12, n_classes=4)
     print(f"Dataset shape: X={X.shape}, y={y.shape}")
     
-    # Initialize pipeline
+    
     print("\nInitializing ML training pipeline...")
     pipeline = MLTrainingPipeline(random_seed=42)
     
-    # Train model with full pipeline
+    
     print("Training model with pipeline...")
     results = pipeline.train_model(
         X, y,
@@ -112,7 +112,7 @@ def demo_ml_pipeline():
         verbose=True
     )
     
-    # Print detailed results
+    
     print("\n" + "-" * 40)
     print("DETAILED EVALUATION RESULTS")
     print("-" * 40)
@@ -135,12 +135,12 @@ def demo_ml_pipeline():
     print(f"Per-class Recall: {metrics['recall_per_class']}")
     print(f"Per-class F1-score: {metrics['f1_per_class']}")
     
-    # Save pipeline
+    
     pipeline_path = "saved_models/demo_pipeline.pkl"
     pipeline.save_pipeline(pipeline_path)
     print(f"\nPipeline saved to: {pipeline_path}")
     
-    # Test prediction on new data
+    
     print("\nTesting predictions on new data...")
     test_X = np.random.randn(3, 12)
     predictions = pipeline.predict(test_X)
@@ -151,7 +151,7 @@ def demo_ml_pipeline():
         print(f"Sample {i+1}: {pred}")
     print(f"Predicted classes: {class_predictions}")
     
-    # Load and test saved pipeline
+    
     print("\nLoading saved pipeline...")
     loaded_pipeline = MLTrainingPipeline.load_pipeline(pipeline_path)
     loaded_predictions = loaded_pipeline.predict(test_X)
@@ -167,7 +167,7 @@ def demo_survey_integration():
     print("DEMO 3: Survey Response Integration")
     print("=" * 60)
     
-    # Sample survey responses (simulating real survey data)
+    
     sample_surveys = [
         {
             'math_interest': 8,
@@ -213,7 +213,7 @@ def demo_survey_integration():
         }
     ]
     
-    # Extract features from survey responses
+    
     print("Extracting features from survey responses...")
     survey_features = []
     for i, survey in enumerate(sample_surveys):
@@ -224,13 +224,13 @@ def demo_survey_integration():
     X_survey = np.array(survey_features)
     print(f"\nSurvey features shape: {X_survey.shape}")
     
-    # Create synthetic target labels for universities/programs
-    y_programs = np.array([0, 2, 1])  # 0: Engineering, 1: Science, 2: Arts
+    
+    y_programs = np.array([0, 2, 1])  
     program_names = ['Engineering', 'Science', 'Arts']
     
     print(f"Target programs: {[program_names[y] for y in y_programs]}")
     
-    # Since we have very limited data, let's create a larger synthetic dataset
+    
     print("\nGenerating synthetic dataset based on survey patterns...")
     n_synthetic = 300
     X_synthetic = []
@@ -238,11 +238,11 @@ def demo_survey_integration():
     
     np.random.seed(42)
     for _ in range(n_synthetic):
-        # Generate synthetic survey based on the three patterns
+        
         pattern = np.random.choice([0, 1, 2])
         base_survey = sample_surveys[pattern].copy()
         
-        # Add noise to the values
+        
         for key, value in base_survey.items():
             if isinstance(value, (int, float)) and key != 'grades_average':
                 noise = np.random.normal(0, 0.5)
@@ -260,7 +260,7 @@ def demo_survey_integration():
     
     print(f"Synthetic dataset shape: X={X_synthetic.shape}, y={y_synthetic.shape}")
     
-    # Train model on synthetic survey data
+    
     print("\nTraining model on survey data...")
     survey_pipeline = MLTrainingPipeline(random_seed=42)
     
@@ -276,7 +276,7 @@ def demo_survey_integration():
         verbose=True
     )
     
-    # Test on original survey responses
+    
     print("\nTesting on original survey responses...")
     predictions = survey_pipeline.predict(X_survey)
     class_predictions = survey_pipeline.predict_classes(X_survey)
@@ -290,7 +290,7 @@ def demo_survey_integration():
         print(f"  Predicted program: {program_names[pred_class]} (confidence: {pred_probs[pred_class]:.3f})")
         print(f"  Actual program: {program_names[y_programs[i]]}")
     
-    # Save survey model
+    
     survey_model_path = "saved_models/survey_recommendation_model.pkl"
     survey_pipeline.save_pipeline(survey_model_path)
     print(f"\nSurvey model saved to: {survey_model_path}")
@@ -304,10 +304,10 @@ def demo_model_comparison():
     print("DEMO 4: Model Architecture Comparison")
     print("=" * 60)
     
-    # Create consistent dataset
+    
     X, y = create_sample_dataset(n_samples=800, n_features=10, n_classes=3)
     
-    # Different architectures to compare
+    
     architectures = [
         {"hidden_sizes": [16], "name": "Single Layer (16)"},
         {"hidden_sizes": [32, 16], "name": "Two Layer (32-16)"},
@@ -329,7 +329,7 @@ def demo_model_comparison():
             learning_rate=0.01,
             epochs=50,
             batch_size=32,
-            verbose=False  # Reduce output for comparison
+            verbose=False  
         )
         
         metrics = result['test_metrics']
@@ -344,7 +344,7 @@ def demo_model_comparison():
         
         print(f"Accuracy: {metrics['accuracy']:.4f}, F1-score: {metrics['f1_macro']:.4f}")
     
-    # Print comparison table
+    
     print("\n" + "-" * 80)
     print("ARCHITECTURE COMPARISON RESULTS")
     print("-" * 80)
@@ -355,7 +355,7 @@ def demo_model_comparison():
         print(f"{result['name']:<25} {result['accuracy']:<10.4f} {result['precision']:<10.4f} "
               f"{result['recall']:<10.4f} {result['f1_score']:<10.4f}")
     
-    # Find best architecture
+    
     best_arch = max(results, key=lambda x: x['f1_score'])
     print(f"\nBest performing architecture: {best_arch['name']} with F1-score: {best_arch['f1_score']:.4f}")
     
@@ -377,10 +377,10 @@ def main():
     print("\nStarting demonstrations...\n")
     
     try:
-        # Create saved_models directory
+        
         os.makedirs("saved_models", exist_ok=True)
         
-        # Run all demos
+        
         demo1_results = demo_basic_neural_network()
         demo2_results = demo_ml_pipeline()
         demo3_results = demo_survey_integration()

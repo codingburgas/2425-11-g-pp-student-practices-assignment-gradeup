@@ -13,7 +13,7 @@ from datetime import datetime
 from .pipeline import PreprocessingPipeline
 from .utils import create_sample_survey_data, validate_dataframe_for_preprocessing, get_column_info, export_processed_data
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -26,42 +26,42 @@ def run_basic_preprocessing_example():
     print("DATA PREPROCESSING PIPELINE EXAMPLE")
     print("=" * 60)
     
-    # Step 1: Create sample data
+    
     print("\n1. Creating sample survey data...")
     sample_data = create_sample_survey_data(num_responses=200, num_questions=15)
     print(f"Sample data shape: {sample_data.shape}")
     print(f"Columns: {list(sample_data.columns)}")
     
-    # Step 2: Validate data
+    
     print("\n2. Validating data for preprocessing...")
     validation_report = validate_dataframe_for_preprocessing(sample_data)
     print(f"Data is valid: {validation_report['is_valid']}")
     if validation_report['warnings']:
         print(f"Warnings: {validation_report['warnings']}")
     
-    # Step 3: Initialize preprocessing pipeline
+    
     print("\n3. Initializing preprocessing pipeline...")
     pipeline = PreprocessingPipeline(
-        # Data cleaning parameters
+        
         missing_threshold=0.3,
         outlier_method='iqr',
         
-        # Normalization parameters
+        
         numerical_method='standard',
         categorical_method='onehot',
         
-        # Feature engineering parameters
+        
         create_interactions=True,
         create_polynomials=False,
         create_aggregations=True,
         create_domain_features=True,
         
-        # General parameters
+        
         save_artifacts=True,
         artifacts_dir='preprocessing_artifacts'
     )
     
-    # Step 4: Run preprocessing pipeline
+    
     print("\n4. Running preprocessing pipeline...")
     processed_data = pipeline.fit_transform(
         data=sample_data,
@@ -71,11 +71,11 @@ def run_basic_preprocessing_example():
     print(f"Processed data shape: {processed_data.shape}")
     print(f"Original shape: {sample_data.shape}")
     
-    # Step 5: Get pipeline summary
+    
     print("\n5. Pipeline Summary:")
     print(pipeline.get_summary())
     
-    # Step 6: Export processed data
+    
     print("\n6. Exporting processed data...")
     export_processed_data(
         df=processed_data,
@@ -96,18 +96,18 @@ def run_advanced_preprocessing_example():
     print("ADVANCED PREPROCESSING PIPELINE EXAMPLE")
     print("=" * 60)
     
-    # Create larger sample data with more complexity
+    
     print("\n1. Creating complex sample data...")
     sample_data = create_sample_survey_data(num_responses=500, num_questions=20)
     
-    # Add some additional complexity
+    
     sample_data['user_income'] = np.random.lognormal(10, 1, len(sample_data))
     sample_data['user_years_experience'] = np.random.poisson(8, len(sample_data))
     sample_data['response_time_minutes'] = np.random.gamma(2, 10, len(sample_data))
     
     print(f"Complex data shape: {sample_data.shape}")
     
-    # Analyze column information
+    
     print("\n2. Analyzing column information...")
     column_info = get_column_info(sample_data)
     print("\nColumn Information Summary:")
@@ -115,31 +115,31 @@ def run_advanced_preprocessing_example():
     print(f"- Columns with missing values: {(column_info['null_count'] > 0).sum()}")
     print(f"- High cardinality columns (>50% unique): {(column_info['unique_percentage'] > 50).sum()}")
     
-    # Configure advanced pipeline
+    
     print("\n3. Configuring advanced preprocessing pipeline...")
     advanced_pipeline = PreprocessingPipeline(
-        # Stricter data cleaning
+        
         missing_threshold=0.2,
         outlier_method='iqr',
         outlier_factor=1.5,
         
-        # Different normalization approach
-        numerical_method='robust',  # More robust to outliers
-        categorical_method='label',  # Use label encoding instead of one-hot
         
-        # More feature engineering
+        numerical_method='robust',  
+        categorical_method='label',  
+        
+        
         create_interactions=True,
         create_polynomials=True,
         polynomial_degree=2,
         create_aggregations=True,
         create_domain_features=True,
         
-        # Save artifacts
+        
         save_artifacts=True,
         artifacts_dir='advanced_preprocessing_artifacts'
     )
     
-    # Run preprocessing
+    
     print("\n4. Running advanced preprocessing...")
     start_time = datetime.now()
     
@@ -154,7 +154,7 @@ def run_advanced_preprocessing_example():
     print(f"Processing completed in {processing_time:.2f} seconds")
     print(f"Data shape: {sample_data.shape} -> {processed_data.shape}")
     
-    # Analyze results
+    
     print("\n5. Analyzing preprocessing results...")
     pipeline_report = advanced_pipeline.get_pipeline_report()
     
@@ -162,7 +162,7 @@ def run_advanced_preprocessing_example():
     print(f"- Features created: {len(pipeline_report.get('feature_engineering', {}).get('created_features', []))}")
     print(f"- Missing values handled: {pipeline_report.get('cleaning', {}).get('missing_values', {})}")
     
-    # Test transform on new data
+    
     print("\n6. Testing transform on new data...")
     new_sample_data = create_sample_survey_data(num_responses=50, num_questions=20)
     new_sample_data['user_income'] = np.random.lognormal(10, 1, len(new_sample_data))
@@ -172,7 +172,7 @@ def run_advanced_preprocessing_example():
     new_processed_data = advanced_pipeline.transform(new_sample_data)
     print(f"New data transformed: {new_sample_data.shape} -> {new_processed_data.shape}")
     
-    # Export multiple formats
+    
     print("\n7. Exporting processed data in multiple formats...")
     
     export_processed_data(processed_data, 'advanced_processed_data.csv', 'csv')
@@ -191,10 +191,10 @@ def compare_preprocessing_methods():
     print("PREPROCESSING METHODS COMPARISON")
     print("=" * 60)
     
-    # Create test data
+    
     test_data = create_sample_survey_data(num_responses=300, num_questions=12)
     
-    # Method 1: Standard preprocessing
+    
     print("\n1. Standard preprocessing...")
     standard_pipeline = PreprocessingPipeline(
         numerical_method='standard',
@@ -206,7 +206,7 @@ def compare_preprocessing_methods():
     
     standard_result = standard_pipeline.fit_transform(test_data, target_column='recommendation_score')
     
-    # Method 2: Robust preprocessing
+    
     print("\n2. Robust preprocessing...")
     robust_pipeline = PreprocessingPipeline(
         numerical_method='robust',
@@ -219,7 +219,7 @@ def compare_preprocessing_methods():
     
     robust_result = robust_pipeline.fit_transform(test_data, target_column='recommendation_score')
     
-    # Method 3: Feature-rich preprocessing
+    
     print("\n3. Feature-rich preprocessing...")
     feature_rich_pipeline = PreprocessingPipeline(
         numerical_method='minmax',
@@ -233,14 +233,14 @@ def compare_preprocessing_methods():
     
     feature_rich_result = feature_rich_pipeline.fit_transform(test_data, target_column='recommendation_score')
     
-    # Compare results
+    
     print("\n4. Comparison Results:")
     print(f"Original data shape: {test_data.shape}")
     print(f"Standard preprocessing: {standard_result.shape}")
     print(f"Robust preprocessing: {robust_result.shape}")
     print(f"Feature-rich preprocessing: {feature_rich_result.shape}")
     
-    # Processing time comparison
+    
     methods = [
         ("Standard", standard_pipeline),
         ("Robust", robust_pipeline),
@@ -257,15 +257,15 @@ def compare_preprocessing_methods():
 
 
 if __name__ == "__main__":
-    # Run examples
+    
     try:
-        # Basic example
+        
         basic_pipeline, basic_data = run_basic_preprocessing_example()
         
-        # Advanced example
+        
         advanced_pipeline, advanced_data = run_advanced_preprocessing_example()
         
-        # Comparison
+        
         compare_preprocessing_methods()
         
         print("\n" + "=" * 60)

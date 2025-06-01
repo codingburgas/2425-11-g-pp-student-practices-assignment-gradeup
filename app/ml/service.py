@@ -71,17 +71,17 @@ class MLModelService:
             return {"status": "Model already trained", "retrained": False}
         
         try:
-            # Extract features and labels from survey responses
+            
             X, y, program_mapping = self._prepare_training_data(survey_responses)
             
-            if len(X) < 10:  # Minimum samples required
+            if len(X) < 10:  
                 return {
                     "status": "Insufficient training data", 
                     "samples": len(X),
                     "minimum_required": 10
                 }
             
-            # Initialize and train the model
+            
             self.model = MLTrainingPipeline(random_seed=42)
             
             training_results = self.model.train_model(
@@ -98,10 +98,10 @@ class MLModelService:
             
             self.is_trained = True
             
-            # Save the model
+            
             self.save_model()
             
-            # Store program mapping for later use
+            
             self._save_program_mapping(program_mapping)
             
             return {
@@ -133,25 +133,25 @@ class MLModelService:
                 return []
         
         try:
-            # Extract features from survey data
+            
             features = extract_features_from_survey_response(survey_data)
             
-            # Make prediction
+            
             predictions = self.model.predict(features)
             class_predictions = self.model.predict_classes(features)
             
-            # Load program mapping
+            
             program_mapping = self._load_program_mapping()
             
             if program_mapping is None:
                 current_app.logger.warning("Program mapping not found")
                 return []
             
-            # Convert predictions to program recommendations
+            
             recommendations = []
             
             if len(predictions.shape) > 1 and predictions.shape[1] > 1:
-                # Multi-class classification
+                
                 prediction_probs = predictions[0]
                 sorted_indices = np.argsort(prediction_probs)[::-1]
                 
@@ -166,7 +166,7 @@ class MLModelService:
                             'rank': i + 1
                         })
             else:
-                # Binary classification or single output
+                
                 confidence = float(predictions[0][0])
                 predicted_class = int(class_predictions[0])
                 
@@ -192,9 +192,9 @@ class MLModelService:
         y = []
         program_mapping = {}
         
-        # Get all unique programs and create mapping (placeholder)
-        # This would normally integrate with your database models
-        # For now, create synthetic program mapping
+        
+        
+        
         programs = [
             {'id': 1, 'name': 'Computer Science', 'school_name': 'Technical University'},
             {'id': 2, 'name': 'Engineering', 'school_name': 'Technical University'},
@@ -205,20 +205,20 @@ class MLModelService:
         for i, program in enumerate(programs):
             program_mapping[i] = program
         
-        # If no real survey responses, create synthetic data
+        
         if len(survey_responses) == 0:
             X, y = self._create_synthetic_training_data(program_mapping)
         else:
-            # Process actual survey responses
+            
             for response in survey_responses:
                 try:
-                    # Extract features from survey answers
+                    
                     answers = response.get_answers() if hasattr(response, 'get_answers') else {}
                     features = extract_features_from_survey_response(answers)
                     X.append(features.flatten())
                     
-                    # Assign a program based on some logic (simplified)
-                    y.append(0)  # Default assignment
+                    
+                    y.append(0)  
                     
                 except Exception as e:
                     current_app.logger.warning(f"Error processing survey response: {e}")
@@ -234,14 +234,14 @@ class MLModelService:
         y = []
         np.random.seed(42)
         
-        # Create synthetic survey responses for each program type
+        
         for program_idx, program_info in program_mapping.items():
             program_name = program_info['name'].lower()
             
-            # Generate synthetic surveys based on program type
-            for _ in range(50):  # 50 samples per program
+            
+            for _ in range(50):  
                 if 'computer' in program_name or 'engineering' in program_name:
-                    # Engineering-oriented profile
+                    
                     survey = {
                         'math_interest': np.random.normal(8, 1),
                         'science_interest': np.random.normal(7, 1),
@@ -257,7 +257,7 @@ class MLModelService:
                         'grades_average': np.random.normal(5.5, 0.3)
                     }
                 elif 'arts' in program_name:
-                    # Arts-oriented profile
+                    
                     survey = {
                         'math_interest': np.random.normal(4, 1),
                         'science_interest': np.random.normal(5, 1),
@@ -273,7 +273,7 @@ class MLModelService:
                         'grades_average': np.random.normal(5.2, 0.4)
                     }
                 elif 'business' in program_name:
-                    # Business-oriented profile
+                    
                     survey = {
                         'math_interest': np.random.normal(6, 1),
                         'science_interest': np.random.normal(5, 1),
@@ -289,7 +289,7 @@ class MLModelService:
                         'grades_average': np.random.normal(5.3, 0.3)
                     }
                 else:
-                    # General profile
+                    
                     survey = {
                         'math_interest': np.random.normal(6, 2),
                         'science_interest': np.random.normal(6, 2),
@@ -305,7 +305,7 @@ class MLModelService:
                         'grades_average': np.random.normal(5.0, 0.5)
                     }
                 
-                # Clamp values to reasonable ranges
+                
                 for key, value in survey.items():
                     if isinstance(value, (int, float)) and key not in ['grades_average']:
                         survey[key] = max(1, min(10, value))
@@ -338,7 +338,7 @@ class MLModelService:
                 if os.path.exists(mapping_path):
                     with open(mapping_path, 'r') as f:
                         mapping = json.load(f)
-                    # Convert string keys back to integers
+                    
                     return {int(k): v for k, v in mapping.items()}
             return None
         except Exception as e:

@@ -71,7 +71,7 @@ class ModelEvaluator:
         elif average == 'micro':
             tp_total = np.sum(np.diag(cm))
             fp_total = np.sum(cm) - tp_total
-            fn_total = fp_total  # For multi-class, fp_total == fn_total
+            fn_total = fp_total  
             
             precision = tp_total / (tp_total + fp_total) if (tp_total + fp_total) > 0 else 0
             recall = tp_total / (tp_total + fn_total) if (tp_total + fn_total) > 0 else 0
@@ -103,11 +103,11 @@ class ModelEvaluator:
         Returns:
             Dictionary containing all evaluation metrics
         """
-        # Make predictions
+        
         y_pred_proba = model.predict(X_test)
         y_pred = model.predict_classes(X_test)
         
-        # Convert y_test to class labels if one-hot encoded
+        
         if y_test.ndim > 1 and y_test.shape[1] > 1:
             y_test_labels = np.argmax(y_test, axis=1)
             num_classes = y_test.shape[1]
@@ -115,13 +115,13 @@ class ModelEvaluator:
             y_test_labels = y_test.flatten().astype(int)
             num_classes = len(np.unique(y_test_labels))
         
-        # Calculate metrics
+        
         accuracy = np.mean(y_pred == y_test_labels)
         
-        # Confusion matrix
+        
         cm = ModelEvaluator.confusion_matrix(y_test_labels, y_pred, num_classes)
         
-        # Precision, Recall, F1-score
+        
         precision_macro, recall_macro, f1_macro = ModelEvaluator.precision_recall_f1(
             y_test_labels, y_pred, num_classes, 'macro'
         )
@@ -132,7 +132,7 @@ class ModelEvaluator:
             y_test_labels, y_pred, num_classes, 'weighted'
         )
         
-        # Per-class metrics
+        
         precision_per_class, recall_per_class, f1_per_class = ModelEvaluator.precision_recall_f1(
             y_test_labels, y_pred, num_classes, 'none'
         )

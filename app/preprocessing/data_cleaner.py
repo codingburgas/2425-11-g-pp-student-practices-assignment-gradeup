@@ -51,29 +51,29 @@ class DataCleaner:
         """
         logger.info("Starting data cleaning process")
         
-        # Create a copy to avoid modifying original data
+        
         cleaned_data = data.copy()
         
-        # Track original shape
+        
         original_shape = cleaned_data.shape
         self.cleaning_report['original_shape'] = original_shape
         
-        # Step 1: Remove duplicate responses
+        
         cleaned_data = self._remove_duplicates(cleaned_data)
         
-        # Step 2: Handle missing values
+        
         cleaned_data = self._handle_missing_values(cleaned_data)
         
-        # Step 3: Validate and clean data types
+        
         cleaned_data = self._clean_data_types(cleaned_data)
         
-        # Step 4: Handle outliers
+        
         cleaned_data = self._handle_outliers(cleaned_data)
         
-        # Step 5: Clean text responses
+        
         cleaned_data = self._clean_text_responses(cleaned_data)
         
-        # Track final shape
+        
         final_shape = cleaned_data.shape
         self.cleaning_report['final_shape'] = final_shape
         self.cleaning_report['rows_removed'] = original_shape[0] - final_shape[0]
@@ -87,10 +87,10 @@ class DataCleaner:
         """Remove duplicate responses."""
         initial_count = len(data)
         
-        # Remove exact duplicates
+        
         data = data.drop_duplicates()
         
-        # Remove duplicates based on user_id and survey_id combination
+        
         if 'user_id' in data.columns and 'survey_id' in data.columns:
             data = data.drop_duplicates(subset=['user_id', 'survey_id'], keep='last')
         
@@ -106,10 +106,10 @@ class DataCleaner:
         """Handle missing values in the dataset."""
         missing_info = {}
         
-        # Calculate missing value percentages
+        
         missing_percentages = (data.isnull().sum() / len(data)) * 100
         
-        # Drop columns with too many missing values
+        
         columns_to_drop = missing_percentages[missing_percentages > (self.missing_threshold * 100)].index.tolist()
         
         if columns_to_drop:
@@ -117,7 +117,7 @@ class DataCleaner:
             missing_info['columns_dropped'] = columns_to_drop
             logger.info(f"Dropped columns with >30% missing values: {columns_to_drop}")
         
-        # Handle remaining missing values
+        
         for column in data.columns:
             missing_count = data[column].isnull().sum()
             if missing_count > 0:
@@ -126,22 +126,22 @@ class DataCleaner:
                     'missing_percentage': (missing_count / len(data)) * 100
                 }
                 
-                # Different strategies for different data types
+                
                 if data[column].dtype in ['object', 'string']:
-                    # For categorical/text data, use mode or 'Unknown'
+                    
                     mode_value = data[column].mode()
                     fill_value = mode_value[0] if not mode_value.empty else 'Unknown'
                     data[column] = data[column].fillna(fill_value)
                     missing_info[column]['fill_method'] = f'mode ({fill_value})'
                     
                 elif data[column].dtype in ['int64', 'float64']:
-                    # For numerical data, use median
+                    
                     median_value = data[column].median()
                     data[column] = data[column].fillna(median_value)
                     missing_info[column]['fill_method'] = f'median ({median_value})'
                     
                 elif pd.api.types.is_datetime64_any_dtype(data[column]):
-                    # For datetime data, use forward fill
+                    
                     data[column] = data[column].fillna(method='ffill')
                     missing_info[column]['fill_method'] = 'forward_fill'
         
@@ -155,31 +155,31 @@ class DataCleaner:
         for column in data.columns:
             original_dtype = data[column].dtype
             
-            # Convert string representations of numbers
+            
             if data[column].dtype == 'object':
-                # Try to convert to numeric if it looks like numbers
+                
                 try:
                     numeric_data = pd.to_numeric(data[column], errors='coerce')
-                    # If most values are convertible, use numeric
+                    
                     if numeric_data.notna().sum() / len(data) > 0.8:
                         data[column] = numeric_data
                         type_changes[column] = f'{original_dtype} -> numeric'
                 except:
                     pass
             
-            # Handle specific survey response patterns
+            
             if 'rating' in column.lower() or 'score' in column.lower():
-                # Ensure rating columns are numeric
+                
                 data[column] = pd.to_numeric(data[column], errors='coerce')
                 if original_dtype != data[column].dtype:
                     type_changes[column] = f'{original_dtype} -> numeric (rating)'
             
-            # Clean yes/no responses
+            
             if data[column].dtype == 'object':
                 unique_values = data[column].str.lower().unique() if hasattr(data[column], 'str') else []
                 if len(unique_values) <= 5 and any(val in ['yes', 'no', 'true', 'false', 'y', 'n'] 
                                                   for val in unique_values if pd.notna(val)):
-                    # Convert to boolean
+                    
                     data[column] = data[column].str.lower().map({
                         'yes': True, 'no': False, 'true': True, 'false': False, 'y': True, 'n': False
                     })
@@ -211,7 +211,7 @@ class DataCleaner:
                     'outlier_percentage': (outliers.sum() / len(data)) * 100
                 }
                 
-                # Cap outliers instead of removing (preserve data)
+                
                 if self.outlier_method == 'iqr':
                     Q1 = data[column].quantile(0.25)
                     Q3 = data[column].quantile(0.75)
@@ -252,18 +252,18 @@ class DataCleaner:
             if data[column].dtype == 'object':
                 original_unique = data[column].nunique()
                 
-                # Remove leading/trailing whitespace
+                
                 data[column] = data[column].astype(str).str.strip()
                 
-                # Remove extra whitespace
+                
                 data[column] = data[column].str.replace(r'\s+', ' ', regex=True)
                 
-                # Handle empty strings
+                
                 data[column] = data[column].replace('', np.nan)
                 data[column] = data[column].replace('nan', np.nan)
                 
-                # Convert to lowercase for consistency (if it's categorical)
-                if data[column].nunique() < 50:  # Assuming categorical if few unique values
+                
+                if data[column].nunique() < 50:  
                     data[column] = data[column].str.lower()
                 
                 final_unique = data[column].nunique()
@@ -287,7 +287,7 @@ class DataCleaner:
         """Save cleaning report to a file."""
         import json
         
-        # Convert numpy types to native Python types for JSON serialization
+        
         def convert_numpy_types(obj):
             if isinstance(obj, np.integer):
                 return int(obj)
@@ -297,7 +297,7 @@ class DataCleaner:
                 return obj.tolist()
             return obj
         
-        # Create a JSON-serializable version of the report
+        
         serializable_report = {}
         for key, value in self.cleaning_report.items():
             if isinstance(value, dict):
