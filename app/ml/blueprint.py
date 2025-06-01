@@ -17,15 +17,21 @@ ml_bp = Blueprint('ml', __name__, url_prefix='/ml')
 ml_service = MLModelService()
 
 
-@ml_bp.before_app_first_request
-def initialize_ml_service():
+def initialize_ml_service(app):
     """Initialize the ML service when the app starts."""
     try:
-        ml_service.initialize(current_app.instance_path)
+        ml_service.initialize(app.instance_path)
         ml_service.load_model()
-        current_app.logger.info("ML service initialized successfully")
+        app.logger.info("ML service initialized successfully")
     except Exception as e:
-        current_app.logger.error(f"Error initializing ML service: {e}")
+        app.logger.error(f"Error initializing ML service: {e}")
+
+
+# Initialize ML service when blueprint is registered
+@ml_bp.record_once
+def on_register(state):
+    """Called when the blueprint is registered with the app."""
+    initialize_ml_service(state.app)
 
 
 @ml_bp.route('/train', methods=['GET', 'POST'])
