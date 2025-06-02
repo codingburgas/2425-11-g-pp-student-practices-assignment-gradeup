@@ -423,4 +423,48 @@ def survey_responses():
         page=page, per_page=20, error_out=False)
     
     surveys = Survey.query.all()
-    return render_template('admin/survey_responses.html', title='Survey Responses', responses=responses, surveys=surveys, selected_survey=survey_id) 
+    return render_template('admin/survey_responses.html', title='Survey Responses', responses=responses, surveys=surveys, selected_survey=survey_id)
+
+@bp.route('/responses/<int:response_id>/details')
+@admin_required
+def response_details(response_id):
+    """View detailed information about a specific survey response."""
+    response = SurveyResponse.query.get_or_404(response_id)
+    
+    # Parse response answers
+    try:
+        answers = json.loads(response.answers)
+    except (json.JSONDecodeError, TypeError):
+        answers = {}
+    
+    # Get survey questions for context
+    survey_questions = response.survey.get_questions()
+    
+    # Match answers with questions
+    detailed_answers = []
+    for question in survey_questions:
+        q_id = str(question.get('id', ''))
+        answer = answers.get(q_id, 'No answer provided')
+        
+        detailed_answers.append({
+            'question': question,
+            'answer': answer,
+            'question_id': q_id
+        })
+    
+    # Get user's other responses for this survey
+    user_other_responses = SurveyResponse.query.filter(
+        SurveyResponse.user_id == response.user_id,
+        SurveyResponse.survey_id == response.survey_id,
+        SurveyResponse.id != response.id
+    ).order_by(SurveyResponse.created_at.desc()).limit(5).all()
+    
+    # Get user's total response count
+    user_total_responses = SurveyResponse.query.filter_by(user_id=response.user_id).count()
+    
+    return render_template('admin/response_details.html', 
+                         title=f'Response Details - #{response.id}',
+                         response=response,
+                         detailed_answers=detailed_answers,
+                         user_other_responses=user_other_responses,
+                         user_total_responses=user_total_responses) 

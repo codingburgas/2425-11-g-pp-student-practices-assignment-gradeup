@@ -39,7 +39,7 @@
                 <div class="col-lg-8">
                     <form id="survey-form" method="POST" action="{{ url_for('main.submit_survey_response', survey_id=survey.id) }}"
                           data-total-questions="{{ survey.get_questions()|length|default(0) }}" class="cosmic-survey-form">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         
                         {% for question in survey.get_questions() %}
                             <div class="survey-question-card" data-question="{{ loop.index }}" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">

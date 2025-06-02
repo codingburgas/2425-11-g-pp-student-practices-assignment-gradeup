@@ -1285,7 +1285,7 @@ function viewResponse(responseId) {
                     <i class="fas fa-times"></i>
                     Close
                 </button>
-                <button class="modal-btn primary">
+                <button class="modal-btn primary" onclick="openFullDetails(${responseId})">
                     <i class="fas fa-external-link-alt"></i>
                     Open Full Details
                 </button>
@@ -1679,6 +1679,18 @@ function viewResponse(responseId) {
             modalStyles.remove();
         }
     });
+}
+
+// Function to open full details of a response
+function openFullDetails(responseId) {
+    // Close the current modal
+    const modal = document.querySelector('.response-modal-enhanced');
+    if (modal) {
+        modal.remove();
+    }
+    
+    // Redirect to the full response details page
+    window.location.href = `/admin/responses/${responseId}/details`;
 }
 </script>
 {% endblock %} 

@@ -1,0 +1,1124 @@
+{% extends "base.html" %}
+
+{% block title %}Response Details - #{{ response.id }} - GradeUP{% endblock %}
+
+{% block content %}
+<div class="cosmic-admin-container">
+    <!-- Enhanced Response Details Hero Section -->
+    <div class="response-hero-enhanced">
+        <div class="container-fluid">
+            <div class="hero-content-enhanced">
+                <div class="hero-icon-enhanced">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="icon-glow"></div>
+                </div>
+                <div class="hero-info-enhanced">
+                    <h1 class="hero-title">Response Details</h1>
+                    <p class="hero-subtitle">Comprehensive analysis of survey response #{{ response.id }}</p>
+                    <div class="hero-meta">
+                        <div class="meta-badge">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>{{ response.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <i class="fas fa-user"></i>
+                            <span>{{ response.user.username }}</span>
+                        </div>
+                        <div class="meta-badge">
+                            <i class="fas fa-poll"></i>
+                            <span>{{ response.survey.title }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-actions-enhanced">
+                    <a href="{{ url_for('admin.survey_responses') }}" class="hero-btn secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Responses</span>
+                    </a>
+                    <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" class="hero-btn primary">
+                        <i class="fas fa-poll"></i>
+                        <span>View Survey</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="main-content-enhanced">
+        <div class="container-fluid">
+            <div class="content-grid">
+                <!-- Left Column - Response Details -->
+                <div class="content-main">
+                    <!-- Response Summary Card -->
+                    <div class="detail-card summary-card">
+                        <div class="card-header">
+                            <div class="header-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>Response Summary</h3>
+                                <p>Overview of this survey response</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-hashtag"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Response ID</span>
+                                        <span class="item-value">#{{ response.id }}</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-clipboard-list"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Survey</span>
+                                        <span class="item-value">{{ response.survey.title }}</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Respondent</span>
+                                        <span class="item-value">{{ response.user.username }}</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Submitted</span>
+                                        <span class="item-value">{{ response.created_at.strftime('%B %d, %Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-question-circle"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Total Questions</span>
+                                        <span class="item-value">{{ detailed_answers|length }}</span>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="item-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="item-content">
+                                        <span class="item-label">Completed</span>
+                                        <span class="item-value">{{ detailed_answers|selectattr('answer')|list|length }}/{{ detailed_answers|length }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Survey Responses Card -->
+                    <div class="detail-card responses-card">
+                        <div class="card-header">
+                            <div class="header-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>Survey Responses</h3>
+                                <p>Detailed answers to all survey questions</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="responses-container">
+                                {% for item in detailed_answers %}
+                                <div class="response-block" data-question-id="{{ item.question_id }}">
+                                    <div class="question-header">
+                                        <div class="question-number">
+                                            <span>{{ loop.index }}</span>
+                                        </div>
+                                        <div class="question-info">
+                                            <h4 class="question-title">{{ item.question.text or item.question.question or 'Question text not available' }}</h4>
+                                            <div class="question-tags">
+                                                <span class="question-type-tag">{{ item.question.type|title or 'Unknown' }}</span>
+                                                {% if item.question.required %}
+                                                <span class="required-tag">Required</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="answer-container">
+                                        <div class="answer-header">
+                                            <i class="fas fa-reply"></i>
+                                            <span>Response</span>
+                                        </div>
+                                        <div class="answer-body">
+                                            {% if item.answer and item.answer != 'No answer provided' %}
+                                                {% if item.question.type == 'multiple_select' and item.answer is iterable and item.answer is not string %}
+                                                    <div class="multi-select-answer">
+                                                        {% for answer_item in item.answer %}
+                                                        <span class="selection-chip">{{ answer_item }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% elif item.question.type == 'rating' or item.question.type == 'slider' %}
+                                                    <div class="rating-display">
+                                                        <div class="rating-value">
+                                                            <span class="rating-number">{{ item.answer }}</span>
+                                                            <span class="rating-max">/ {{ item.question.max or 5 }}</span>
+                                                        </div>
+                                                        <div class="rating-stars">
+                                                            {% for i in range(1, (item.question.max or 5) + 1) %}
+                                                            <span class="star {% if i <= (item.answer|int) %}filled{% endif %}">★</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-response">{{ item.answer }}</div>
+                                                {% endif %}
+                                            {% else %}
+                                                <div class="empty-response">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                    <span>No answer provided</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <div class="content-sidebar">
+                    <!-- User Profile Card -->
+                    <div class="sidebar-card profile-card">
+                        <div class="card-header">
+                            <div class="header-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>User Profile</h3>
+                                <p>Information about the respondent</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="profile-section">
+                                <div class="profile-avatar">
+                                    <div class="avatar-circle">{{ response.user.username[0]|upper }}</div>
+                                </div>
+                                <div class="profile-info">
+                                    <h4 class="profile-name">{{ response.user.username }}</h4>
+                                    <p class="profile-email">{{ response.user.email }}</p>
+                                    <div class="profile-stats">
+                                        <div class="stat-box">
+                                            <span class="stat-number">{{ user_total_responses }}</span>
+                                            <span class="stat-label">Total Responses</span>
+                                        </div>
+                                        <div class="stat-box">
+                                            <span class="stat-number">{{ response.user.created_at.strftime('%Y') if response.user.created_at else 'N/A' }}</span>
+                                            <span class="stat-label">Member Since</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Card -->
+                    <div class="sidebar-card actions-card">
+                        <div class="card-header">
+                            <div class="header-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>Quick Actions</h3>
+                                <p>Manage this response</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="action-grid">
+                                <button class="action-button primary" onclick="exportResponse()">
+                                    <i class="fas fa-download"></i>
+                                    <span>Export Response</span>
+                                </button>
+                                <button class="action-button secondary" onclick="viewRecommendations()">
+                                    <i class="fas fa-star"></i>
+                                    <span>View Recommendations</span>
+                                </button>
+                                <button class="action-button info" onclick="generateReport()">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span>Generate Report</span>
+                                </button>
+                                <a href="mailto:{{ response.user.email }}" class="action-button warning">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>Contact User</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Survey Info Card -->
+                    <div class="sidebar-card survey-card">
+                        <div class="card-header">
+                            <div class="header-icon">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                            <div class="header-content">
+                                <h3>Survey Details</h3>
+                                <p>Information about this survey</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="survey-section">
+                                <h4 class="survey-title">{{ response.survey.title }}</h4>
+                                {% if response.survey.description %}
+                                <p class="survey-description">{{ response.survey.description }}</p>
+                                {% endif %}
+                                <div class="survey-metrics">
+                                    <div class="metric-item">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <span class="metric-value">{{ response.survey.responses.count() }}</span>
+                                            <span class="metric-label">Total Responses</span>
+                                        </div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-question"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <span class="metric-value">{{ response.survey.get_questions()|length }}</span>
+                                            <span class="metric-label">Questions</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="survey-actions">
+                                    <a href="{{ url_for('admin.survey_detail', survey_id=response.survey.id) }}" class="survey-action primary">
+                                        <i class="fas fa-eye"></i>
+                                        <span>View Survey</span>
+                                    </a>
+                                    <a href="{{ url_for('admin.edit_survey', survey_id=response.survey.id) }}" class="survey-action secondary">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Edit Survey</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Enhanced Response Details Styles */
+.cosmic-admin-container {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
+    min-height: 100vh;
+    padding: 0;
+}
+
+.response-hero-enhanced {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #1e40af 50%, #1e3a8a 75%, #1e1b4b 100%);
+    padding: 3rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.response-hero-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.hero-content-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+}
+
+.hero-icon-enhanced {
+    position: relative;
+}
+
+.icon-wrapper {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.icon-glow {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 25px;
+    filter: blur(15px);
+    opacity: 0.4;
+    z-index: 1;
+}
+
+.hero-info-enhanced {
+    flex: 1;
+    min-width: 300px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffffff, #e2e8f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    margin: 0 0 1.5rem 0;
+    font-weight: 400;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(148, 163, 184, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+.meta-badge i {
+    color: #8b5cf6;
+}
+
+.hero-actions-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 200px;
+}
+
+.hero-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.hero-btn:hover::before {
+    left: 100%;
+}
+
+.hero-btn.primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.hero-btn.primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+    color: white;
+}
+
+.hero-btn.secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.hero-btn.secondary:hover {
+    background: rgba(148, 163, 184, 0.3);
+    transform: translateY(-2px);
+    color: white;
+}
+
+.main-content-enhanced {
+    padding: 2rem 0;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.detail-card, .sidebar-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.detail-card:hover, .sidebar-card:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.1);
+}
+
+.card-header {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.header-content h3 {
+    color: #e2e8f0;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.header-content p {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.item-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.item-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-label {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.item-value {
+    color: #e2e8f0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.responses-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.response-block {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.response-block:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    background: rgba(30, 41, 59, 0.8);
+}
+
+.question-header {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.question-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.question-info {
+    flex: 1;
+}
+
+.question-title {
+    color: #e2e8f0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.5;
+}
+
+.question-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.question-type-tag {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.required-tag {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.answer-container {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.answer-header {
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a855f7;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.answer-body {
+    padding: 1.25rem;
+}
+
+.text-response {
+    color: #e2e8f0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.multi-select-answer {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.selection-chip {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.rating-value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.rating-number {
+    color: #e2e8f0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.rating-max {
+    color: #94a3b8;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star {
+    font-size: 1.5rem;
+    color: rgba(139, 92, 246, 0.3);
+    transition: color 0.3s ease;
+}
+
+.star.filled {
+    color: #fbbf24;
+}
+
+.empty-response {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.profile-section {
+    text-align: center;
+}
+
+.profile-avatar {
+    margin-bottom: 1.5rem;
+}
+
+.avatar-circle {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0 auto;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}
+
+.profile-name {
+    color: #e2e8f0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
+
+.profile-email {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    margin: 0 0 1.5rem 0;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.stat-box {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    color: #e2e8f0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.action-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.action-button.secondary {
+    background: rgba(107, 114, 128, 0.2);
+    color: #d1d5db;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.action-button.info {
+    background: rgba(6, 182, 212, 0.2);
+    color: #67e8f9;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.action-button.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+}
+
+.survey-section {
+    text-align: center;
+}
+
+.survey-title {
+    color: #e2e8f0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.survey-description {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+}
+
+.survey-metrics {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.metric-icon {
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.85rem;
+}
+
+.metric-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.metric-value {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.metric-label {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.survey-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.survey-action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.survey-action.primary {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a855f7;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.survey-action.secondary {
+    background: rgba(107, 114, 128, 0.2);
+    color: #d1d5db;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.survey-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content-enhanced {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .hero-actions-enhanced {
+        flex-direction: row;
+        width: 100%;
+        gap: 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-meta {
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .question-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .rating-display {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .profile-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .survey-metrics {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .survey-actions {
+        flex-direction: column;
+    }
+}
+
+/* Animation on load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.response-block {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.response-block:nth-child(1) { animation-delay: 0.1s; }
+.response-block:nth-child(2) { animation-delay: 0.2s; }
+.response-block:nth-child(3) { animation-delay: 0.3s; }
+.response-block:nth-child(4) { animation-delay: 0.4s; }
+.response-block:nth-child(5) { animation-delay: 0.5s; }
+</style>
+
+<script>
+function exportResponse() {
+    alert('Export functionality will be implemented soon!');
+}
+
+function viewRecommendations() {
+    window.location.href = "{{ url_for('main.recommendations') }}";
+}
+
+function generateReport() {
+    alert('Report generation functionality will be implemented soon!');
+}
+
+// Enhanced page interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to interactive elements
+    const interactiveElements = document.querySelectorAll('.summary-item, .response-block, .action-button, .survey-action');
+    
+    interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Add smooth scrolling for action buttons
+    const actionButtons = document.querySelectorAll('.action-button');
+    actionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'translateY(-2px)';
+            }, 150);
+        });
+    });
+});
+</script>
+{% endblock %} 
