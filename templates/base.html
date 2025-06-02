@@ -29,6 +29,52 @@
             </h3>
         </div>
         
+        {% if current_user.is_authenticated %}
+        <!-- Survey-focused navigation for logged in users -->
+        <div class="sidebar-section">
+            <h6 class="sidebar-section-title">Survey</h6>
+            <ul class="sidebar-nav">
+                <li class="nav-item {% if request.endpoint == 'main.survey' %}active{% endif %}">
+                    <a href="{{ url_for('main.survey') }}" class="nav-link">
+                        <i class="fas fa-poll"></i>
+                        <span>Take Survey</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.endpoint == 'main.recommendations' %}active{% endif %}">
+                    <a href="{{ url_for('main.recommendations') }}" class="nav-link">
+                        <i class="fas fa-star"></i>
+                        <span>My Results</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <h6 class="sidebar-section-title">Account</h6>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="{{ url_for('auth.profile') }}" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        {% else %}
+        <!-- Public navigation for non-logged in users -->
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Navigation</h6>
             <ul class="sidebar-nav">
@@ -36,12 +82,6 @@
                     <a href="{{ url_for('main.index') }}" class="nav-link">
                         <i class="fas fa-home"></i>
                         <span>Home</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('main.survey') }}" class="nav-link">
-                        <i class="fas fa-poll"></i>
-                        <span>Survey</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -53,35 +93,15 @@
                 <li class="nav-item">
                     <a href="{{ url_for('main.specialties') }}" class="nav-link">
                         <i class="fas fa-star"></i>
-                        <span>Specialties</span>
+                        <span>Programs</span>
                     </a>
                 </li>
             </ul>
         </div>
 
         <div class="sidebar-section">
-            <h6 class="sidebar-section-title">Account</h6>
+            <h6 class="sidebar-section-title">Get Started</h6>
             <ul class="sidebar-nav">
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.profile') }}" class="nav-link">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.logout') }}" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-                {% else %}
                 <li class="nav-item">
                     <a href="{{ url_for('auth.login') }}" class="nav-link">
                         <i class="fas fa-sign-in-alt"></i>
@@ -94,9 +114,9 @@
                         <span>Register</span>
                     </a>
                 </li>
-                {% endif %}
             </ul>
         </div>
+        {% endif %}
 
         {% if current_user.is_authenticated and current_user.is_admin %}
         <div class="sidebar-section">
@@ -121,10 +141,22 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="nav-links">
+                    {% if current_user.is_authenticated %}
+                    <!-- Survey-focused top nav for logged in users -->
+                    <a href="{{ url_for('main.survey') }}" class="nav-link {% if request.endpoint == 'main.survey' %}active{% endif %}">
+                        <i class="fas fa-poll me-1"></i>Survey
+                    </a>
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('main.recommendations') }}" class="nav-link">
+                        <i class="fas fa-star me-1"></i>Results
+                    </a>
+                    {% else %}
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a>
-                    <a href="{{ url_for('main.survey') }}" class="nav-link">Survey</a>
                     <a href="{{ url_for('main.universities') }}" class="nav-link">Universities</a>
-                    <a href="{{ url_for('main.specialties') }}" class="nav-link">Specialties</a>
+                    <a href="{{ url_for('main.specialties') }}" class="nav-link">Programs</a>
+                    {% endif %}
                 </div>
             </div>
             <div class="nav-actions">
@@ -132,7 +164,9 @@
                     <i class="fas fa-moon"></i>
                 </button>
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">Log Out</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light me-2">Log In</a>
                 <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Sign Up</a>

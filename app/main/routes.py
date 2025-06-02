@@ -1,7 +1,9 @@
 from flask import render_template, redirect, url_for, request, jsonify, flash, current_app
 from flask_login import login_required, current_user
+from flask_wtf.csrf import generate_csrf
 from app.main import bp
 from app.models import School, Program, Survey
+from app import db
 from app.preprocessing import PreprocessingPipeline
 from app.preprocessing.utils import (
     load_survey_responses_to_dataframe, 
@@ -44,8 +46,123 @@ def universities():
 
 @bp.route('/survey')
 def survey():
+    # Check if there are any active surveys, if not create a sample one
     surveys = Survey.query.filter_by(is_active=True).order_by(Survey.created_at.desc()).all()
+    
+    # Create sample survey if none exist
+    if not surveys:
+        create_sample_survey()
+        surveys = Survey.query.filter_by(is_active=True).order_by(Survey.created_at.desc()).all()
+    
     return render_template('main/survey_list.html', title='Available Surveys', surveys=surveys)
+
+@bp.route('/create-sample-survey')
+@login_required 
+def create_sample_survey():
+    """Create a sample survey for testing"""
+    import json
+    
+    # Check if survey already exists
+    existing_survey = Survey.query.filter_by(title="Educational Preferences Survey").first()
+    if existing_survey:
+        flash('Sample survey already exists!', 'info')
+        return redirect(url_for('main.survey'))
+    
+    survey_questions = [
+        {
+            "id": 1,
+            "text": "What subjects do you enjoy the most?",
+            "type": "multiple_choice",
+            "required": True,
+            "options": ["Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "History", "Literature", "Languages", "Arts", "Economics", "Psychology", "Philosophy"]
+        },
+        {
+            "id": 2,
+            "text": "What type of career are you interested in?",
+            "type": "multiple_choice",
+            "required": True,
+            "options": ["Technology", "Science", "Medicine", "Business", "Law", "Education", "Arts", "Engineering", "Social Services", "Government"]
+        },
+        {
+            "id": 3,
+            "text": "How important is university location to you?",
+            "type": "rating",
+            "required": True,
+            "min": 1,
+            "max": 5,
+            "labels": {"1": "Not Important", "5": "Very Important"}
+        },
+        {
+            "id": 4,
+            "text": "Do you prefer theoretical or practical learning?",
+            "type": "slider",
+            "required": True,
+            "min": 1,
+            "max": 5,
+            "labels": ["Theoretical", "Balanced", "Practical"]
+        },
+        {
+            "id": 5,
+            "text": "What program length do you prefer?",
+            "type": "multiple_choice",
+            "required": True,
+            "options": ["3 years", "4 years", "5 years", "6 years"]
+        },
+        {
+            "id": 6,
+            "text": "How important is employment rate after graduation?",
+            "type": "rating",
+            "required": True,
+            "min": 1,
+            "max": 5,
+            "labels": {"1": "Not Important", "5": "Very Important"}
+        },
+        {
+            "id": 7,
+            "text": "What teaching language do you prefer?",
+            "type": "multiple_choice",
+            "required": True,
+            "options": ["Bulgarian", "English", "Other", "Doesn't matter"]
+        },
+        {
+            "id": 8,
+            "text": "What are your average grades in high school?",
+            "type": "multiple_choice",
+            "required": True,
+            "options": ["Below 4.0", "4.0-4.5", "4.5-5.0", "5.0-5.5", "5.5-6.0"]
+        },
+        {
+            "id": 9,
+            "text": "What extracurricular activities do you enjoy?",
+            "type": "multiple_select",
+            "required": False,
+            "options": ["Sports", "Music", "Art", "Programming", "Volunteering", "Student Government", "Debate", "None"]
+        },
+        {
+            "id": 10,
+            "text": "What skills would you like to develop?",
+            "type": "multiple_select",
+            "required": False,
+            "options": ["Problem Solving", "Critical Thinking", "Communication", "Leadership", "Teamwork", "Technical Skills", "Creative Thinking", "Research Skills"]
+        }
+    ]
+    
+    survey = Survey(
+        title="Educational Preferences Survey",
+        description="This survey helps us understand your educational preferences and career goals to recommend suitable academic programs.",
+        questions=json.dumps(survey_questions),
+        is_active=True
+    )
+    
+    try:
+        db.session.add(survey)
+        db.session.commit()
+        flash('Sample survey created successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating survey: {str(e)}', 'danger')
+    
+    return redirect(url_for('main.survey'))
 
 @bp.route('/specialties')
 def specialties():
@@ -99,44 +216,73 @@ def take_survey(survey_id):
     
     return render_template('main/take_survey.html', 
                          title=f'Take Survey: {survey.title}', 
-                         survey=survey)
+                         survey=survey,
+                         csrf_token=generate_csrf())
 
 @bp.route('/survey/submit/<int:survey_id>', methods=['POST'])
 @login_required
 def submit_survey_response(survey_id):
     from app.models import SurveyResponse
-    from app import db
     import json
-    from flask import flash, request
     
     survey = Survey.query.get_or_404(survey_id)
     
-    
+    # Check if user has already submitted this survey
     existing_response = SurveyResponse.query.filter_by(
         user_id=current_user.id, 
         survey_id=survey_id
     ).first()
     
     if existing_response:
-        flash('You have already submitted this survey.', 'info')
-        return redirect(url_for('main.survey'))
+        flash('You have already submitted this survey. Thank you for your participation!', 'info')
+        return redirect(url_for('main.recommendations'))
     
-    
+    # Process survey responses
     answers = {}
     questions = survey.get_questions()
+    required_missing = []
     
     for question in questions:
         q_id = str(question['id'])
+        question_name = f'question_{q_id}'
+        
         if question['type'] == 'multiple_choice':
-            answers[q_id] = request.form.get(f'question_{q_id}')
+            answer = request.form.get(question_name)
+            if answer:
+                answers[q_id] = answer
+            elif question.get('required', True):
+                required_missing.append(question['text'])
+                
         elif question['type'] == 'multiple_select':
-            answers[q_id] = request.form.getlist(f'question_{q_id}')
+            answer_list = request.form.getlist(question_name)
+            if answer_list:
+                answers[q_id] = answer_list
+            elif question.get('required', True):
+                required_missing.append(question['text'])
+                
         elif question['type'] in ['rating', 'slider']:
-            answers[q_id] = int(request.form.get(f'question_{q_id}', 0))
-        else:
-            answers[q_id] = request.form.get(f'question_{q_id}')
+            answer = request.form.get(question_name)
+            if answer:
+                try:
+                    answers[q_id] = int(answer)
+                except ValueError:
+                    answers[q_id] = 0
+            elif question.get('required', True):
+                required_missing.append(question['text'])
+                
+        else:  # text input
+            answer = request.form.get(question_name, '').strip()
+            if answer:
+                answers[q_id] = answer
+            elif question.get('required', True):
+                required_missing.append(question['text'])
     
+    # Check for required questions
+    if required_missing:
+        flash(f'Please answer all required questions: {", ".join(required_missing)}', 'warning')
+        return redirect(url_for('main.take_survey', survey_id=survey_id))
     
+    # Create survey response
     response = SurveyResponse(
         user_id=current_user.id,
         survey_id=survey_id,
@@ -146,10 +292,24 @@ def submit_survey_response(survey_id):
     try:
         db.session.add(response)
         db.session.commit()
-        flash('Thank you! Your survey response has been submitted successfully.', 'success')
+        flash('🎉 Thank you! Your survey has been submitted successfully. You can now view your personalized recommendations!', 'success')
+        
+        # Try to generate recommendations immediately
+        try:
+            from app.ml.service import MLModelService
+            ml_service = MLModelService()
+            recommendations = ml_service.get_program_recommendations(current_user.id)
+            if recommendations:
+                flash(f'✨ Great news! We found {len(recommendations)} program recommendations based on your responses.', 'info')
+        except Exception as ml_error:
+            # Don't fail the whole process if ML fails
+            logger.warning(f"ML recommendation generation failed: {ml_error}")
+        
         return redirect(url_for('main.recommendations'))
+        
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Error saving survey response: {e}")
         flash('An error occurred while submitting your response. Please try again.', 'danger')
         return redirect(url_for('main.take_survey', survey_id=survey_id))
 

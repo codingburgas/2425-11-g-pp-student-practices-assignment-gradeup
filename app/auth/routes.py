@@ -12,7 +12,7 @@ from flask import current_app
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.survey'))
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -21,13 +21,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('main.dashboard')
-            
-            
-            if '?' in next_page:
-                next_page += '&logged_in=true'
-            else:
-                next_page += '?logged_in=true'
+                next_page = url_for('main.survey')
             
             return redirect(next_page)
         
@@ -40,12 +34,12 @@ def login():
 @bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('main.index') + '?logged_out=true')
+    return redirect(url_for('main.index'))
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.survey'))
     
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -56,7 +50,7 @@ def register():
         
         
         login_user(user)
-        return redirect(url_for('main.dashboard') + '?registered=true')
+        return redirect(url_for('main.survey'))
     
     return render_template('auth/register.html', title='Register', form=form)
 

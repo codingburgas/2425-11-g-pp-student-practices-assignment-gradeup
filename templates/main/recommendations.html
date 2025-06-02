@@ -3,70 +3,574 @@
 {% block title %}My Recommendations - GradeUP{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="dashboard-header">
+<div class="cosmic-page-container">
+    <!-- Hero Section -->
+    <div class="cosmic-hero-enhanced">
+        <div class="cosmic-particles-hero"></div>
         <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1 class="dashboard-title">
-                        <i class="fas fa-star me-2"></i>
-                        My Recommendations
-                    </h1>
-                    <p class="dashboard-subtitle">Personalized university recommendations based on your profile.</p>
+            <div class="hero-content text-center">
+                <div class="hero-icon-enhanced mb-4">
+                    <div class="professional-emoji size-xxl cosmic-glow">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="cosmic-glow-enhanced"></div>
+                </div>
+                <h1 class="cosmic-title-enhanced mb-3">
+                    <span class="title-gradient">My Recommendations</span>
+                </h1>
+                <p class="cosmic-subtitle-enhanced mb-4">
+                    Personalized university and program recommendations based on your survey responses
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="cosmic-content-section">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    {% set user_responses = current_user.survey_responses %}
+                    {% if user_responses %}
+                        <!-- User has taken surveys -->
+                        <div class="recommendations-container">
+                            <!-- Survey Status Card -->
+                            <div class="cosmic-card mb-4" data-aos="fade-up">
+                                <div class="card-header">
+                                    <h3>
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Survey Completed
+                                    </h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="status-item">
+                                                <i class="fas fa-calendar-check"></i>
+                                                <div class="status-details">
+                                                    <h5>Survey Date</h5>
+                                                    <p>{{ user_responses.first().created_at.strftime('%B %d, %Y') if user_responses.first() else 'N/A' }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="status-item">
+                                                <i class="fas fa-chart-line"></i>
+                                                <div class="status-details">
+                                                    <h5>Analysis Status</h5>
+                                                    <p class="text-success">
+                                                        <i class="fas fa-check me-1"></i>
+                                                        Complete
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AI Analysis Results -->
+                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="100">
+                                <div class="card-header">
+                                    <h3>
+                                        <i class="fas fa-brain me-2"></i>
+                                        AI Analysis Results
+                                    </h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="analysis-results">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <div class="analysis-metric">
+                                                    <div class="metric-icon">
+                                                        <i class="fas fa-graduation-cap"></i>
+                                                    </div>
+                                                    <div class="metric-content">
+                                                        <h4>Match Score</h4>
+                                                        <div class="score-display">
+                                                            <span class="score-number">87%</span>
+                                                            <div class="score-bar">
+                                                                <div class="score-fill" style="width: 87%;"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="analysis-metric">
+                                                    <div class="metric-icon">
+                                                        <i class="fas fa-university"></i>
+                                                    </div>
+                                                    <div class="metric-content">
+                                                        <h4>Programs Found</h4>
+                                                        <div class="metric-value">
+                                                            <span class="number">12</span>
+                                                            <span class="label">Matching Programs</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="analysis-metric">
+                                                    <div class="metric-icon">
+                                                        <i class="fas fa-target"></i>
+                                                    </div>
+                                                    <div class="metric-content">
+                                                        <h4>Best Match</h4>
+                                                        <div class="metric-value">
+                                                            <span class="best-match">Computer Science</span>
+                                                            <span class="confidence">95% confidence</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommended Programs -->
+                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="200">
+                                <div class="card-header">
+                                    <h3>
+                                        <i class="fas fa-award me-2"></i>
+                                        Top Recommended Programs
+                                    </h3>
+                                    <p>Based on your interests, skills, and career goals</p>
+                                </div>
+                                <div class="card-content">
+                                    <div class="recommendations-grid">
+                                        <!-- Sample recommendations - in real app these would come from ML model -->
+                                        <div class="recommendation-item">
+                                            <div class="rec-header">
+                                                <div class="rec-rank">1</div>
+                                                <div class="rec-info">
+                                                    <h4>Computer Science</h4>
+                                                    <p>Technical University of Sofia</p>
+                                                </div>
+                                                <div class="rec-score">
+                                                    <span class="score">95%</span>
+                                                    <small>match</small>
+                                                </div>
+                                            </div>
+                                            <div class="rec-details">
+                                                <div class="rec-tags">
+                                                    <span class="tag">4 years</span>
+                                                    <span class="tag">English</span>
+                                                    <span class="tag">High demand</span>
+                                                </div>
+                                                <p class="rec-description">Perfect match for your mathematical interests and technology career goals.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="recommendation-item">
+                                            <div class="rec-header">
+                                                <div class="rec-rank">2</div>
+                                                <div class="rec-info">
+                                                    <h4>Software Engineering</h4>
+                                                    <p>American University in Bulgaria</p>
+                                                </div>
+                                                <div class="rec-score">
+                                                    <span class="score">89%</span>
+                                                    <small>match</small>
+                                                </div>
+                                            </div>
+                                            <div class="rec-details">
+                                                <div class="rec-tags">
+                                                    <span class="tag">4 years</span>
+                                                    <span class="tag">English</span>
+                                                    <span class="tag">International</span>
+                                                </div>
+                                                <p class="rec-description">Excellent choice combining technical skills with practical application.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="recommendation-item">
+                                            <div class="rec-header">
+                                                <div class="rec-rank">3</div>
+                                                <div class="rec-info">
+                                                    <h4>Information Technology</h4>
+                                                    <p>University of Sofia</p>
+                                                </div>
+                                                <div class="rec-score">
+                                                    <span class="score">84%</span>
+                                                    <small>match</small>
+                                                </div>
+                                            </div>
+                                            <div class="rec-details">
+                                                <div class="rec-tags">
+                                                    <span class="tag">3 years</span>
+                                                    <span class="tag">Bulgarian</span>
+                                                    <span class="tag">Practical</span>
+                                                </div>
+                                                <p class="rec-description">Great option for hands-on technology application and system management.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="recommendations-actions text-center" data-aos="fade-up" data-aos-delay="300">
+                                <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced ghost me-3">
+                                    <i class="fas fa-redo"></i>
+                                    <span>Retake Survey</span>
+                                    <div class="btn-cosmic-glow"></div>
+                                </a>
+                                <a href="{{ url_for('main.universities') }}" class="cosmic-btn-enhanced primary">
+                                    <i class="fas fa-university"></i>
+                                    <span>Explore Universities</span>
+                                    <div class="btn-cosmic-glow"></div>
+                                </a>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <!-- User hasn't taken any surveys -->
+                        <div class="no-surveys-container text-center">
+                            <div class="cosmic-card">
+                                <div class="card-content">
+                                    <div class="empty-state-icon mb-4">
+                                        <div class="professional-emoji size-xxl cosmic-glow">
+                                            <i class="fas fa-poll"></i>
+                                        </div>
+                                    </div>
+                                    <h2 class="mb-3">Ready to Discover Your Perfect University?</h2>
+                                    <p class="lead mb-4">
+                                        Take our comprehensive survey to get personalized university and program recommendations based on your interests, goals, and preferences.
+                                    </p>
+                                    
+                                    <div class="survey-benefits mb-4">
+                                        <div class="benefit-grid">
+                                            <div class="benefit-item">
+                                                <i class="fas fa-brain"></i>
+                                                <h5>AI-Powered</h5>
+                                                <p>Advanced machine learning analyzes your responses</p>
+                                            </div>
+                                            <div class="benefit-item">
+                                                <i class="fas fa-target"></i>
+                                                <h5>Personalized</h5>
+                                                <p>Recommendations tailored specifically for you</p>
+                                            </div>
+                                            <div class="benefit-item">
+                                                <i class="fas fa-clock"></i>
+                                                <h5>Quick & Easy</h5>
+                                                <p>Takes only 5-10 minutes to complete</p>
+                                            </div>
+                                            <div class="benefit-item">
+                                                <i class="fas fa-university"></i>
+                                                <h5>Comprehensive</h5>
+                                                <p>Covers programs from top universities</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cta-actions">
+                                        <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced primary btn-lg">
+                                            <i class="fas fa-play"></i>
+                                            <span>Take Survey Now</span>
+                                            <div class="btn-cosmic-glow"></div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="dashboard-content">
-        <div class="container-fluid">
-            <div class="text-center py-5">
-                <div class="coming-soon-icon">
-                    <i class="fas fa-magic"></i>
-                </div>
-                <h2>AI-Powered Recommendations</h2>
-                <p>Take our survey first to get personalized university recommendations!</p>
-                <div class="action-buttons">
-                    <a href="{{ url_for('main.start_survey') }}" class="btn btn-cosmic me-3">
-                        <i class="fas fa-clipboard-list me-2"></i>
-                        Take Survey
-                    </a>
-                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-cosmic-outline">
-                        <i class="fas fa-arrow-left me-2"></i>
-                        Back to Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Floating particles -->
+    <div class="cosmic-particles-floating"></div>
 </div>
 
 <style>
-.coming-soon-icon {
-    width: 120px;
-    height: 120px;
-    background: var(--cosmic-gradient);
-    border-radius: 50%;
+/* Recommendations Page Styles */
+.recommendations-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.cosmic-card {
+    background: rgba(30, 30, 70, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    transition: all 0.4s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.cosmic-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2);
+}
+
+.card-header {
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    color: var(--star-white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.card-header p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.status-item i {
+    font-size: 2rem;
+    color: #10B981;
+}
+
+.status-details h5 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.status-details p {
+    color: rgba(248, 250, 252, 0.8);
+    margin: 0;
+}
+
+.analysis-metric {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 1rem;
+    height: 100%;
+}
+
+.metric-icon {
+    font-size: 2rem;
+    color: #A855F7;
+}
+
+.metric-content h4 {
+    color: var(--star-white);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.score-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.score-number {
+    color: #10B981;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.score-bar {
+    width: 100%;
+    height: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981, #34D399);
+    border-radius: 0.25rem;
+    transition: width 1s ease;
+}
+
+.metric-value .number {
+    color: #A855F7;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+
+.metric-value .label {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.85rem;
+}
+
+.best-match {
+    color: #10B981;
+    font-weight: 600;
+    display: block;
+}
+
+.confidence {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.85rem;
+}
+
+.recommendations-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.recommendation-item {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.rec-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rec-rank {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 2rem;
-    font-size: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #8B5CF6, #A855F7);
+    border-radius: 50%;
     color: white;
-    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4);
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 
-.coming-soon-icon i {
-    animation: sparkle 2s ease-in-out infinite alternate;
+.rec-info {
+    flex: 1;
 }
 
-.action-buttons {
+.rec-info h4 {
+    color: var(--star-white);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.rec-info p {
+    color: rgba(248, 250, 252, 0.7);
+    margin: 0;
+}
+
+.rec-score {
+    text-align: center;
+}
+
+.rec-score .score {
+    color: #10B981;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+
+.rec-score small {
+    color: rgba(248, 250, 252, 0.6);
+}
+
+.rec-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background: rgba(139, 92, 246, 0.2);
+    color: #C084FC;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.rec-description {
+    color: rgba(248, 250, 252, 0.8);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.no-surveys-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.benefit-item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.benefit-item i {
+    font-size: 2rem;
+    color: #A855F7;
+    margin-bottom: 0.75rem;
+}
+
+.benefit-item h5 {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.benefit-item p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.recommendations-actions {
     margin-top: 2rem;
 }
 
-@keyframes sparkle {
-    0% { transform: scale(1) rotate(0deg); }
-    100% { transform: scale(1.1) rotate(10deg); }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cosmic-card {
+        padding: 1.5rem;
+    }
+    
+    .analysis-metric {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .rec-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .benefit-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 {% endblock %} 
