@@ -1,4 +1,6 @@
-# 🎓 School Recommendation System
+# 🎓 GradeUp - School Recommendation System
+![GradeUp](https://github.com/user-attachments/assets/2447bd21-24f3-4cc3-8c58-62c0bae53cbe)
+
 
 A web application that helps students find the perfect educational institution based on their preferences and needs.
 
