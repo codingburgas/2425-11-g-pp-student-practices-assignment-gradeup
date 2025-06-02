@@ -1,8 +1,8 @@
-/* GradeUP - Cosmic Theme CSS */
 
-/* ===== CSS VARIABLES ===== */
+
+
 :root {
-  /* Cosmic Color Palette */
+ 
   --cosmic-purple: #8B5CF6;
   --cosmic-blue: #06B6D4;
   --cosmic-cyan: #EC4899;
@@ -12,21 +12,21 @@
   --nebula-purple: rgba(139, 92, 246, 0.1);
   --nebula-blue: rgba(6, 182, 212, 0.1);
   
-  /* Gradients */
+ 
   --cosmic-gradient: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
   --hero-gradient: linear-gradient(135deg, #1E1E2E 0%, #2D1B69 50%, #1E3A8A 100%);
   --card-gradient: linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
   
-  /* Layout */
+ 
   --sidebar-width: 240px;
   --top-navbar-height: 70px;
   
-  /* Animations */
+ 
   --transition-speed: 0.3s;
   --hover-transform: translateY(-2px);
 }
 
-/* ===== GLOBAL STYLES ===== */
+
 * {
   margin: 0;
   padding: 0;
@@ -46,7 +46,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* ===== ANIMATED BACKGROUND ===== */
+
 .cosmic-background {
   position: fixed;
   top: 0;
@@ -71,7 +71,7 @@ html {
   animation: cosmicPulse 8s ease-in-out infinite alternate;
 }
 
-/* ===== MOVING PARTICLES BACKGROUND ===== */
+
 .particles-background {
   position: fixed;
   top: 0;
@@ -127,7 +127,7 @@ html {
   }
 }
 
-/* ===== GLASSMORPHISM HERO BOX ===== */
+
 .hero-glass-box {
   position: relative;
   background: rgba(15, 15, 35, 0.15);
@@ -168,7 +168,7 @@ html {
   z-index: -1;
 }
 
-/* ===== HERO BOX PARTICLES ===== */
+
 .hero-particles {
   position: absolute;
   top: 0;
@@ -217,7 +217,7 @@ html {
   }
 }
 
-/* ===== SCROLL ANIMATIONS ===== */
+
 .animate-fade-in {
   opacity: 0;
   transform: translateY(30px);
@@ -248,7 +248,7 @@ html {
   transition: all 0.6s ease-out;
 }
 
-/* When elements are in view */
+
 .animate-fade-in.in-view {
   opacity: 1;
   transform: translateY(0);
@@ -283,7 +283,7 @@ html {
   overflow: hidden;
 }
 
-/* ===== PARTICLE ANIMATIONS ===== */
+
 @keyframes cosmicPulse {
   0% { opacity: 0.5; transform: scale(1); }
   100% { opacity: 0.8; transform: scale(1.1); }
@@ -305,7 +305,7 @@ html {
   100% { transform: rotate(360deg); }
 }
 
-/* ===== SIDEBAR NAVIGATION ===== */
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -319,7 +319,7 @@ html {
   overflow-y: auto;
   padding: 2rem 0;
   transition: transform var(--transition-speed) ease;
-  /* Enhanced glassmorphism */
+ 
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
 }
 
@@ -409,7 +409,7 @@ html {
   color: var(--cosmic-purple);
 }
 
-/* ===== TOP NAVIGATION ===== */
+
 .top-navbar {
   position: fixed;
   top: 0;
@@ -421,7 +421,7 @@ html {
   border-bottom: 1px solid rgba(139, 92, 246, 0.2);
   z-index: 999;
   transition: all var(--transition-speed) ease;
-  /* Enhanced glassmorphism */
+ 
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
 }
 
@@ -494,7 +494,7 @@ html {
   border-color: var(--cosmic-purple);
 }
 
-/* Mobile Menu Toggle */
+
 .mobile-menu-toggle {
   display: none;
   background: none;
@@ -506,7 +506,7 @@ html {
   font-size: 1.2rem;
 }
 
-/* ===== MAIN CONTENT ===== */
+
 .main-content {
   margin-left: var(--sidebar-width);
   padding-top: var(--top-navbar-height);
@@ -523,12 +523,12 @@ html {
   z-index: 2;
 }
 
-/* ===== HOME PAGE STYLES ===== */
+
 .home-container {
   position: relative;
 }
 
-/* ===== HERO SECTION ===== */
+
 .hero-section {
   min-height: calc(100vh - var(--top-navbar-height));
   display: flex;
@@ -652,7 +652,7 @@ html {
   color: var(--star-white);
 }
 
-/* ===== FEATURES LIST ===== */
+
 .features-list {
   display: flex !important;
   flex-direction: column;
@@ -697,7 +697,7 @@ html {
   transform: scale(1.1);
 }
 
-/* ===== HERO VISUAL / MOCKUP ===== */
+
 .hero-visual {
   display: flex;
   justify-content: center;
@@ -809,7 +809,7 @@ html {
   100% { opacity: 1; transform: scaleY(1.2); }
 }
 
-/* ===== STATISTICS SECTION ===== */
+
 .stats-section {
   padding: 4rem 0;
   background: rgba(15, 15, 35, 0.5);
@@ -868,7 +868,7 @@ html {
   margin-top: 0.25rem;
 }
 
-/* Secondary Stats */
+
 .stat-item.secondary {
   padding: 1.5rem 1rem;
 }
@@ -889,7 +889,7 @@ html {
   color: rgba(248, 250, 252, 0.7);
 }
 
-/* ===== HOW IT WORKS SECTION ===== */
+
 .how-it-works-section {
   padding: 6rem 0;
   background: rgba(15, 15, 35, 0.3);
@@ -945,7 +945,7 @@ html {
   line-height: 1.6;
 }
 
-/* ===== JOURNEY SECTION ===== */
+
 .journey-section {
   padding: 6rem 0;
   background: rgba(30, 27, 105, 0.3);
@@ -1001,7 +1001,7 @@ html {
   margin: 0;
 }
 
-/* ===== WHY CHOOSE SECTION ===== */
+
 .why-choose-section {
   padding: 6rem 0;
   background: rgba(15, 15, 35, 0.4);
@@ -1103,7 +1103,7 @@ html {
   transition: width 2s ease-in-out;
 }
 
-/* ===== TESTIMONIALS SECTION ===== */
+
 .testimonials-section {
   padding: 6rem 0;
   background: rgba(30, 27, 105, 0.2);
@@ -1192,7 +1192,7 @@ blockquote::before {
   right: -25px;
 }
 
-/* ===== FAQ SECTION ===== */
+
 .faq-section {
   padding: 6rem 0;
   background: rgba(15, 15, 35, 0.5);
@@ -1273,7 +1273,7 @@ blockquote::before {
   z-index: 1;
 }
 
-/* Ensure proper collapsing behavior */
+
 .accordion-collapse:not(.show) {
   height: 0;
   overflow: hidden;
@@ -1284,7 +1284,7 @@ blockquote::before {
   overflow: visible;
 }
 
-/* ===== SECTION TITLE ENHANCEMENTS ===== */
+
 .section-title {
   font-size: 2.5rem;
   font-weight: 700;
@@ -1313,7 +1313,7 @@ blockquote::before {
   line-height: 1.7;
 }
 
-/* ===== ENHANCED RESPONSIVE DESIGN ===== */
+
 @media (max-width: 768px) {
   .hero-section {
     padding: 0;
@@ -1434,7 +1434,7 @@ blockquote::before {
   }
 }
 
-/* ===== ENHANCED LIGHT THEME ===== */
+
 .light-theme {
   --cosmic-purple: #6B46C1;
   --cosmic-blue: #0284C7;
@@ -1487,7 +1487,7 @@ blockquote::before {
   background: rgba(107, 70, 193, 0.4);
 }
 
-/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1502,7 +1502,7 @@ blockquote::before {
   }
 }
 
-/* Reduce particles on low-end devices */
+
 .reduced-motion * {
   animation-duration: 0.1s !important;
   transition-duration: 0.1s !important;
@@ -1512,7 +1512,7 @@ blockquote::before {
   display: none;
 }
 
-/* ===== ENHANCED RESPONSIVENESS ===== */
+
 @media (max-width: 576px) {
   .features-list {
     margin-top: 1.5rem;
@@ -1529,7 +1529,7 @@ blockquote::before {
   }
 }
 
-/* ===== CUSTOM SCROLLBAR ===== */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -1547,7 +1547,7 @@ blockquote::before {
   background: linear-gradient(135deg, #9F7AEA 0%, #0891B2 100%);
 }
 
-/* ===== UTILITY CLASSES ===== */
+
 .cosmic-glow {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
 }
@@ -1567,7 +1567,7 @@ blockquote::before {
   border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
-/* ===== DASHBOARD COMMON STYLES ===== */
+
 .dashboard-container {
   min-height: 100vh;
   background: var(--hero-gradient);
@@ -1603,7 +1603,7 @@ blockquote::before {
   padding: 0 0 4rem 0;
 }
 
-/* ===== COMING SOON PAGES ===== */
+
 .coming-soon-icon {
   width: 120px;
   height: 120px;
@@ -1630,7 +1630,7 @@ blockquote::before {
   margin: 0.5rem;
 }
 
-/* ===== ENHANCED BUTTON STYLES ===== */
+
 .btn-cosmic {
   background: var(--cosmic-gradient);
   color: white;
@@ -1674,7 +1674,7 @@ blockquote::before {
   text-decoration: none;
 }
 
-/* ===== ADDITIONAL ANIMATIONS ===== */
+
 @keyframes pulse {
   0% { transform: scale(1); }
   100% { transform: scale(1.1); }
@@ -1696,7 +1696,7 @@ blockquote::before {
   transition: transform 0.15s ease;
 }
 
-/* ===== NOTIFICATION SYSTEM STYLES ===== */
+
 .notification-container {
     position: fixed;
     top: 20px;
@@ -1789,17 +1789,17 @@ blockquote::before {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Legacy toast styles override */
+
 .toast-container {
     display: none !important;
 }
 
-/* Flash messages should be hidden */
+
 .flash-messages .alert {
     display: none !important;
 }
 
-/* Responsive notifications */
+
 @media (max-width: 768px) {
     .notification-container {
         top: 10px;
@@ -1822,7 +1822,7 @@ blockquote::before {
     }
 }
 
-/* ===== PROFESSIONAL EMOJI SYSTEM ===== */
+
 .professional-emoji {
     display: inline-flex;
     align-items: center;
@@ -1883,7 +1883,7 @@ blockquote::before {
     transform: scale(1.05);
 }
 
-/* Color variants */
+
 .professional-emoji.variant-success {
     background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.2));
     border-color: rgba(16, 185, 129, 0.3);
@@ -1923,15 +1923,7 @@ blockquote::before {
     color: #EF4444;
 }
 
-/* Usage examples:
-   <div class="professional-emoji size-lg">
-     <i class="fas fa-users"></i>
-   </div>
-   
-   <div class="professional-emoji size-md variant-success">
-     <i class="fas fa-check"></i>
-   </div>
-*/
+
 
 @media (max-width: 768px) {
     .professional-emoji.size-xl {

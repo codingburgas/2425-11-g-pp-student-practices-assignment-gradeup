@@ -65,17 +65,17 @@ class ModelsTestCase(unittest.TestCase):
         self.assertEqual(len(survey.get_questions()), 2)
     
     def test_survey_response_model(self):
-        # Create user
+        
         u = User(username='testuser', email='test@example.com')
         db.session.add(u)
         
-        # Create survey
+        
         questions = [{"id": 1, "text": "Test question?", "type": "text"}]
         s = Survey(title='Test Survey', questions=json.dumps(questions))
         db.session.add(s)
         db.session.commit()
         
-        # Create response
+        
         answers = {"1": "My answer"}
         sr = SurveyResponse(user_id=u.id, survey_id=s.id, answers=json.dumps(answers))
         db.session.add(sr)
@@ -86,11 +86,11 @@ class ModelsTestCase(unittest.TestCase):
         self.assertEqual(response.get_answers()["1"], "My answer")
     
     def test_recommendation_model(self):
-        # Create user
+        
         u = User(username='testuser', email='test@example.com')
         db.session.add(u)
         
-        # Create school and program
+        
         s = School(name='Test School', location='Test Location')
         db.session.add(s)
         db.session.commit()
@@ -99,7 +99,7 @@ class ModelsTestCase(unittest.TestCase):
         db.session.add(p)
         db.session.commit()
         
-        # Create survey and response
+        
         questions = [{"id": 1, "text": "Test question?", "type": "text"}]
         survey = Survey(title='Test Survey', questions=json.dumps(questions))
         db.session.add(survey)
@@ -110,7 +110,7 @@ class ModelsTestCase(unittest.TestCase):
         db.session.add(sr)
         db.session.commit()
         
-        # Create recommendation
+        
         r = Recommendation(survey_response_id=sr.id, program_id=p.id, score=0.85)
         db.session.add(r)
         db.session.commit()
@@ -120,16 +120,16 @@ class ModelsTestCase(unittest.TestCase):
         self.assertEqual(rec.score, 0.85)
     
     def test_favorite_model(self):
-        # Create user
+        
         u = User(username='testuser', email='test@example.com')
         db.session.add(u)
         
-        # Create school
+        
         s = School(name='Test School', location='Test Location')
         db.session.add(s)
         db.session.commit()
         
-        # Create favorite
+        
         f = Favorite(user_id=u.id, school_id=s.id)
         db.session.add(f)
         db.session.commit()

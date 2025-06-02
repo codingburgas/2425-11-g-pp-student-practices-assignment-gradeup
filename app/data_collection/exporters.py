@@ -28,13 +28,13 @@ class DataExporter:
         if not survey_data:
             return output.getvalue()
         
-        # Get all possible field names from all responses
+        
         all_fields = set()
         for data in survey_data:
             raw_data = data.get_raw_data()
             all_fields.update(raw_data.keys())
         
-        # Add metadata fields
+        
         meta_fields = ['id', 'submission_time', 'processing_status', 'submission_ip']
         all_fields = list(all_fields) + meta_fields
         
@@ -43,7 +43,7 @@ class DataExporter:
         
         for data in survey_data:
             row = data.get_raw_data().copy()
-            # Add metadata
+            
             row.update({
                 'id': data.id,
                 'submission_time': data.submission_time.isoformat(),
@@ -94,13 +94,13 @@ class DataExporter:
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         
-        # Create main data worksheet
+        
         worksheet = workbook.add_worksheet('Survey Data')
         
-        # Define formats
+        
         header_format = workbook.add_format({
             'bold': True,
-            'bg_color': '#D3D3D3',
+            'bg_color': '#CCE5FF',
             'border': 1
         })
         date_format = workbook.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
@@ -111,20 +111,20 @@ class DataExporter:
             output.seek(0)
             return output.read()
         
-        # Get all possible field names
+        
         all_fields = set()
         for data in survey_data:
             raw_data = data.get_raw_data()
             all_fields.update(raw_data.keys())
         
-        # Define column headers
+        
         headers = ['ID', 'Survey ID', 'Submission Time', 'Status', 'IP Address'] + list(all_fields)
         
-        # Write headers
+        
         for col, header in enumerate(headers):
             worksheet.write(0, col, header, header_format)
         
-        # Write data
+        
         for row, data in enumerate(survey_data, 1):
             raw_data = data.get_raw_data()
             
@@ -134,17 +134,17 @@ class DataExporter:
             worksheet.write(row, 3, data.processing_status)
             worksheet.write(row, 4, data.submission_ip or '')
             
-            # Write survey response fields
+            
             for col, field in enumerate(all_fields, 5):
                 value = raw_data.get(field, '')
                 worksheet.write(row, col, str(value))
         
-        # Auto-adjust column widths
+        
         for col, header in enumerate(headers):
             max_width = max(len(header), 15)
             worksheet.set_column(col, col, max_width)
         
-        # Create summary worksheet
+        
         summary_sheet = workbook.add_worksheet('Summary')
         summary_sheet.write('A1', 'Export Summary', header_format)
         summary_sheet.write('A3', 'Total Records:')
@@ -168,7 +168,7 @@ class ExportManager:
                      exported_by: int = None) -> Dict[str, Any]:
         """Create and return an export of survey data."""
         try:
-            # Get survey data
+            
             survey_data = DataStorageManager.get_survey_data(
                 survey_id=survey_id,
                 start_date=start_date,
@@ -198,7 +198,7 @@ class ExportManager:
             else:
                 raise ValueError(f"Unsupported export format: {export_format}")
             
-            # Log the export
+            
             filters = {
                 'survey_id': survey_id,
                 'start_date': start_date.isoformat() if start_date else None,

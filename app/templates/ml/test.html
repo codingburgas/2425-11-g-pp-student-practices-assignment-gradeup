@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Test ML Model{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Test ML Model</h1>
+            
+            {% if test_data and recommendations %}
+            <!-- Results Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Prediction Results</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Input Summary -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>Input Data Summary:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Interests:</strong></p>
+                                    <ul>
+                                        <li>Mathematics: {{ test_data.math_interest }}/10</li>
+                                        <li>Science: {{ test_data.science_interest }}/10</li>
+                                        <li>Art: {{ test_data.art_interest }}/10</li>
+                                        <li>Sports: {{ test_data.sports_interest }}/10</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Profile:</strong></p>
+                                    <ul>
+                                        <li>Preferred Subject: {{ test_data.preferred_subject }}</li>
+                                        <li>Career Goal: {{ test_data.career_goal }}</li>
+                                        <li>Study Hours/Day: {{ test_data.study_hours_per_day }}</li>
+                                        <li>Average Grade: {{ test_data.grades_average }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <h6>Top Program Recommendations:</h6>
+                    {% if recommendations %}
+                        <div class="row">
+                            {% for rec in recommendations %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card {% if loop.index <= 2 %}border-primary{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="card-title">{{ rec.program.name }}</h6>
+                                                <p class="card-text">
+                                                    <strong>{{ rec.school.name }}</strong><br>
+                                                    <small class="text-muted">{{ rec.program.degree_type }}</small>
+                                                </p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="badge badge-{% if rec.confidence > 0.7 %}success{% elif rec.confidence > 0.5 %}warning{% else %}secondary{% endif %}">
+                                                    {{ "%.1f%%" | format(rec.confidence * 100) }}
+                                                </span>
+                                                <br>
+                                                <small class="text-muted">Rank {{ rec.rank }}</small>
+                                            </div>
+                                        </div>
+                                        {% if rec.program.description %}
+                                        <p class="card-text"><small>{{ rec.program.description[:100] }}...</small></p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            No recommendations generated. Please check if the model is trained.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Test Again Button -->
+            <div class="text-center mb-4">
+                <a href="{{ url_for('ml.test_model') }}" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Test Again
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Test Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Enter Test Data</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <!-- Interest Levels -->
+                            <div class="col-md-6">
+                                <h6>Interest Levels (1-10)</h6>
+                                
+                                <div class="form-group">
+                                    <label for="math_interest">Mathematics Interest</label>
+                                    <input type="range" class="form-control-range" id="math_interest" name="math_interest" 
+                                           min="1" max="10" value="{{ test_data.math_interest if test_data else 5 }}"
+                                           oninput="document.getElementById('math_value').textContent = this.value">
+                                    <small class="form-text text-muted">Value: <span id="math_value">{{ test_data.math_interest if test_data else 5 }}</span></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="science_interest">Science Interest</label>
+                                    <input type="range" class="form-control-range" id="science_interest" name="science_interest" 
+                                           min="1" max="10" value="{{ test_data.science_interest if test_data else 5 }}"
+                                           oninput="document.getElementById('science_value').textContent = this.value">
+                                    <small class="form-text text-muted">Value: <span id="science_value">{{ test_data.science_interest if test_data else 5 }}</span></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="art_interest">Art Interest</label>
+                                    <input type="range" class="form-control-range" id="art_interest" name="art_interest" 
+                                           min="1" max="10" value="{{ test_data.art_interest if test_data else 5 }}"
+                                           oninput="document.getElementById('art_value').textContent = this.value">
+                                    <small class="form-text text-muted">Value: <span id="art_value">{{ test_data.art_interest if test_data else 5 }}</span></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="sports_interest">Sports Interest</label>
+                                    <input type="range" class="form-control-range" id="sports_interest" name="sports_interest" 
+                                           min="1" max="10" value="{{ test_data.sports_interest if test_data else 5 }}"
+                                           oninput="document.getElementById('sports_value').textContent = this.value">
+                                    <small class="form-text text-muted">Value: <span id="sports_value">{{ test_data.sports_interest if test_data else 5 }}</span></small>
+                                </div>
+                            </div>
+
+                            <!-- Profile Information -->
+                            <div class="col-md-6">
+                                <h6>Profile Information</h6>
+                                
+                                <div class="form-group">
+                                    <label for="preferred_subject">Preferred Subject</label>
+                                    <select class="form-control" id="preferred_subject" name="preferred_subject">
+                                        <option value="Mathematics" {{ "selected" if test_data and test_data.preferred_subject == "Mathematics" }}>Mathematics</option>
+                                        <option value="Science" {{ "selected" if test_data and test_data.preferred_subject == "Science" }}>Science</option>
+                                        <option value="Art" {{ "selected" if test_data and test_data.preferred_subject == "Art" }}>Art</option>
+                                        <option value="History" {{ "selected" if test_data and test_data.preferred_subject == "History" }}>History</option>
+                                        <option value="Languages" {{ "selected" if test_data and test_data.preferred_subject == "Languages" }}>Languages</option>
+                                        <option value="Economics" {{ "selected" if test_data and test_data.preferred_subject == "Economics" }}>Economics</option>
+                                        <option value="Physics" {{ "selected" if test_data and test_data.preferred_subject == "Physics" }}>Physics</option>
+                                        <option value="Chemistry" {{ "selected" if test_data and test_data.preferred_subject == "Chemistry" }}>Chemistry</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="career_goal">Career Goal</label>
+                                    <select class="form-control" id="career_goal" name="career_goal">
+                                        <option value="Engineer" {{ "selected" if test_data and test_data.career_goal == "Engineer" }}>Engineer</option>
+                                        <option value="Scientist" {{ "selected" if test_data and test_data.career_goal == "Scientist" }}>Scientist</option>
+                                        <option value="Designer" {{ "selected" if test_data and test_data.career_goal == "Designer" }}>Designer</option>
+                                        <option value="Teacher" {{ "selected" if test_data and test_data.career_goal == "Teacher" }}>Teacher</option>
+                                        <option value="Doctor" {{ "selected" if test_data and test_data.career_goal == "Doctor" }}>Doctor</option>
+                                        <option value="Business" {{ "selected" if test_data and test_data.career_goal == "Business" }}>Business</option>
+                                        <option value="Artist" {{ "selected" if test_data and test_data.career_goal == "Artist" }}>Artist</option>
+                                        <option value="Lawyer" {{ "selected" if test_data and test_data.career_goal == "Lawyer" }}>Lawyer</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="study_hours_per_day">Study Hours per Day</label>
+                                    <input type="number" class="form-control" id="study_hours_per_day" name="study_hours_per_day" 
+                                           min="1" max="12" value="{{ test_data.study_hours_per_day if test_data else 4 }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="grades_average">Average Grade</label>
+                                    <input type="number" class="form-control" id="grades_average" name="grades_average" 
+                                           min="2.0" max="6.0" step="0.1" value="{{ test_data.grades_average if test_data else 5.0 }}">
+                                    <small class="form-text text-muted">Bulgarian grading system (2.0 - 6.0)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="languages_spoken">Languages Spoken (comma-separated)</label>
+                                    <input type="text" class="form-control" id="languages_spoken" name="languages_spoken" 
+                                           value="{{ test_data.languages_spoken | join(', ') if test_data else 'Bulgarian, English' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boolean Questions -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h6>Additional Information</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" id="extracurricular_yes" value="true" 
+                                                   {{ "checked" if test_data and test_data.extracurricular else "checked" if not test_data }}>
+                                            <label class="form-check-label" for="extracurricular_yes">
+                                                Participates in extracurricular activities
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" id="extracurricular_no" value="false"
+                                                   {{ "checked" if test_data and not test_data.extracurricular }}>
+                                            <label class="form-check-label" for="extracurricular_no">
+                                                Does not participate in extracurricular activities
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="leadership_experience" id="leadership_yes" value="true"
+                                                   {{ "checked" if test_data and test_data.leadership_experience }}>
+                                            <label class="form-check-label" for="leadership_yes">
+                                                Has leadership experience
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="leadership_experience" id="leadership_no" value="false"
+                                                   {{ "checked" if test_data and not test_data.leadership_experience else "checked" if not test_data }}>
+                                            <label class="form-check-label" for="leadership_no">
+                                                No leadership experience
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="team_preference" id="team_yes" value="true"
+                                                   {{ "checked" if test_data and test_data.team_preference }}>
+                                            <label class="form-check-label" for="team_yes">
+                                                Prefers working in teams
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="team_preference" id="team_no" value="false"
+                                                   {{ "checked" if test_data and not test_data.team_preference else "checked" if not test_data }}>
+                                            <label class="form-check-label" for="team_no">
+                                                Prefers working independently
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic"></i> Get Recommendations
+                            </button>
+                            <a href="{{ url_for('ml.model_status') }}" class="btn btn-outline-secondary btn-lg ml-2">
+                                <i class="fas fa-chart-line"></i> Model Status
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize slider values on page load
+document.addEventListener('DOMContentLoaded', function() {
+    ['math', 'science', 'art', 'sports'].forEach(function(subject) {
+        const slider = document.getElementById(subject + '_interest');
+        const display = document.getElementById(subject + '_value');
+        if (slider && display) {
+            display.textContent = slider.value;
+        }
+    });
+});
+</script>
+{% endblock %} 

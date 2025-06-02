@@ -16,12 +16,12 @@ class User(UserMixin, db.Model):
     profile_picture = db.Column(db.String(255), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     location = db.Column(db.String(100), nullable=True)
-    preferences = db.Column(db.Text, nullable=True)  # JSON string for user preferences
+    preferences = db.Column(db.Text, nullable=True)  
     
-    # One-to-many relationship with survey responses
+    
     survey_responses = db.relationship('SurveyResponse', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
-    # One-to-many relationship with favorite schools
+    
     favorites = db.relationship('Favorite', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def set_password(self, password):
@@ -62,10 +62,10 @@ class School(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # One-to-many relationship with programs
+    
     programs = db.relationship('Program', backref='school', lazy='dynamic', cascade='all, delete-orphan')
     
-    # One-to-many relationship with favorites
+    
     favorites = db.relationship('Favorite', backref='school', lazy='dynamic', cascade='all, delete-orphan')
     
     def __repr__(self):
@@ -77,17 +77,17 @@ class Program(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
-    duration = db.Column(db.String(50), nullable=True)  # e.g., "4 years"
-    degree_type = db.Column(db.String(50), nullable=False)  # e.g., "Bachelor's", "Master's"
+    duration = db.Column(db.String(50), nullable=True)  
+    degree_type = db.Column(db.String(50), nullable=False)  
     admission_requirements = db.Column(db.Text, nullable=True)
     tuition_fee = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Foreign key
+    
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
     
-    # Many-to-many relationship with survey responses through recommendations
+    
     recommendations = db.relationship('Recommendation', backref='program', lazy='dynamic', cascade='all, delete-orphan')
     
     def __repr__(self):
@@ -99,12 +99,12 @@ class Survey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    questions = db.Column(db.Text, nullable=False)  # JSON string of questions
+    questions = db.Column(db.Text, nullable=False)  
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # One-to-many relationship with survey responses
+    
     responses = db.relationship('SurveyResponse', backref='survey', lazy='dynamic', cascade='all, delete-orphan')
     
     def get_questions(self):
@@ -120,14 +120,14 @@ class SurveyResponse(db.Model):
     __tablename__ = 'survey_responses'
     
     id = db.Column(db.Integer, primary_key=True)
-    answers = db.Column(db.Text, nullable=False)  # JSON string of answers
+    answers = db.Column(db.Text, nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Foreign keys
+    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     survey_id = db.Column(db.Integer, db.ForeignKey('surveys.id'), nullable=False)
     
-    # One-to-many relationship with recommendations
+    
     recommendations = db.relationship('Recommendation', backref='survey_response', lazy='dynamic', cascade='all, delete-orphan')
     
     def get_answers(self):
@@ -143,10 +143,10 @@ class Recommendation(db.Model):
     __tablename__ = 'recommendations'
     
     id = db.Column(db.Integer, primary_key=True)
-    score = db.Column(db.Float, nullable=False)  # Matching score between survey response and program
+    score = db.Column(db.Float, nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Foreign keys
+    
     survey_response_id = db.Column(db.Integer, db.ForeignKey('survey_responses.id'), nullable=False)
     program_id = db.Column(db.Integer, db.ForeignKey('programs.id'), nullable=False)
     
@@ -159,7 +159,7 @@ class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Foreign keys
+    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
     
