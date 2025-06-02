@@ -44,6 +44,8 @@
                         <span>Survey</span>
                     </a>
                 </li>
+                <!-- Hide Universities and Specialties for students -->
+                <!-- 
                 <li class="nav-item">
                     <a href="{{ url_for('main.universities') }}" class="nav-link">
                         <i class="fas fa-university"></i>
@@ -56,6 +58,7 @@
                         <span>Specialties</span>
                     </a>
                 </li>
+                -->
             </ul>
         </div>
 
@@ -123,8 +126,11 @@
                 <div class="nav-links">
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a>
                     <a href="{{ url_for('main.survey') }}" class="nav-link">Survey</a>
+                    <!-- Hide Universities and Specialties for students -->
+                    <!-- 
                     <a href="{{ url_for('main.universities') }}" class="nav-link">Universities</a>
                     <a href="{{ url_for('main.specialties') }}" class="nav-link">Specialties</a>
+                    -->
                 </div>
             </div>
             <div class="nav-actions">

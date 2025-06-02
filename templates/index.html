@@ -35,17 +35,23 @@
                                     Take the Survey
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
+                                <!-- Hidden for students - focus on survey only -->
+                                <!-- 
                                 <a href="{{ url_for('main.universities') }}" class="btn btn-outline-primary btn-hero">
                                     Explore Universities
                                 </a>
+                                -->
                                 {% else %}
                                 <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-hero">
                                     Go to Dashboard
                                     <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
+                                <!-- Hidden for students - focus on survey only -->
+                                <!-- 
                                 <a href="{{ url_for('main.universities') }}" class="btn btn-outline-primary btn-hero">
                                     Explore Universities
                                 </a>
+                                -->
                                 {% endif %}
                             </div>
 

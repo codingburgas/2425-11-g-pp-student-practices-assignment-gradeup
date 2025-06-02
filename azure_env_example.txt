@@ -1,0 +1,34 @@
+# Azure App Service Environment Variables Configuration
+# Copy these settings to your Azure App Service Configuration -> Application Settings
+
+# Flask Configuration
+FLASK_APP=startup.py
+FLASK_ENV=production
+SECRET_KEY=your-super-secret-key-change-this-in-production-use-32-chars-minimum
+
+# Database Configuration (Azure SQL Database)
+# Replace with your Azure SQL Database connection string
+DATABASE_URL=mssql+pyodbc://username:password@servername.database.windows.net/database_name?driver=ODBC+Driver+17+for+SQL+Server
+
+# Example for Azure SQL:
+# DATABASE_URL=mssql+pyodbc://gradeup_admin:YourPassword123!@gradeup-server.database.windows.net/gradeup_db?driver=ODBC+Driver+17+for+SQL+Server
+
+# Email Configuration (Optional)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=1
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+
+# Azure-specific settings
+WEBSITE_HOSTNAME=your-app-name.azurewebsites.net
+PORT=8000
+
+# Admin Configuration
+ADMIN_EMAIL=admin@yourdomain.com
+
+# Instructions:
+# 1. Go to Azure Portal -> Your App Service -> Configuration -> Application Settings
+# 2. Add each of these as a new application setting
+# 3. Replace placeholder values with your actual values
+# 4. Save and restart your app service 
