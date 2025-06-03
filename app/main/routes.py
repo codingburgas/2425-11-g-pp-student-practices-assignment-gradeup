@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, request, jsonify, flash, c
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
 from app.main import bp
-from app.models import School, Program, Survey
+from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation
 from app import db
 from app.preprocessing import PreprocessingPipeline
 from app.preprocessing.utils import (
@@ -25,7 +25,82 @@ def index():
 @bp.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('main/dashboard.html')
+    # Calculate user progress metrics
+    total_surveys = Survey.query.filter_by(is_active=True).count()
+    completed_surveys = SurveyResponse.query.filter_by(user_id=current_user.id).count()
+    
+    # Profile completion
+    profile_fields = [
+        current_user.bio,
+        current_user.location,
+        current_user.preferences
+    ]
+    profile_completion = sum(1 for field in profile_fields if field) * 25  # Each field worth 25%
+    
+    # Recent recommendations
+    recent_recommendations = db.session.query(Recommendation)\
+        .join(SurveyResponse)\
+        .filter(SurveyResponse.user_id == current_user.id)\
+        .order_by(Recommendation.created_at.desc())\
+        .limit(5).all()
+    
+    # Favorite schools count
+    favorites_count = Favorite.query.filter_by(user_id=current_user.id).count()
+    
+    # Recent favorites
+    recent_favorites = Favorite.query.filter_by(user_id=current_user.id)\
+        .order_by(Favorite.created_at.desc())\
+        .limit(3).all()
+    
+    # Calculate overall progress
+    survey_progress = (completed_surveys / max(total_surveys, 1)) * 100
+    overall_progress = (survey_progress + profile_completion) / 2
+    
+    # Next steps suggestions
+    next_steps = []
+    if completed_surveys == 0:
+        next_steps.append({
+            'icon': 'fas fa-poll',
+            'title': 'Take Your First Survey',
+            'description': 'Complete our survey to get personalized university recommendations',
+            'link': url_for('main.survey'),
+            'priority': 1
+        })
+    
+    if not current_user.bio:
+        next_steps.append({
+            'icon': 'fas fa-user-edit',
+            'title': 'Complete Your Profile',
+            'description': 'Add a bio and preferences to improve recommendations',
+            'link': url_for('auth.profile'),
+            'priority': 2
+        })
+    
+    if favorites_count == 0:
+        next_steps.append({
+            'icon': 'fas fa-star',
+            'title': 'Explore Universities',
+            'description': 'Browse universities and save your favorites',
+            'link': url_for('main.universities'),
+            'priority': 3
+        })
+    
+    # Sort by priority
+    next_steps.sort(key=lambda x: x['priority'])
+    
+    dashboard_data = {
+        'total_surveys': total_surveys,
+        'completed_surveys': completed_surveys,
+        'survey_progress': survey_progress,
+        'profile_completion': profile_completion,
+        'overall_progress': overall_progress,
+        'favorites_count': favorites_count,
+        'recent_recommendations': recent_recommendations,
+        'recent_favorites': recent_favorites,
+        'next_steps': next_steps[:3]  # Show top 3 suggestions
+    }
+    
+    return render_template('main/dashboard.html', **dashboard_data)
 
 @bp.route('/universities')
 def universities():

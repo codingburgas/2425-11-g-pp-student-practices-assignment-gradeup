@@ -1,8 +1,4 @@
-
-
-
 :root {
- 
   --cosmic-purple: #8B5CF6;
   --cosmic-blue: #06B6D4;
   --cosmic-cyan: #EC4899;
@@ -12,20 +8,16 @@
   --nebula-purple: rgba(139, 92, 246, 0.1);
   --nebula-blue: rgba(6, 182, 212, 0.1);
   
- 
   --cosmic-gradient: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
   --hero-gradient: linear-gradient(135deg, #1E1E2E 0%, #2D1B69 50%, #1E3A8A 100%);
   --card-gradient: linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
   
- 
   --sidebar-width: 240px;
   --top-navbar-height: 70px;
   
- 
   --transition-speed: 0.3s;
   --hover-transform: translateY(-2px);
 }
-
 
 * {
   margin: 0;
@@ -45,7 +37,6 @@ body {
 html {
   scroll-behavior: smooth;
 }
-
 
 .cosmic-background {
   position: fixed;
@@ -70,7 +61,6 @@ html {
               radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
   animation: cosmicPulse 8s ease-in-out infinite alternate;
 }
-
 
 .particles-background {
   position: fixed;
@@ -127,7 +117,6 @@ html {
   }
 }
 
-
 .hero-glass-box {
   position: relative;
   background: rgba(15, 15, 35, 0.15);
@@ -167,7 +156,6 @@ html {
   animation: rotate 30s linear infinite;
   z-index: -1;
 }
-
 
 .hero-particles {
   position: absolute;
@@ -217,7 +205,6 @@ html {
   }
 }
 
-
 .animate-fade-in {
   opacity: 0;
   transform: translateY(30px);
@@ -247,7 +234,6 @@ html {
   transform: scale(0.9);
   transition: all 0.6s ease-out;
 }
-
 
 .animate-fade-in.in-view {
   opacity: 1;
@@ -283,7 +269,6 @@ html {
   overflow: hidden;
 }
 
-
 @keyframes cosmicPulse {
   0% { opacity: 0.5; transform: scale(1); }
   100% { opacity: 0.8; transform: scale(1.1); }
@@ -304,7 +289,6 @@ html {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 
 .sidebar {
   position: fixed;
@@ -409,7 +393,6 @@ html {
   color: var(--cosmic-purple);
 }
 
-
 .top-navbar {
   position: fixed;
   top: 0;
@@ -479,22 +462,7 @@ html {
   gap: 2rem;
 }
 
-.theme-toggle {
-  background: none;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: var(--cosmic-purple);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all var(--transition-speed) ease;
-}
-
-.theme-toggle:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: var(--cosmic-purple);
-}
-
-
+/* Mobile Menu Toggle */
 .mobile-menu-toggle {
   display: none;
   background: none;
@@ -505,7 +473,6 @@ html {
   cursor: pointer;
   font-size: 1.2rem;
 }
-
 
 .main-content {
   margin-left: var(--sidebar-width);
@@ -523,11 +490,9 @@ html {
   z-index: 2;
 }
 
-
 .home-container {
   position: relative;
 }
-
 
 .hero-section {
   min-height: calc(100vh - var(--top-navbar-height));
@@ -652,7 +617,6 @@ html {
   color: var(--star-white);
 }
 
-
 .features-list {
   display: flex !important;
   flex-direction: column;
@@ -696,7 +660,6 @@ html {
   color: var(--cosmic-blue);
   transform: scale(1.1);
 }
-
 
 .hero-visual {
   display: flex;
@@ -809,7 +772,6 @@ html {
   100% { opacity: 1; transform: scaleY(1.2); }
 }
 
-
 .stats-section {
   padding: 4rem 0;
   background: rgba(15, 15, 35, 0.5);
@@ -868,7 +830,6 @@ html {
   margin-top: 0.25rem;
 }
 
-
 .stat-item.secondary {
   padding: 1.5rem 1rem;
 }
@@ -888,7 +849,6 @@ html {
   font-size: 0.9rem;
   color: rgba(248, 250, 252, 0.7);
 }
-
 
 .how-it-works-section {
   padding: 6rem 0;
@@ -945,7 +905,6 @@ html {
   line-height: 1.6;
 }
 
-
 .journey-section {
   padding: 6rem 0;
   background: rgba(30, 27, 105, 0.3);
@@ -1000,7 +959,6 @@ html {
   line-height: 1.6;
   margin: 0;
 }
-
 
 .why-choose-section {
   padding: 6rem 0;
@@ -1103,7 +1061,6 @@ html {
   transition: width 2s ease-in-out;
 }
 
-
 .testimonials-section {
   padding: 6rem 0;
   background: rgba(30, 27, 105, 0.2);
@@ -1192,7 +1149,6 @@ blockquote::before {
   right: -25px;
 }
 
-
 .faq-section {
   padding: 6rem 0;
   background: rgba(15, 15, 35, 0.5);
@@ -1273,7 +1229,6 @@ blockquote::before {
   z-index: 1;
 }
 
-
 .accordion-collapse:not(.show) {
   height: 0;
   overflow: hidden;
@@ -1283,7 +1238,6 @@ blockquote::before {
   height: auto;
   overflow: visible;
 }
-
 
 .section-title {
   font-size: 2.5rem;
@@ -1312,7 +1266,6 @@ blockquote::before {
   margin: 0 auto;
   line-height: 1.7;
 }
-
 
 @media (max-width: 768px) {
   .hero-section {
@@ -1434,60 +1387,6 @@ blockquote::before {
   }
 }
 
-
-.light-theme {
-  --cosmic-purple: #6B46C1;
-  --cosmic-blue: #0284C7;
-  --cosmic-cyan: #DB2777;
-  --deep-space: #F8FAFC;
-  --star-white: #1E1E2E;
-  --space-gray: #E5E7EB;
-  --hero-gradient: linear-gradient(135deg, #F8FAFC 0%, #E5E7EB 50%, #D1D5DB 100%);
-  --card-gradient: linear-gradient(145deg, rgba(107, 70, 193, 0.05) 0%, rgba(2, 132, 199, 0.03) 100%);
-}
-
-.light-theme .cosmic-background {
-  background: var(--hero-gradient);
-}
-
-.light-theme .cosmic-background::before {
-  background: radial-gradient(circle at 20% 80%, rgba(107, 70, 193, 0.2) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(2, 132, 199, 0.2) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(219, 39, 119, 0.1) 0%, transparent 50%);
-}
-
-.light-theme .sidebar {
-  background: rgba(248, 250, 252, 0.95);
-  border-right: 1px solid rgba(107, 70, 193, 0.2);
-}
-
-.light-theme .top-navbar {
-  background: rgba(248, 250, 252, 0.95);
-  border-bottom: 1px solid rgba(107, 70, 193, 0.2);
-}
-
-.light-theme .stats-section,
-.light-theme .how-it-works-section,
-.light-theme .journey-section,
-.light-theme .why-choose-section,
-.light-theme .testimonials-section,
-.light-theme .faq-section {
-  background: rgba(248, 250, 252, 0.05);
-}
-
-.light-theme .process-card,
-.light-theme .journey-step,
-.light-theme .testimonial-card,
-.light-theme .accordion-item {
-  background: rgba(248, 250, 252, 0.1);
-  border: 1px solid rgba(107, 70, 193, 0.1);
-}
-
-.light-theme .particle {
-  background: rgba(107, 70, 193, 0.4);
-}
-
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1502,7 +1401,6 @@ blockquote::before {
   }
 }
 
-
 .reduced-motion * {
   animation-duration: 0.1s !important;
   transition-duration: 0.1s !important;
@@ -1511,7 +1409,6 @@ blockquote::before {
 .reduced-motion .particle {
   display: none;
 }
-
 
 @media (max-width: 576px) {
   .features-list {
@@ -1529,7 +1426,6 @@ blockquote::before {
   }
 }
 
-
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -1546,7 +1442,6 @@ blockquote::before {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #9F7AEA 0%, #0891B2 100%);
 }
-
 
 .cosmic-glow {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
@@ -1566,7 +1461,6 @@ blockquote::before {
 .border-cosmic {
   border: 1px solid rgba(139, 92, 246, 0.3);
 }
-
 
 .dashboard-container {
   min-height: 100vh;
@@ -1603,7 +1497,6 @@ blockquote::before {
   padding: 0 0 4rem 0;
 }
 
-
 .coming-soon-icon {
   width: 120px;
   height: 120px;
@@ -1629,7 +1522,6 @@ blockquote::before {
 .action-buttons .btn {
   margin: 0.5rem;
 }
-
 
 .btn-cosmic {
   background: var(--cosmic-gradient);
@@ -1674,7 +1566,6 @@ blockquote::before {
   text-decoration: none;
 }
 
-
 @keyframes pulse {
   0% { transform: scale(1); }
   100% { transform: scale(1.1); }
@@ -1695,7 +1586,6 @@ blockquote::before {
   transform: scale(0.98);
   transition: transform 0.15s ease;
 }
-
 
 .notification-container {
     position: fixed;
@@ -1789,16 +1679,13 @@ blockquote::before {
     background: rgba(255, 255, 255, 0.1);
 }
 
-
 .toast-container {
     display: none !important;
 }
 
-
 .flash-messages .alert {
     display: none !important;
 }
-
 
 @media (max-width: 768px) {
     .notification-container {
@@ -1821,7 +1708,6 @@ blockquote::before {
         transform: translateY(-100px);
     }
 }
-
 
 .professional-emoji {
     display: inline-flex;
@@ -1883,7 +1769,6 @@ blockquote::before {
     transform: scale(1.05);
 }
 
-
 .professional-emoji.variant-success {
     background: linear-gradient(145deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.2));
     border-color: rgba(16, 185, 129, 0.3);
@@ -1922,8 +1807,6 @@ blockquote::before {
 .professional-emoji.variant-danger i {
     color: #EF4444;
 }
-
-
 
 @media (max-width: 768px) {
     .professional-emoji.size-xl {

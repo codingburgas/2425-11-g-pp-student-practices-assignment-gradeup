@@ -56,6 +56,24 @@
         </div>
 
         <div class="sidebar-section">
+            <h6 class="sidebar-section-title">Explore</h6>
+            <ul class="sidebar-nav">
+                <li class="nav-item {% if request.endpoint == 'main.universities' %}active{% endif %}">
+                    <a href="{{ url_for('main.universities') }}" class="nav-link">
+                        <i class="fas fa-university"></i>
+                        <span>Universities</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.endpoint == 'main.specialties' %}active{% endif %}">
+                    <a href="{{ url_for('main.specialties') }}" class="nav-link">
+                        <i class="fas fa-star"></i>
+                        <span>Programs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
             <h6 class="sidebar-section-title">Account</h6>
             <ul class="sidebar-nav">
                 <li class="nav-item">
@@ -146,9 +164,6 @@
                 </div>
             </div>
             <div class="nav-actions">
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">
                     <i class="fas fa-sign-out-alt me-1"></i>Logout
