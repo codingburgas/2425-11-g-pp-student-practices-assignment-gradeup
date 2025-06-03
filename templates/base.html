@@ -84,18 +84,6 @@
                         <span>Home</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('main.universities') }}" class="nav-link">
-                        <i class="fas fa-university"></i>
-                        <span>Universities</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('main.specialties') }}" class="nav-link">
-                        <i class="fas fa-star"></i>
-                        <span>Programs</span>
-                    </a>
-                </li>
             </ul>
         </div>
 
@@ -154,8 +142,6 @@
                     </a>
                     {% else %}
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a>
-                    <a href="{{ url_for('main.universities') }}" class="nav-link">Universities</a>
-                    <a href="{{ url_for('main.specialties') }}" class="nav-link">Programs</a>
                     {% endif %}
                 </div>
             </div>
