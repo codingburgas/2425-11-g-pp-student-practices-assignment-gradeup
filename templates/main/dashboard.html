@@ -1,25 +1,139 @@
 {% extends "base.html" %}
 
-{% block title %}Student Dashboard - GradeUP{% endblock %}
+{% block title %}Dashboard - GradeUP{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
+<div class="cosmic-dashboard-container">
+    <!-- Dashboard Hero Section -->
+    <div class="dashboard-hero">
         <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1 class="dashboard-title">
-                        <i class="fas fa-tachometer-alt me-2"></i>
-                        Student Dashboard
-                    </h1>
-                    <p class="dashboard-subtitle">Welcome back! Here's your cosmic journey overview.</p>
+            <div class="dashboard-header">
+                <div class="dashboard-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="dashboard-glow"></div>
                 </div>
-                <div class="col-auto">
+                <div class="dashboard-info">
+                    <h1 class="dashboard-title">Welcome back, {{ current_user.username }}!</h1>
+                    <p class="dashboard-subtitle">Track your progress and discover your perfect academic path.</p>
                     <div class="dashboard-stats">
-                        <div class="stat-badge">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>Progress: 25%</span>
+                        <span class="stat-badge">
+                            <i class="fas fa-chart-line"></i>
+                            {{ "%.0f"|format(overall_progress) }}% Complete
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-poll"></i>
+                            {{ completed_surveys }}/{{ total_surveys }} Surveys
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-star"></i>
+                            {{ favorites_count }} Favorites
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Overview Section -->
+    <div class="progress-overview-section">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <!-- Overall Progress Card -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="card-icon">
+                                <div class="professional-emoji">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div class="card-info">
+                                <h3>Your Progress</h3>
+                                <p>Track your completion status</p>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card-body">
+                            <div class="progress-item">
+                                <div class="progress-info">
+                                    <span class="progress-label">Overall Progress</span>
+                                    <span class="progress-percentage">{{ "%.0f"|format(overall_progress) }}%</span>
+                                </div>
+                                <div class="cosmic-progress-bar">
+                                    <div class="cosmic-progress-fill" style="width: {{ overall_progress }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item">
+                                <div class="progress-info">
+                                    <span class="progress-label">Survey Completion</span>
+                                    <span class="progress-percentage">{{ "%.0f"|format(survey_progress) }}%</span>
+                                </div>
+                                <div class="cosmic-progress-bar">
+                                    <div class="cosmic-progress-fill" style="width: {{ survey_progress }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="progress-item">
+                                <div class="progress-info">
+                                    <span class="progress-label">Profile Completion</span>
+                                    <span class="progress-percentage">{{ profile_completion }}%</span>
+                                </div>
+                                <div class="cosmic-progress-bar">
+                                    <div class="cosmic-progress-fill" style="width: {{ profile_completion }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <!-- Quick Stats Card -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="card-icon">
+                                <div class="professional-emoji">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                            </div>
+                            <div class="card-info">
+                                <h3>Quick Stats</h3>
+                                <p>Your activity overview</p>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card-body">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-poll"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-number">{{ completed_surveys }}</span>
+                                    <span class="stat-label">Surveys Completed</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-number">{{ favorites_count }}</span>
+                                    <span class="stat-label">Favorite Universities</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-number">{{ recent_recommendations|length }}</span>
+                                    <span class="stat-label">Recommendations</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -27,495 +141,592 @@
         </div>
     </div>
 
-    <!-- Dashboard Content -->
-    <div class="dashboard-content">
+    <!-- Next Steps Section -->
+    {% if next_steps %}
+    <div class="next-steps-section">
         <div class="container-fluid">
-            <!-- Main Content -->
+            <h2 class="section-title">
+                <i class="fas fa-route me-2"></i>
+                Recommended Next Steps
+            </h2>
+            <div class="dashboard-grid">
+                {% for step in next_steps %}
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="card-icon">
+                            <div class="professional-emoji">
+                                <i class="{{ step.icon }}"></i>
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3>{{ step.title }}</h3>
+                            <p>{{ step.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card-actions">
+                        <a href="{{ step.link }}" class="dashboard-btn primary">
+                            <i class="fas fa-arrow-right"></i>
+                            Get Started
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity Section -->
+    <div class="activity-section">
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
-                    <!-- Quick Actions Row -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="dashboard-card action-card">
-                                <div class="card-icon">
-                                    <i class="fas fa-search cosmic-icon"></i>
+                {% if recent_recommendations %}
+                <div class="col-lg-6 mb-4">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="card-icon">
+                                <div class="professional-emoji">
+                                    <i class="fas fa-lightbulb"></i>
                                 </div>
-                                <div class="card-content">
-                                    <h3>Get Recommendations</h3>
-                                    <p>Take our AI-powered survey to discover universities that match your profile and goals.</p>
-                                    <a href="{{ url_for('main.start_survey') }}" class="btn btn-cosmic">
-                                        Take Survey
-                                        <i class="fas fa-arrow-right ms-2"></i>
-                                    </a>
-                                </div>
-                                <div class="card-glow"></div>
+                            </div>
+                            <div class="card-info">
+                                <h3>Recent Recommendations</h3>
+                                <p>Your latest program matches</p>
                             </div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <div class="dashboard-card action-card">
-                                <div class="card-icon">
-                                    <i class="fas fa-star cosmic-icon"></i>
-                                </div>
-                                <div class="card-content">
-                                    <h3>Explore Schools</h3>
-                                    <p>Browse our comprehensive database of universities and find your perfect match.</p>
-                                    <a href="{{ url_for('main.universities') }}" class="btn btn-cosmic-outline">
-                                        Explore Schools
-                                        <i class="fas fa-external-link-alt ms-2"></i>
-                                    </a>
-                                </div>
-                                <div class="card-glow"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Statistics Cards -->
-                    <div class="row mb-4">
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h4>0</h4>
-                                    <p>Recommendations</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h4>0</h4>
-                                    <p>Favorites</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h4>15</h4>
-                                    <p>Minutes Left</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="stat-card">
-                                <div class="stat-icon">
-                                    <i class="fas fa-percentage"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h4>25%</h4>
-                                    <p>Complete</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Featured Universities -->
-                    <div class="dashboard-card featured-section">
-                        <div class="card-header">
-                            <h3>
-                                <i class="fas fa-fire me-2"></i>
-                                Featured Universities
-                            </h3>
-                            <p>Popular choices among students like you</p>
-                        </div>
-                        <div class="card-content">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <div class="university-card">
-                                        <div class="university-header">
-                                            <div class="university-logo">
-                                                <i class="fas fa-graduation-cap"></i>
-                                            </div>
-                                            <div class="university-info">
-                                                <h5>American University in Bulgaria</h5>
-                                                <span class="university-type">Private University</span>
-                                            </div>
-                                        </div>
-                                        <div class="university-stats">
-                                            <div class="stat">
-                                                <i class="fas fa-users"></i>
-                                                <span>2,500 Students</span>
-                                            </div>
-                                            <div class="stat">
-                                                <i class="fas fa-globe"></i>
-                                                <span>50+ Countries</span>
-                                            </div>
-                                        </div>
-                                        <div class="university-actions">
-                                            <a href="#" class="btn btn-sm btn-cosmic-outline">Learn More</a>
-                                            <button class="btn btn-sm btn-favorite" onclick="toggleFavorite(this)">
-                                                <i class="far fa-heart"></i>
-                                            </button>
-                                        </div>
+                        <div class="dashboard-card-body">
+                            {% for recommendation in recent_recommendations %}
+                            <div class="recommendation-item">
+                                <div class="recommendation-avatar">
+                                    <div class="professional-emoji">
+                                        <i class="fas fa-graduation-cap"></i>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <div class="university-card">
-                                        <div class="university-header">
-                                            <div class="university-logo">
-                                                <i class="fas fa-graduation-cap"></i>
-                                            </div>
-                                            <div class="university-info">
-                                                <h5>Technical University of Sofia</h5>
-                                                <span class="university-type">Public University</span>
-                                            </div>
-                                        </div>
-                                        <div class="university-stats">
-                                            <div class="stat">
-                                                <i class="fas fa-users"></i>
-                                                <span>12,000 Students</span>
-                                            </div>
-                                            <div class="stat">
-                                                <i class="fas fa-cogs"></i>
-                                                <span>Engineering Focus</span>
-                                            </div>
-                                        </div>
-                                        <div class="university-actions">
-                                            <a href="#" class="btn btn-sm btn-cosmic-outline">Learn More</a>
-                                            <button class="btn btn-sm btn-favorite" onclick="toggleFavorite(this)">
-                                                <i class="far fa-heart"></i>
-                                            </button>
-                                        </div>
+                                <div class="recommendation-info">
+                                    <h5>{{ recommendation.program.name }}</h5>
+                                    <p class="text-muted">{{ recommendation.program.school.name }}</p>
+                                    <div class="recommendation-score">
+                                        <i class="fas fa-star"></i>
+                                        {{ "%.0f"|format(recommendation.score * 100) }}% Match
                                     </div>
                                 </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="card-actions">
+                                <a href="{{ url_for('main.recommendations') }}" class="dashboard-btn secondary">
+                                    <i class="fas fa-eye"></i>
+                                    View All Recommendations
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
+                {% endif %}
+                
+                {% if recent_favorites %}
+                <div class="col-lg-6 mb-4">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="card-icon">
+                                <div class="professional-emoji">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="card-info">
+                                <h3>Favorite Universities</h3>
+                                <p>Your saved institutions</p>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-card-body">
+                            {% for favorite in recent_favorites %}
+                            <div class="favorite-item">
+                                <div class="favorite-avatar">
+                                    <div class="professional-emoji">
+                                        <i class="fas fa-university"></i>
+                                    </div>
+                                </div>
+                                <div class="favorite-info">
+                                    <h5>{{ favorite.school.name }}</h5>
+                                    <p class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ favorite.school.location }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="card-actions">
+                                <a href="{{ url_for('main.favorites') }}" class="dashboard-btn secondary">
+                                    <i class="fas fa-eye"></i>
+                                    View All Favorites
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+        <div class="container-fluid">
+            <h2 class="section-title">
+                <i class="fas fa-bolt me-2"></i>
+                Quick Actions
+            </h2>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="card-icon">
+                            <div class="professional-emoji">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3>Take Survey</h3>
+                            <p>Get personalized recommendations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card-actions">
+                        <a href="{{ url_for('main.survey') }}" class="dashboard-btn primary">
+                            <i class="fas fa-play"></i>
+                            Start Survey
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="card-icon">
+                            <div class="professional-emoji">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3>Update Profile</h3>
+                            <p>Complete your information</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card-actions">
+                        <a href="{{ url_for('auth.profile') }}" class="dashboard-btn primary">
+                            <i class="fas fa-edit"></i>
+                            Edit Profile
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <div class="card-icon">
+                            <div class="professional-emoji">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3>View Results</h3>
+                            <p>Check your recommendations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card-actions">
+                        <a href="{{ url_for('main.recommendations') }}" class="dashboard-btn primary">
+                            <i class="fas fa-star"></i>
+                            View Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 </div>
 
 <style>
-/* ===== DASHBOARD STYLES ===== */
-.dashboard-container {
+/* ===== COSMIC DASHBOARD STYLES (COPYING UNIVERSITIES DESIGN) ===== */
+.cosmic-dashboard-container {
     min-height: 100vh;
     background: var(--hero-gradient);
     position: relative;
+    overflow: hidden;
+}
+
+/* ===== DASHBOARD HERO ===== */
+.dashboard-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 0;
+    position: relative;
+    z-index: 10;
 }
 
 .dashboard-header {
-    background: rgba(15, 15, 35, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
-    padding: 2rem 0;
-    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.dashboard-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.dashboard-info {
+    flex: 1;
+    min-width: 300px;
 }
 
 .dashboard-title {
+    color: var(--star-white);
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--star-white);
-    background: linear-gradient(135deg, var(--star-white) 0%, var(--cosmic-blue) 100%);
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin: 0;
 }
 
 .dashboard-subtitle {
-    color: rgba(248, 250, 252, 0.7);
+    color: rgba(248, 250, 252, 0.8);
     font-size: 1.1rem;
-    margin: 0;
+    margin-bottom: 1rem;
 }
 
-.dashboard-stats .stat-badge {
-    background: var(--cosmic-gradient);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 2rem;
-    font-weight: 600;
+.dashboard-stats {
     display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
 }
 
-/* ===== DASHBOARD CARDS ===== */
+/* ===== DASHBOARD CONTENT SECTIONS ===== */
+.progress-overview-section,
+.next-steps-section,
+.activity-section,
+.quick-actions-section {
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.section-title {
+    color: var(--star-white);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== DASHBOARD CARDS (COPYING UNIVERSITY CARD DESIGN) ===== */
 .dashboard-card {
     background: rgba(15, 15, 35, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 1.5rem;
     padding: 2rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-    height: 100%;
     transition: all 0.3s ease;
+    animation: cardSlideIn 0.8s ease-out;
+    height: 100%;
 }
 
 .dashboard-card:hover {
-    transform: translateY(-5px);
     border-color: var(--cosmic-purple);
-    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
 }
 
-.action-card {
+.dashboard-card-header {
     display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 2.5rem;
-}
-
-.card-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--cosmic-gradient);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: white;
-    flex-shrink: 0;
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
-}
-
-.card-content h3 {
-    color: var(--star-white);
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-.card-content p {
-    color: rgba(248, 250, 252, 0.8);
-    line-height: 1.6;
+    align-items: flex-start;
+    gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.card-glow {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.1), transparent);
-    animation: rotate 20s linear infinite;
-    z-index: -1;
+.card-icon {
+    flex-shrink: 0;
 }
 
-/* ===== BUTTONS ===== */
-.btn-cosmic {
-    background: var(--cosmic-gradient);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+.card-info {
+    flex: 1;
 }
 
-.btn-cosmic:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
-    color: white;
-}
-
-.btn-cosmic-outline {
-    background: transparent;
-    color: var(--cosmic-purple);
-    border: 2px solid var(--cosmic-purple);
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.btn-cosmic-outline:hover {
-    background: rgba(139, 92, 246, 0.1);
-    color: var(--cosmic-purple);
-    transform: translateY(-2px);
-}
-
-/* ===== STATISTICS CARDS ===== */
-.stat-card {
-    background: rgba(15, 15, 35, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    text-align: center;
-    height: 100%;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.stat-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--cosmic-purple);
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.2);
-}
-
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    background: var(--cosmic-gradient);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.5rem;
-    color: white;
-    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
-}
-
-.stat-info h4 {
+.card-info h3 {
     color: var(--star-white);
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-    background: var(--cosmic-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.stat-info p {
-    color: rgba(248, 250, 252, 0.8);
-    margin: 0;
-    font-weight: 500;
-}
-
-/* ===== FEATURED SECTION ===== */
-.featured-section .card-header {
-    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
-    padding-bottom: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.featured-section .card-header h3 {
-    color: var(--star-white);
-    font-size: 1.75rem;
+    font-size: 1.3rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
 
-.featured-section .card-header p {
+.card-info p {
     color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
     margin: 0;
 }
 
-/* ===== UNIVERSITY CARDS ===== */
-.university-card {
-    background: rgba(30, 30, 70, 0.8);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-    height: 100%;
+.dashboard-card-body {
+    margin-bottom: 1.5rem;
 }
 
-.university-card:hover {
-    border-color: var(--cosmic-purple);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.2);
+/* ===== PROGRESS BARS ===== */
+.progress-item {
+    margin-bottom: 1.5rem;
 }
 
-.university-header {
+.progress-item:last-child {
+    margin-bottom: 0;
+}
+
+.progress-info {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
 }
 
-.university-logo {
-    width: 50px;
-    height: 50px;
-    background: var(--cosmic-gradient);
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.25rem;
+.progress-label {
+    color: rgba(248, 250, 252, 0.8);
+    font-weight: 500;
 }
 
-.university-info h5 {
+.progress-percentage {
     color: var(--star-white);
     font-weight: 600;
-    margin-bottom: 0.25rem;
-    font-size: 1.1rem;
 }
 
-.university-type {
-    color: rgba(248, 250, 252, 0.6);
-    font-size: 0.85rem;
+.cosmic-progress-bar {
+    height: 8px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.university-stats {
+.cosmic-progress-fill {
+    height: 100%;
+    background: var(--cosmic-gradient);
+    border-radius: 10px;
+    transition: width 0.8s ease;
+}
+
+/* ===== STATS ITEMS ===== */
+.stat-item {
     display: flex;
+    align-items: center;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.university-stats .stat {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(248, 250, 252, 0.8);
-    font-size: 0.9rem;
+.stat-item:last-child {
+    margin-bottom: 0;
 }
 
-.university-stats .stat i {
-    color: var(--cosmic-purple);
-}
-
-.university-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.btn-favorite {
-    background: transparent;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    color: var(--cosmic-purple);
-    width: 40px;
-    height: 40px;
-    border-radius: 0.5rem;
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--cosmic-gradient);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--star-white);
+}
+
+.stat-label {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+/* ===== DASHBOARD GRID ===== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* ===== RECOMMENDATION & FAVORITE ITEMS ===== */
+.recommendation-item,
+.favorite-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.recommendation-item:last-child,
+.favorite-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.recommendation-avatar,
+.favorite-avatar {
+    flex-shrink: 0;
+}
+
+.recommendation-info h5,
+.favorite-info h5 {
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+}
+
+.recommendation-info p,
+.favorite-info p {
+    color: rgba(248, 250, 252, 0.7);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.recommendation-score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--cosmic-purple);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* ===== DASHBOARD BUTTONS (COPYING UNIVERSITY BUTTON DESIGN) ===== */
+.dashboard-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
 }
 
-.btn-favorite:hover {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: var(--cosmic-purple);
-}
-
-.btn-favorite.favorited {
+.dashboard-btn.primary {
     background: var(--cosmic-gradient);
-    border-color: transparent;
     color: white;
 }
 
+.dashboard-btn.primary:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.dashboard-btn.secondary {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+}
+
+.dashboard-btn.secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--star-white);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.dashboard-card-actions {
+    margin-top: 1rem;
+}
+
+.card-actions {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+/* ===== PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    animation: particleFloat 20s infinite linear;
+    opacity: 0.6;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(3) { left: 50%; animation-delay: 8s; }
+.particle:nth-child(4) { left: 70%; animation-delay: 12s; }
+.particle:nth-child(5) { left: 90%; animation-delay: 16s; }
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-    .action-card {
+    .dashboard-header {
         flex-direction: column;
         text-align: center;
         gap: 1.5rem;
@@ -525,39 +736,60 @@
         font-size: 2rem;
     }
     
-    .university-stats {
-        flex-direction: column;
-        gap: 0.5rem;
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
     
-    .university-actions {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+    .dashboard-stats {
+        justify-content: center;
     }
 }
 
-@keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* ===== ANIMATIONS ===== */
+@keyframes cardSlideIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(100vh) rotate(0deg); 
+        opacity: 0; 
+    }
+    10% { 
+        opacity: 0.6; 
+    }
+    90% { 
+        opacity: 0.6; 
+    }
+    100% { 
+        transform: translateY(-100px) rotate(360deg); 
+        opacity: 0; 
+    }
 }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Dashboard JavaScript functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize dashboard animations
     initDashboardAnimations();
-    
-    // Initialize navigation
-    initDashboardNavigation();
 });
 
-// Dashboard Animations
 function initDashboardAnimations() {
-    const cards = document.querySelectorAll('.dashboard-card, .stat-card, .university-card');
+    const cards = document.querySelectorAll('.dashboard-card');
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry, index) => {
@@ -576,47 +808,6 @@ function initDashboardAnimations() {
         card.style.transition = 'all 0.6s ease';
         observer.observe(card);
     });
-}
-
-// Navigation functionality
-function initDashboardNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            
-            // Check if it's a hash link or placeholder
-            if (href === '#' || href.includes('#')) {
-                e.preventDefault();
-                
-                // Show coming soon message for placeholder links
-                if (href === '#') {
-                    showComingSoonMessage();
-                }
-            }
-        });
-    });
-}
-
-// Toggle favorite functionality
-function toggleFavorite(button) {
-    const icon = button.querySelector('i');
-    
-    if (button.classList.contains('favorited')) {
-        button.classList.remove('favorited');
-        icon.className = 'far fa-heart';
-        showNotification('Removed from favorites', 'info');
-    } else {
-        button.classList.add('favorited');
-        icon.className = 'fas fa-heart';
-        showNotification('Added to favorites', 'success');
-    }
-}
-
-// Coming soon message
-function showComingSoonMessage() {
-    showNotification('Feature coming soon!', 'info');
 }
 </script>
 {% endblock %} 
