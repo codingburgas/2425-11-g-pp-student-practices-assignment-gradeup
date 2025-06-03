@@ -6,6 +6,19 @@ A web application that helps students find the perfect educational institution b
 
 ---
 
+## 🛠️ Contributors
+
+### Backend 👨‍💻
+> [KRRusev21](https://github.com/KRRusev21) |
+> [TPIvanov21](https://github.com/TPIvanov21)
+
+### Designers 🎨
+> [PSDineva21](https://github.com/PSDineva21) |
+> [GYFilipov21](https://github.com/GYFilipov21)
+
+### Scrum Master 🧑‍🏫
+> [SGMikov21](https://github.com/SGMikov21)
+---
 ## 🚀 Features
 
 - 🔐User authentication (registration, login, profile management)  
