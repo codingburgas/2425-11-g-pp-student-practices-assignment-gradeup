@@ -128,9 +128,6 @@
                 </div>
             </div>
             <div class="nav-actions">
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">Log Out</a>
                 {% else %}
