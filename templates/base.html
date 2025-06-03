@@ -56,6 +56,24 @@
         </div>
 
         <div class="sidebar-section">
+            <h6 class="sidebar-section-title">Explore</h6>
+            <ul class="sidebar-nav">
+                <li class="nav-item {% if request.endpoint == 'main.universities' %}active{% endif %}">
+                    <a href="{{ url_for('main.universities') }}" class="nav-link">
+                        <i class="fas fa-university"></i>
+                        <span>Universities</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.endpoint == 'main.specialties' %}active{% endif %}">
+                    <a href="{{ url_for('main.specialties') }}" class="nav-link">
+                        <i class="fas fa-star"></i>
+                        <span>Programs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
             <h6 class="sidebar-section-title">Account</h6>
             <ul class="sidebar-nav">
                 <li class="nav-item">
@@ -137,7 +155,7 @@
                     <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                         <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                     </a>
-                    <a href="{{ url_for('main.recommendations') }}" class="nav-link {% if request.endpoint == 'main.recommendations' %}active{% endif %}">
+                    <a href="{{ url_for('main.recommendations') }}" class="nav-link">
                         <i class="fas fa-star me-1"></i>Results
                     </a>
                     {% else %}
