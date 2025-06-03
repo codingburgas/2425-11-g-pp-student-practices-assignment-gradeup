@@ -17,13 +17,13 @@ class SurveyData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     survey_id = db.Column(db.Integer, db.ForeignKey('surveys.id'), nullable=False)
     response_id = db.Column(db.Integer, db.ForeignKey('survey_responses.id'), nullable=True)
-    raw_data = db.Column(db.Text, nullable=False)  # Original JSON data
-    processed_data = db.Column(db.Text, nullable=True)  # Processed/cleaned data
-    survey_metadata = db.Column(db.Text, nullable=True)  # Additional metadata
-    submission_ip = db.Column(db.String(45), nullable=True)  # IPv4/IPv6 address
+    raw_data = db.Column(db.Text, nullable=False)  
+    processed_data = db.Column(db.Text, nullable=True)  
+    survey_metadata = db.Column(db.Text, nullable=True)  
+    submission_ip = db.Column(db.String(45), nullable=True)  
     user_agent = db.Column(db.String(255), nullable=True)
     submission_time = db.Column(db.DateTime, default=datetime.utcnow)
-    processing_status = db.Column(db.String(20), default='pending')  # pending, processed, failed
+    processing_status = db.Column(db.String(20), default='pending')  
     
     def set_raw_data(self, data_dict):
         """Store raw survey data as JSON."""
@@ -69,13 +69,13 @@ class DataExportLog(db.Model):
     __tablename__ = 'data_export_logs'
     
     id = db.Column(db.Integer, primary_key=True)
-    export_type = db.Column(db.String(50), nullable=False)  # csv, json, excel
+    export_type = db.Column(db.String(50), nullable=False)  
     file_path = db.Column(db.String(255), nullable=True)
     record_count = db.Column(db.Integer, nullable=False, default=0)
     exported_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    export_filters = db.Column(db.Text, nullable=True)  # JSON of applied filters
+    export_filters = db.Column(db.Text, nullable=True)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='pending')  # pending, completed, failed
+    status = db.Column(db.String(20), default='pending')  
     
     def set_filters(self, filters_dict):
         """Store export filters as JSON."""
@@ -93,7 +93,7 @@ class DataStorageManager:
     def store_survey_submission(survey_id, response_data, user_id=None, metadata=None):
         """Store a new survey submission with full tracking."""
         try:
-            # Create SurveyData record for analytics
+            
             survey_data = SurveyData(
                 survey_id=survey_id,
                 submission_ip=metadata.get('ip') if metadata else None,
@@ -104,9 +104,9 @@ class DataStorageManager:
                 survey_data.set_metadata(metadata)
             
             db.session.add(survey_data)
-            db.session.flush()  # Get the ID without committing
+            db.session.flush()  
             
-            # If user is logged in, also create a SurveyResponse record
+            
             if user_id:
                 from app.models import SurveyResponse
                 survey_response = SurveyResponse(
@@ -117,7 +117,7 @@ class DataStorageManager:
                 db.session.add(survey_response)
                 db.session.flush()
                 
-                # Link the survey_data to the response
+                
                 survey_data.response_id = survey_response.id
             
             db.session.commit()
@@ -153,13 +153,13 @@ class DataStorageManager:
         """Get basic statistics for survey responses."""
         total_responses = SurveyData.query.filter_by(survey_id=survey_id).count()
         
-        # Get responses by status
+        
         status_counts = db.session.query(
             SurveyData.processing_status,
             db.func.count(SurveyData.id)
         ).filter_by(survey_id=survey_id).group_by(SurveyData.processing_status).all()
         
-        # Get daily response counts for last 30 days
+        
         thirty_days_ago = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - \
                          datetime.timedelta(days=30)
         

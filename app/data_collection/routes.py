@@ -6,39 +6,39 @@ Handles the API endpoints for survey data collection.
 
 from flask import request, jsonify, render_template
 from flask_login import current_user
-from . import data_collection
+from . import bp
 from .validators import SurveyValidator, ResponseValidator
 from .models import DataStorageManager, SurveyData
 from .exporters import ExportManager
 
-# HTML Template Routes
-@data_collection.route('/')
-@data_collection.route('/dashboard')
+
+@bp.route('/')
+@bp.route('/dashboard')
 def dashboard():
     """Data collection dashboard page."""
     return render_template('data_collection/dashboard.html')
 
-@data_collection.route('/validation')
+@bp.route('/validation')
 def data_validation():
     """Data validation testing page."""
     return render_template('data_collection/validation.html')
 
-@data_collection.route('/export')
+@bp.route('/export')
 def export_center():
     """Data export center page."""
     return render_template('data_collection/export.html')
 
-@data_collection.route('/history')
+@bp.route('/history')
 def export_history():
     """Export history page."""
     return render_template('data_collection/history.html')
 
-@data_collection.route('/surveys/list')
+@bp.route('/surveys/list')
 def survey_list():
     """Survey list page."""
     return render_template('data_collection/surveys.html')
 
-@data_collection.route('/surveys', methods=['GET'])
+@bp.route('/surveys', methods=['GET'])
 def get_surveys():
     """Retrieve list of available surveys."""
     from app.models import Survey
@@ -59,7 +59,7 @@ def get_surveys():
         'message': 'Data collection system active'
     })
 
-@data_collection.route('/surveys/submit', methods=['POST'])
+@bp.route('/surveys/submit', methods=['POST'])
 def submit_survey():
     """Submit survey response with data storage."""
     try:
@@ -78,7 +78,7 @@ def submit_survey():
                 'valid': False
             }), 400
         
-        # Basic validation schema for demo
+        
         demo_schema = {
             'required_fields': ['name', 'email'],
             'fields': {
@@ -99,7 +99,7 @@ def submit_survey():
                 'errors': validation_result['errors']
             }), 400
         
-        # Prepare metadata
+        
         metadata = {
             'ip': request.remote_addr,
             'user_agent': request.headers.get('User-Agent'),
@@ -107,7 +107,7 @@ def submit_survey():
             'validation_passed': True
         }
         
-        # Store the survey submission
+        
         user_id = current_user.id if current_user.is_authenticated else None
         storage_id = DataStorageManager.store_survey_submission(
             survey_id=survey_id,
@@ -116,11 +116,11 @@ def submit_survey():
             metadata=metadata
         )
         
-        # Update processing status to 'processed' since validation passed
+        
         from app.data_collection.models import SurveyData
         survey_data = SurveyData.query.get(storage_id)
         if survey_data:
-            survey_data.mark_as_processed(data)  # Use new method
+            survey_data.mark_as_processed(data)  
             from app import db
             db.session.commit()
         
@@ -132,7 +132,7 @@ def submit_survey():
         })
         
     except Exception as e:
-        # If there was an error after storage, mark as failed
+        
         try:
             if 'storage_id' in locals():
                 from app.data_collection.models import SurveyData
@@ -142,14 +142,14 @@ def submit_survey():
                     from app import db
                     db.session.commit()
         except:
-            pass  # Don't let error handling create more errors
+            pass  
             
         return jsonify({
             'error': f'Internal server error: {str(e)}',
             'valid': False
         }), 500
 
-@data_collection.route('/surveys/validate', methods=['POST'])
+@bp.route('/surveys/validate', methods=['POST'])
 def validate_survey_data():
     """Endpoint to validate survey data without submitting."""
     try:
@@ -161,7 +161,7 @@ def validate_survey_data():
                 'valid': False
             }), 400
         
-        # Use individual validators for quick checks
+        
         validator = SurveyValidator()
         validation_results = {}
         
@@ -185,7 +185,7 @@ def validate_survey_data():
             'valid': False
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/statistics', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/statistics', methods=['GET'])
 def get_survey_statistics(survey_id):
     """Get statistics for a specific survey."""
     try:
@@ -200,16 +200,16 @@ def get_survey_statistics(survey_id):
             'error': f'Error retrieving statistics: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/responses', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/responses', methods=['GET'])
 def get_survey_responses(survey_id):
     """Get responses for a specific survey."""
     try:
-        # Get query parameters for filtering
+        
         limit = request.args.get('limit', 100, type=int)
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         
-        # Convert date strings to datetime objects if provided
+        
         from datetime import datetime
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
@@ -243,28 +243,28 @@ def get_survey_responses(survey_id):
             'error': f'Error retrieving responses: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/responses/view')
+@bp.route('/surveys/<int:survey_id>/responses/view')
 def view_survey_responses(survey_id):
     """HTML page for viewing survey responses."""
     return render_template('data_collection/responses.html', survey_id=survey_id)
 
-@data_collection.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/export/<export_format>', methods=['GET'])
 def export_survey_data(survey_id, export_format):
     """Export survey data in specified format (csv, json, excel)."""
     try:
-        # Get query parameters for filtering
+        
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         
-        # Convert date strings to datetime objects if provided
+        
         from datetime import datetime
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
         
-        # Get current user ID if authenticated
+        
         exported_by = current_user.id if current_user.is_authenticated else None
         
-        # Create export
+        
         export_result = ExportManager.create_export(
             survey_id=survey_id,
             export_format=export_format,
@@ -291,7 +291,7 @@ def export_survey_data(survey_id, export_format):
             'error': f'Export error: {str(e)}'
         }), 500
 
-@data_collection.route('/exports/history', methods=['GET'])
+@bp.route('/exports/history', methods=['GET'])
 def get_export_history():
     """Get history of data exports."""
     try:
@@ -309,16 +309,16 @@ def get_export_history():
             'error': f'Error retrieving export history: {str(e)}'
         }), 500
 
-@data_collection.route('/surveys/<int:survey_id>/export/preview', methods=['GET'])
+@bp.route('/surveys/<int:survey_id>/export/preview', methods=['GET'])
 def preview_export_data(survey_id):
     """Preview data that would be exported for a survey."""
     try:
-        # Get query parameters for filtering
+        
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
-        limit = request.args.get('limit', 10, type=int)  # Small limit for preview
+        limit = request.args.get('limit', 10, type=int)  
         
-        # Convert date strings to datetime objects if provided
+        
         from datetime import datetime
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
@@ -330,7 +330,7 @@ def preview_export_data(survey_id):
             limit=limit
         )
         
-        # Get total count without limit
+        
         total_responses = DataStorageManager.get_survey_data(
             survey_id=survey_id,
             start_date=start_dt,

@@ -1,4 +1,6 @@
-# 🎓 School Recommendation System
+# 🎓 GradeUp - School Recommendation System
+![GradeUp](https://github.com/user-attachments/assets/2447bd21-24f3-4cc3-8c58-62c0bae53cbe)
+
 
 A web application that helps students find the perfect educational institution based on their preferences and needs.
 
@@ -57,25 +59,11 @@ A web application that helps students find the perfect educational institution b
 
 ---
 
-## 📁 Project Structure
+## 🧩 Entity Relationship Diagram (ERD)
 
-```
-school-recommendation-system/
-│
-├── app/                  # Application package
-│   ├── main/             # General pages blueprint
-│   ├── auth/             # Authentication blueprint
-│   ├── admin/            # Admin panel blueprint
-│   ├── static/           # Static files (CSS, JS, images)
-│   └── templates/        # Jinja2 templates
-│
-├── migrations/           # Database migration scripts
-├── models.py             # Database models
-├── config.py             # Configuration settings
-├── app.py                # Entry point of the application
-└── requirements.txt      # Python dependencies
-```
+You can view the ERD for this project here:
 
+>👉 [View ER Diagram For GradeUp HERE](https://lucid.app/lucidchart/61f65033-3af4-4cf8-bc17-acb81d5eca5f/edit?invitationId=inv_82560b78-52e7-4ab8-ae9b-d66805a27391)
 ---
 
 ## 💻 Technology Stack

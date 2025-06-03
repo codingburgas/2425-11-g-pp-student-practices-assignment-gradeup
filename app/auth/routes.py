@@ -12,7 +12,7 @@ from flask import current_app
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.survey'))
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -21,17 +21,11 @@ def login():
             login_user(user, remember=form.remember_me.data)
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('main.dashboard')
-            
-            # Add success parameter for notification
-            if '?' in next_page:
-                next_page += '&logged_in=true'
-            else:
-                next_page += '?logged_in=true'
+                next_page = url_for('main.survey')
             
             return redirect(next_page)
         
-        # Return error for invalid credentials
+        
         return render_template('auth/login.html', title='Sign In', form=form, 
                              error='Invalid email or password')
     
@@ -40,12 +34,12 @@ def login():
 @bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('main.index') + '?logged_out=true')
+    return redirect(url_for('main.index'))
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.survey'))
     
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -54,9 +48,9 @@ def register():
         db.session.add(user)
         db.session.commit()
         
-        # Auto-login the user and redirect with success notification
+        
         login_user(user)
-        return redirect(url_for('main.dashboard') + '?registered=true')
+        return redirect(url_for('main.survey'))
     
     return render_template('auth/register.html', title='Register', form=form)
 
@@ -68,7 +62,7 @@ def reset_password_request():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
-            # For now, we'll just simulate the password reset
+            
             flash('Check your email for the instructions to reset your password', 'info')
             return redirect(url_for('auth.login'))
         else:
@@ -79,8 +73,8 @@ def reset_password_request():
 def reset_password(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-    # For now, we'll just simulate token verification
-    user = User.query.first()  # This would normally verify the token
+    
+    user = User.query.first()  
     if not user:
         flash('Invalid or expired token', 'danger')
         return redirect(url_for('auth.reset_password_request'))
@@ -97,7 +91,7 @@ def reset_password(token):
 def profile():
     form = ProfileForm(obj=current_user)
     if form.validate_on_submit():
-        # Check if username or email is being changed
+        
         if form.username.data != current_user.username:
             existing_user = User.query.filter_by(username=form.username.data).first()
             if existing_user:
@@ -115,11 +109,11 @@ def profile():
         current_user.bio = form.bio.data
         current_user.location = form.location.data
         
-        # Handle profile picture upload
+        
         if form.picture.data:
             try:
                 picture_file = save_picture(form.picture.data)
-                # Delete old profile picture if it exists
+                
                 if current_user.profile_picture:
                     old_picture_path = os.path.join(current_app.root_path, 'static', 'profile_pics', current_user.profile_picture)
                     if os.path.exists(old_picture_path):
@@ -140,25 +134,25 @@ def profile():
 
 def save_picture(form_picture):
     """Save uploaded picture to static/profile_pics directory"""
-    # Check file size (max 2MB)
-    if len(form_picture.read()) > 2 * 1024 * 1024:  # 2MB in bytes
-        form_picture.seek(0)  # Reset file pointer
+    
+    if len(form_picture.read()) > 2 * 1024 * 1024:  
+        form_picture.seek(0)  
         raise ValueError('File size must be less than 2MB')
     
-    # Reset file pointer after size check
+    
     form_picture.seek(0)
     
-    # Generate random filename
+    
     random_hex = os.urandom(8).hex()
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
     
-    # Create profile_pics directory if it doesn't exist
+    
     picture_path = os.path.join(current_app.root_path, 'static', 'profile_pics')
     if not os.path.exists(picture_path):
         os.makedirs(picture_path)
     
-    # Save the file
+    
     picture_path = os.path.join(picture_path, picture_fn)
     form_picture.save(picture_path)
     
@@ -181,7 +175,7 @@ def change_password():
 def preferences():
     form = UserPreferencesForm()
     
-    # Load existing preferences if any
+    
     if request.method == 'GET':
         prefs = current_user.get_preferences()
         form.preferred_degree_types.data = prefs.get('degree_types', [])
@@ -190,7 +184,7 @@ def preferences():
         form.preferred_programs.data = '\n'.join(prefs.get('programs', []))
     
     if form.validate_on_submit():
-        # Convert form data to preferences dictionary
+        
         prefs = {
             'degree_types': form.preferred_degree_types.data,
             'locations': [loc.strip() for loc in form.preferred_locations.data.split('\n') if loc.strip()],
@@ -198,7 +192,7 @@ def preferences():
             'programs': [prog.strip() for prog in form.preferred_programs.data.split('\n') if prog.strip()]
         }
         
-        # Save preferences
+        
         current_user.set_preferences(prefs)
         db.session.commit()
         flash('Your preferences have been saved.', 'success')

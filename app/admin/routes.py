@@ -20,7 +20,7 @@ def admin_required(f):
 @bp.route('/dashboard')
 @admin_required
 def dashboard():
-    # Get dashboard statistics
+    
     stats = {
         'total_users': User.query.count(),
         'total_universities': School.query.count(),
@@ -67,7 +67,7 @@ def edit_user(user_id):
         user.bio = form.bio.data
         user.location = form.location.data
         
-        # Only allow changing admin status if not editing own account
+        
         if user != current_user:
             user.is_admin = form.is_admin.data
         
@@ -79,7 +79,7 @@ def edit_user(user_id):
             db.session.rollback()
             flash('Error updating user.', 'danger')
     
-    # Pre-populate form with user data
+    
     if request.method == 'GET':
         form.username.data = user.username
         form.email.data = user.email
@@ -121,7 +121,7 @@ def toggle_admin(user_id):
         flash(f'Admin privileges {status} for {user.username}.', 'success')
     return redirect(url_for('admin.users'))
 
-# University Management
+
 @bp.route('/universities')
 @admin_required
 def admin_universities():
@@ -207,7 +207,7 @@ def delete_university(university_id):
     
     return redirect(url_for('admin.admin_universities'))
 
-# Program Management
+
 @bp.route('/programs')
 @admin_required
 def programs():
@@ -293,7 +293,7 @@ def delete_program(program_id):
     
     return redirect(url_for('admin.programs'))
 
-# Survey Management
+
 @bp.route('/surveys')
 @admin_required
 def surveys():
@@ -337,10 +337,10 @@ def new_survey():
 def survey_detail(survey_id):
     survey = Survey.query.get_or_404(survey_id)
     
-    # Get the latest response (most recent first)
+    
     latest_response = survey.responses.order_by(SurveyResponse.created_at.desc()).first() if survey.responses.count() > 0 else None
     
-    # Get recent responses (last 5, most recent first)
+    
     recent_responses = survey.responses.order_by(SurveyResponse.created_at.desc()).limit(5).all()
     
     return render_template('admin/survey_detail.html', 
@@ -408,7 +408,7 @@ def toggle_survey_active(survey_id):
     
     return redirect(url_for('admin.surveys'))
 
-# Survey Responses
+
 @bp.route('/survey-responses')
 @admin_required
 def survey_responses():
