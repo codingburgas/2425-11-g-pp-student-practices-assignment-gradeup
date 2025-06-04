@@ -2650,36 +2650,37 @@ body.sidebar-open {
   .nav-actions {
     display: flex !important;
     align-items: center;
-    gap: 6px !important;
+    gap: 8px !important;
     margin-left: auto;
     flex-shrink: 0;
-    max-width: calc(100vw - 80px);
   }
   
   .nav-actions .btn {
-    padding: 6px 8px !important;
-    font-size: 11px !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
-    border-radius: 6px !important;
-    min-width: 45px !important;
-    max-width: 55px !important;
+    border-radius: 8px !important;
+    min-width: 60px !important;
+    height: 36px !important;
     text-align: center !important;
     transition: all 0.3s ease !important;
     border: 1px solid rgba(139, 92, 246, 0.3) !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
   }
   
   .nav-actions .btn-outline-light {
-    background: rgba(139, 92, 246, 0.1) !important;
+    background: rgba(139, 92, 246, 0.15) !important;
     border: 1px solid rgba(139, 92, 246, 0.4) !important;
     color: var(--star-white) !important;
     backdrop-filter: blur(10px) !important;
   }
   
   .nav-actions .btn-outline-light:hover {
-    background: rgba(139, 92, 246, 0.2) !important;
+    background: rgba(139, 92, 246, 0.25) !important;
     border-color: rgba(139, 92, 246, 0.6) !important;
     color: var(--star-white) !important;
     transform: scale(1.02) !important;
@@ -2925,7 +2926,7 @@ body.sidebar-open {
 /* Extra small devices refinements */
 @media (max-width: 480px) {
   .top-navbar {
-    padding: 0 12px !important;
+    padding: 0 14px !important;
     width: 100vw;
     box-sizing: border-box;
   }
@@ -2937,26 +2938,50 @@ body.sidebar-open {
     padding: 0;
   }
   
-  /* Further optimize nav-actions for very small screens */
+  /* Slightly smaller but still readable for very small screens */
   .nav-actions {
-    gap: 4px !important;
-    max-width: calc(100vw - 70px) !important;
+    gap: 6px !important;
   }
   
   .nav-actions .btn {
-    padding: 5px 6px !important;
-    font-size: 10px !important;
-    min-width: 40px !important;
-    max-width: 48px !important;
-    border-radius: 5px !important;
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    min-width: 55px !important;
+    height: 34px !important;
+    border-radius: 7px !important;
   }
   
   .mobile-menu-toggle {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+    border-radius: 9px;
     flex-shrink: 0;
+  }
+}
+
+/* For very small screens - still maintain readability */
+@media (max-width: 360px) {
+  .top-navbar {
+    padding: 0 12px !important;
+  }
+  
+  .nav-actions {
+    gap: 5px !important;
+  }
+  
+  .nav-actions .btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    min-width: 50px !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+  }
+  
+  .mobile-menu-toggle {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px !important;
   }
 }
 
