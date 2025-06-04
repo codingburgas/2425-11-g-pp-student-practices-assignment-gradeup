@@ -290,6 +290,7 @@
                                             <div class="btn-content-wrapper">
                                                 <div class="btn-icon-cosmic">
                                                     <i class="fas fa-rocket" aria-hidden="true"></i>
+                                                    <span class="icon-fallback" style="display: none;">🚀</span>
                                                 </div>
                                                 <div class="btn-text-content">
                                                     <span class="btn-main-text">Take Survey Now</span>
@@ -297,6 +298,7 @@
                                                 </div>
                                                 <div class="btn-arrow">
                                                     <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                                    <span class="icon-fallback" style="display: none;">→</span>
                                                 </div>
                                             </div>
                                             <div class="btn-glow-effect"></div>
@@ -967,19 +969,39 @@
     display: block;
     text-align: center;
     line-height: 1;
+    position: relative;
+    z-index: 5;
 }
 
+/* Primary fallback - use emoji if FontAwesome fails */
 .btn-icon-cosmic i:before {
-    content: "🚀" !important;
-    font-family: system-ui, -apple-system, sans-serif;
+    content: "🚀";
+    font-family: system-ui, -apple-system, "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     font-style: normal;
     font-weight: normal;
+    font-size: 1.4rem;
+    display: inline-block;
 }
 
-.fas.fa-rocket:before {
-    content: "\f135" !important;
-    font-family: "Font Awesome 6 Free" !important;
-    font-weight: 900 !important;
+/* FontAwesome override - if FontAwesome loads, use the proper icon */
+.btn-icon-cosmic .fas.fa-rocket:before {
+    content: "\f135";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* Additional fallback for older FontAwesome versions */
+.btn-icon-cosmic .fa-rocket:before {
+    content: "\f135";
+    font-family: FontAwesome, "Font Awesome 5 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Force display if all else fails */
+.btn-icon-cosmic i:empty:before {
+    content: "🚀";
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 .cosmic-survey-btn:hover .btn-icon-cosmic {
@@ -1036,19 +1058,39 @@
     display: block;
     text-align: center;
     line-height: 1;
+    position: relative;
+    z-index: 5;
 }
 
+/* Primary fallback - use arrow character if FontAwesome fails */
 .btn-arrow i:before {
-    content: "→" !important;
-    font-family: system-ui, -apple-system, sans-serif;
+    content: "→";
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     font-style: normal;
     font-weight: normal;
+    font-size: 1.2rem;
+    display: inline-block;
 }
 
-.fas.fa-arrow-right:before {
-    content: "\f061" !important;
-    font-family: "Font Awesome 6 Free" !important;
-    font-weight: 900 !important;
+/* FontAwesome override - if FontAwesome loads, use the proper icon */
+.btn-arrow .fas.fa-arrow-right:before {
+    content: "\f061";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* Additional fallback for older FontAwesome versions */
+.btn-arrow .fa-arrow-right:before {
+    content: "\f061";
+    font-family: FontAwesome, "Font Awesome 5 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Force display if all else fails */
+.btn-arrow i:empty:before {
+    content: "→";
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 .cosmic-survey-btn:hover .btn-arrow {
@@ -1258,6 +1300,58 @@
     font-variant: normal;
     text-rendering: auto;
     speak: none;
+    /* Ensure icon content displays */
+    min-width: 1.2em;
+    min-height: 1.2em;
+    line-height: 1.2em;
+}
+
+/* Force visibility of pseudo-elements */
+.btn-icon-cosmic i:before,
+.btn-arrow i:before {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-block !important;
 }
 </style>
+
+<script>
+// JavaScript fallback to ensure icons are visible
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if FontAwesome has loaded
+    setTimeout(function() {
+        const rocketIcon = document.querySelector('.btn-icon-cosmic i');
+        const rocketFallback = document.querySelector('.btn-icon-cosmic .icon-fallback');
+        const arrowIcon = document.querySelector('.btn-arrow i');
+        const arrowFallback = document.querySelector('.btn-arrow .icon-fallback');
+        
+        // Function to check if an icon is properly displayed
+        function isIconDisplayed(element) {
+            if (!element) return false;
+            const style = window.getComputedStyle(element, ':before');
+            return element.offsetWidth > 5 && element.offsetHeight > 5;
+        }
+        
+        // Check rocket icon
+        if (rocketIcon && !isIconDisplayed(rocketIcon)) {
+            if (rocketFallback) {
+                rocketIcon.style.display = 'none';
+                rocketFallback.style.display = 'inline-block';
+                rocketFallback.style.fontSize = '1.4rem';
+                rocketFallback.style.color = 'white';
+            }
+        }
+        
+        // Check arrow icon
+        if (arrowIcon && !isIconDisplayed(arrowIcon)) {
+            if (arrowFallback) {
+                arrowIcon.style.display = 'none';
+                arrowFallback.style.display = 'inline-block';
+                arrowFallback.style.fontSize = '1.2rem';
+                arrowFallback.style.color = 'white';
+            }
+        }
+    }, 1000); // Wait 1 second for FontAwesome to load
+});
+</script>
 {% endblock %} 
