@@ -50,23 +50,32 @@ function initMovingParticlesBackground() {
     const container = document.getElementById('particlesBackground');
     if (!container) return;
     
-    
+    // Check for reduced motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
     
-    const particleCount = window.innerWidth > 768 ? 40 : 20;
+    // Reduce particle count on mobile for better performance
+    let particleCount;
+    if (window.innerWidth <= 480) {
+        particleCount = 15; // Very small screens
+    } else if (window.innerWidth <= 768) {
+        particleCount = 25; // Mobile devices
+    } else {
+        particleCount = 40; // Desktop
+    }
     
     for (let i = 0; i < particleCount; i++) {
         createBackgroundParticle(container);
     }
     
-    
+    // Adjust interval based on device capabilities
+    const intervalTime = window.innerWidth <= 768 ? 4000 : 3000;
     setInterval(() => {
         if (container.children.length < particleCount) {
             createBackgroundParticle(container);
         }
-    }, 3000);
+    }, intervalTime);
 }
 
 function createBackgroundParticle(container) {
@@ -356,20 +365,111 @@ function initCounterAnimations() {
 function initMobileMenu() {
     const mobileToggle = document.querySelector('.mobile-menu-toggle');
     const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
     
     if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-            document.body.classList.toggle('sidebar-open');
+        // Toggle mobile menu
+        mobileToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMobileMenu();
         });
         
+        // Close menu when clicking overlay
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                closeMobileMenu();
+            });
+        }
         
+        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
             if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-                document.body.classList.remove('sidebar-open');
+                closeMobileMenu();
             }
         });
+        
+        // Handle escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Close menu when navigation link is clicked on mobile
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 1024) {
+                    setTimeout(() => closeMobileMenu(), 300);
+                }
+            });
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 1024) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Add swipe gestures for mobile
+        initSwipeGestures(sidebar);
+    }
+    
+    function toggleMobileMenu() {
+        sidebar.classList.toggle('active');
+        if (overlay) {
+            overlay.classList.toggle('active');
+        }
+        document.body.classList.toggle('sidebar-open');
+        
+        // Update ARIA attributes
+        const isOpen = sidebar.classList.contains('active');
+        mobileToggle.setAttribute('aria-expanded', isOpen);
+        sidebar.setAttribute('aria-hidden', !isOpen);
+    }
+    
+    function closeMobileMenu() {
+        sidebar.classList.remove('active');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+        document.body.classList.remove('sidebar-open');
+        
+        // Update ARIA attributes
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        sidebar.setAttribute('aria-hidden', 'true');
+    }
+    
+    function initSwipeGestures(element) {
+        let startX = 0;
+        let startY = 0;
+        let distX = 0;
+        let distY = 0;
+        let threshold = 150; // Required min distance traveled to register swipe
+        let restraint = 100; // Maximum distance allowed at the same time in perpendicular direction
+        let allowedTime = 300; // Maximum time allowed to travel that distance
+        let startTime = 0;
+        
+        element.addEventListener('touchstart', function(e) {
+            const touchObj = e.changedTouches[0];
+            startX = touchObj.pageX;
+            startY = touchObj.pageY;
+            startTime = new Date().getTime();
+        }, {passive: true});
+        
+        element.addEventListener('touchend', function(e) {
+            const touchObj = e.changedTouches[0];
+            distX = touchObj.pageX - startX;
+            distY = touchObj.pageY - startY;
+            const elapsedTime = new Date().getTime() - startTime;
+            
+            // Check if it's a valid swipe left gesture
+            if (elapsedTime <= allowedTime && Math.abs(distX) >= threshold && Math.abs(distY) <= restraint && distX < 0) {
+                closeMobileMenu();
+            }
+        }, {passive: true});
     }
 }
 

@@ -11,7 +11,7 @@ class Config:
     
     if platform.system() == 'Windows':
         SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-            'mssql+pyodbc://admin123:Adminparolchik123@grade-up-srv.database.windows.net/grade-up-db?driver=ODBC+Driver+17+for+SQL+Server'
+            'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
         
         SQLALCHEMY_TRACK_MODIFICATIONS = False
     else:
