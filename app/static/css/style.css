@@ -2628,6 +2628,8 @@ body.sidebar-open {
   
   .top-navbar-content {
     height: 100%;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .mobile-menu-toggle {
@@ -2637,9 +2639,51 @@ body.sidebar-open {
     border-radius: 10px;
   }
   
+  /* Enhanced nav-actions for mobile */
+  .nav-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 8px !important;
+    margin-left: auto;
+  }
+  
   .nav-actions .btn {
-    padding: 10px 16px;
-    font-size: 13px;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    min-width: 60px !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  }
+  
+  .nav-actions .btn-outline-light {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    color: var(--star-white) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  
+  .nav-actions .btn-outline-light:hover {
+    background: rgba(139, 92, 246, 0.2) !important;
+    border-color: rgba(139, 92, 246, 0.6) !important;
+    color: var(--star-white) !important;
+    transform: scale(1.02) !important;
+  }
+  
+  .nav-actions .btn-primary {
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%) !important;
+    border: none !important;
+    color: var(--star-white) !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+  }
+  
+  .nav-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #9F7AEA 0%, #0891B2 100%) !important;
+    color: var(--star-white) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4) !important;
   }
   
   /* Main content adjustments */
@@ -2871,61 +2915,28 @@ body.sidebar-open {
     padding: 0 16px;
   }
   
-  .hero-section .container-fluid {
-    padding: 0 16px;
+  .top-navbar-content {
+    justify-content: space-between;
+    align-items: center;
   }
   
-  .hero-glass-box {
-    padding: 28px 24px;
-    margin: 12px 0;
-    border-radius: 20px;
+  /* Further optimize nav-actions for very small screens */
+  .nav-actions {
+    gap: 6px !important;
   }
   
-  .hero-title {
-    font-size: 2rem;
-    margin-bottom: 20px;
+  .nav-actions .btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    min-width: 55px !important;
+    border-radius: 6px !important;
   }
   
-  .hero-title .highlight {
-    margin-top: 6px;
-  }
-  
-  .hero-description {
-    font-size: 15px;
-    margin-bottom: 24px;
-  }
-  
-  .btn-hero {
-    padding: 14px 20px;
-    font-size: 15px;
-    border-radius: 12px;
-  }
-  
-  .features-list {
-    margin-top: 24px;
-    padding: 20px 0;
-  }
-  
-  .feature-item {
-    font-size: 14px;
-    padding: 10px 16px;
-    margin: 0 2px;
-  }
-  
-  .feature-item i {
+  .mobile-menu-toggle {
+    width: 40px;
+    height: 40px;
     font-size: 16px;
-    width: 22px;
-  }
-  
-  .mockup-screen {
-    max-width: 260px;
-    height: 160px;
-    padding: 14px;
-  }
-  
-  .sidebar {
-    width: 100vw;
-    max-width: 320px;
+    border-radius: 8px;
   }
 }
 
@@ -3232,4 +3243,62 @@ body.sidebar-open {
 
 .flash-messages .alert {
   display: none !important;
+}
+
+/* Hero section styling for very small screens */
+.hero-section .container-fluid {
+  padding: 0 16px;
+}
+
+.hero-glass-box {
+  padding: 28px 24px;
+  margin: 12px 0;
+  border-radius: 20px;
+}
+
+.hero-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.hero-title .highlight {
+  margin-top: 6px;
+}
+
+.hero-description {
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+.btn-hero {
+  padding: 14px 20px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+
+.features-list {
+  margin-top: 24px;
+  padding: 20px 0;
+}
+
+.feature-item {
+  font-size: 14px;
+  padding: 10px 16px;
+  margin: 0 2px;
+}
+
+.feature-item i {
+  font-size: 16px;
+  width: 22px;
+}
+
+.mockup-screen {
+  max-width: 260px;
+  height: 160px;
+  padding: 14px;
+}
+
+.sidebar {
+  width: 100vw;
+  max-width: 320px;
 }
