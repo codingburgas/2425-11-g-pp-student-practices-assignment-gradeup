@@ -136,8 +136,6 @@ html {
 }
 
 .hero-glass-box::before {
-  background: none;
-  height: 0;
   display: none;
 }
 
@@ -2665,8 +2663,7 @@ body.sidebar-open {
   }
   
   .hero-glass-box::before {
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
-    height: 2px;
+    display: none;
   }
   
   /* Enhanced hero typography */
