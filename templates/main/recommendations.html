@@ -289,8 +289,7 @@
                                             <div class="btn-cosmic-bg"></div>
                                             <div class="btn-content-wrapper">
                                                 <div class="btn-icon-cosmic">
-                                                    <i class="fas fa-rocket" aria-hidden="true"></i>
-                                                    <span class="icon-fallback" style="display: none;">🚀</span>
+                                                    🚀
                                                 </div>
                                                 <div class="btn-text-content">
                                                     <span class="btn-main-text">Take Survey Now</span>
@@ -958,59 +957,13 @@
     transition: all 0.3s ease;
     box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
     z-index: 3;
-}
-
-.btn-icon-cosmic i {
     font-size: 1.4rem;
     color: white;
-    transition: all 0.3s ease;
-    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", fontawesome, sans-serif;
-    font-weight: 900;
-    display: block;
-    text-align: center;
-    line-height: 1;
-    position: relative;
-    z-index: 5;
-}
-
-/* Primary fallback - use emoji if FontAwesome fails */
-.btn-icon-cosmic i:before {
-    content: "🚀";
-    font-family: system-ui, -apple-system, "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 1.4rem;
-    display: inline-block;
-}
-
-/* FontAwesome override - if FontAwesome loads, use the proper icon */
-.btn-icon-cosmic .fas.fa-rocket:before {
-    content: "\f135";
-    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
-    font-weight: 900;
-    font-style: normal;
-}
-
-/* Additional fallback for older FontAwesome versions */
-.btn-icon-cosmic .fa-rocket:before {
-    content: "\f135";
-    font-family: FontAwesome, "Font Awesome 5 Free", "Font Awesome 6 Free";
-    font-weight: 900;
-}
-
-/* Force display if all else fails */
-.btn-icon-cosmic i:empty:before {
-    content: "🚀";
-    font-family: system-ui, -apple-system, sans-serif;
 }
 
 .cosmic-survey-btn:hover .btn-icon-cosmic {
     transform: rotate(15deg) scale(1.1);
     box-shadow: 0 8px 24px rgba(6, 182, 212, 0.6);
-}
-
-.cosmic-survey-btn:hover .btn-icon-cosmic i {
-    transform: rotate(-15deg);
 }
 
 .btn-text-content {
