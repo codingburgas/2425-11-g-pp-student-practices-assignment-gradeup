@@ -212,16 +212,36 @@
 
                             <!-- Action Buttons -->
                             <div class="recommendations-actions text-center" data-aos="fade-up" data-aos-delay="300">
-                                <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced ghost me-3">
-                                    <i class="fas fa-redo"></i>
-                                    <span>Retake Survey</span>
+                                {% if has_retakes %}
+                                <a href="{{ url_for('main.survey') }}" class="retake-survey-btn cosmic-enhanced">
+                                    <div class="btn-icon-wrapper">
+                                        <i class="fas fa-redo-alt"></i>
+                                    </div>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Retake Survey</span>
+                                        <span class="btn-subtitle">{{ retakes_left }} retake{{ 's' if retakes_left != 1 else '' }} remaining</span>
+                                    </div>
                                     <div class="btn-cosmic-glow"></div>
+                                    <div class="btn-particles"></div>
                                 </a>
+                                {% else %}
+                                <div class="retake-disabled-notice">
+                                    <div class="notice-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="notice-content">
+                                        <span class="notice-text">Survey Completed</span>
+                                        <span class="notice-subtitle">Maximum {{ max_submissions }} submissions reached</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- 
                                 <a href="{{ url_for('main.universities') }}" class="cosmic-btn-enhanced primary">
                                     <i class="fas fa-university"></i>
                                     <span>Explore Universities</span>
                                     <div class="btn-cosmic-glow"></div>
                                 </a>
+                                -->
                             </div>
                         </div>
 
@@ -551,25 +571,308 @@
     margin-top: 2rem;
 }
 
-/* Responsive Design */
+/* Enhanced Retake Survey Button */
+.retake-survey-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 2px solid rgba(139, 92, 246, 0.4) !important;
+    border-radius: 20px !important;
+    color: var(--star-white) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 
+        0 12px 40px rgba(139, 92, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    min-width: 280px;
+}
+
+.retake-survey-btn:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(6, 182, 212, 0.25) 100%) !important;
+    border-color: rgba(139, 92, 246, 0.7) !important;
+    box-shadow: 
+        0 20px 60px rgba(139, 92, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    color: var(--star-white) !important;
+    text-decoration: none !important;
+}
+
+.btn-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-icon-wrapper i {
+    font-size: 1.4rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.retake-survey-btn:hover .btn-icon-wrapper {
+    transform: rotate(180deg) scale(1.1);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+}
+
+.btn-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.btn-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.btn-subtitle {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-weight: 400;
+    line-height: 1;
+}
+
+.btn-cosmic-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    animation: rotate 4s linear infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.retake-survey-btn:hover .btn-cosmic-glow {
+    opacity: 1;
+}
+
+.btn-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.btn-particles::before,
+.btn-particles::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: particleFloat 3s linear infinite;
+    opacity: 0;
+}
+
+.btn-particles::before {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.btn-particles::after {
+    left: 80%;
+    animation-delay: 1.5s;
+}
+
+.retake-survey-btn:hover .btn-particles::before,
+.retake-survey-btn:hover .btn-particles::after {
+    opacity: 1;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(100%) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20px) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness for retake button */
 @media (max-width: 768px) {
-    .cosmic-card {
-        padding: 1.5rem;
+    .retake-survey-btn {
+        padding: 1.2rem 2rem !important;
+        gap: 1rem;
+        min-width: 260px;
+        font-size: 1rem !important;
     }
     
-    .analysis-metric {
-        flex-direction: column;
-        text-align: center;
+    .btn-icon-wrapper {
+        width: 45px;
+        height: 45px;
     }
     
-    .rec-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
+    .btn-icon-wrapper i {
+        font-size: 1.2rem;
     }
     
-    .benefit-grid {
-        grid-template-columns: 1fr;
+    .btn-text {
+        font-size: 1.1rem;
+    }
+    
+    .btn-subtitle {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .retake-survey-btn {
+        padding: 1rem 1.5rem !important;
+        min-width: 240px;
+        gap: 0.8rem;
+    }
+    
+    .btn-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .btn-icon-wrapper i {
+        font-size: 1.1rem;
+    }
+}
+
+/* Retake Disabled Notice */
+.retake-disabled-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    border-radius: 20px;
+    color: var(--star-white);
+    font-weight: 600;
+    font-size: 1.1rem;
+    min-width: 280px;
+    box-shadow: 
+        0 12px 40px rgba(16, 185, 129, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.notice-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #10B981, #34D399);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.notice-icon i {
+    font-size: 1.4rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.notice-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.notice-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.notice-subtitle {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-weight: 400;
+    line-height: 1;
+}
+
+/* Mobile responsiveness for disabled notice */
+@media (max-width: 768px) {
+    .retake-disabled-notice {
+        padding: 1.2rem 2rem;
+        gap: 1rem;
+        min-width: 260px;
+        font-size: 1rem;
+    }
+    
+    .notice-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .notice-icon i {
+        font-size: 1.2rem;
+    }
+    
+    .notice-text {
+        font-size: 1.1rem;
+    }
+    
+    .notice-subtitle {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .retake-disabled-notice {
+        padding: 1rem 1.5rem;
+        min-width: 240px;
+        gap: 0.8rem;
+    }
+    
+    .notice-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .notice-icon i {
+        font-size: 1.1rem;
     }
 }
 </style>

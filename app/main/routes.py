@@ -268,7 +268,19 @@ def specialties():
 @bp.route('/recommendations')
 @login_required
 def recommendations():
-    return render_template('main/recommendations.html')
+    from app.models import SurveyResponse
+    
+    # Calculate retakes information
+    MAX_SUBMISSIONS = 3
+    user_submissions = SurveyResponse.query.filter_by(user_id=current_user.id).count()
+    retakes_left = max(0, MAX_SUBMISSIONS - user_submissions)
+    has_retakes = retakes_left > 0
+    
+    return render_template('main/recommendations.html', 
+                         user_submissions=user_submissions,
+                         retakes_left=retakes_left,
+                         has_retakes=has_retakes,
+                         max_submissions=MAX_SUBMISSIONS)
 
 @bp.route('/favorites')
 @login_required
@@ -302,14 +314,17 @@ def submit_survey_response(survey_id):
     
     survey = Survey.query.get_or_404(survey_id)
     
-    # Check if user has already submitted this survey
-    existing_response = SurveyResponse.query.filter_by(
+    # Check user's retake count (max 3 retakes allowed)
+    existing_responses_count = SurveyResponse.query.filter_by(
         user_id=current_user.id, 
         survey_id=survey_id
-    ).first()
+    ).count()
     
-    if existing_response:
-        flash('You have already submitted this survey. Thank you for your participation!', 'info')
+    # Allow up to 3 total submissions (original + 2 retakes)
+    MAX_SUBMISSIONS = 3
+    
+    if existing_responses_count >= MAX_SUBMISSIONS:
+        flash(f'⚠️ You have reached the maximum number of survey submissions ({MAX_SUBMISSIONS}). Your latest responses are being used for recommendations.', 'warning')
         return redirect(url_for('main.recommendations'))
     
     # Process survey responses
@@ -357,7 +372,8 @@ def submit_survey_response(survey_id):
         flash(f'Please answer all required questions: {", ".join(required_missing)}', 'warning')
         return redirect(url_for('main.take_survey', survey_id=survey_id))
     
-    # Create survey response
+    # Create new survey response (allowing multiple responses)
+    submission_number = existing_responses_count + 1
     response = SurveyResponse(
         user_id=current_user.id,
         survey_id=survey_id,
@@ -367,7 +383,16 @@ def submit_survey_response(survey_id):
     try:
         db.session.add(response)
         db.session.commit()
-        flash('🎉 Thank you! Your survey has been submitted successfully. You can now view your personalized recommendations!', 'success')
+        
+        # Show different messages based on submission number
+        if submission_number == 1:
+            flash('🎉 Thank you! Your survey has been submitted successfully. You can now view your personalized recommendations!', 'success')
+        else:
+            retakes_left = MAX_SUBMISSIONS - submission_number
+            if retakes_left > 0:
+                flash(f'✨ Survey retake #{submission_number-1} completed! Your recommendations have been updated. You have {retakes_left} retake(s) remaining.', 'success')
+            else:
+                flash(f'🌟 Final survey submission completed! Your recommendations have been updated. You have used all {MAX_SUBMISSIONS} submissions.', 'info')
         
         # Try to generate recommendations immediately
         try:
@@ -375,7 +400,7 @@ def submit_survey_response(survey_id):
             ml_service = MLModelService()
             recommendations = ml_service.get_program_recommendations(current_user.id)
             if recommendations:
-                flash(f'✨ Great news! We found {len(recommendations)} program recommendations based on your responses.', 'info')
+                flash(f'✨ Great news! We found {len(recommendations)} program recommendations based on your latest responses.', 'info')
         except Exception as ml_error:
             # Don't fail the whole process if ML fails
             logger.warning(f"ML recommendation generation failed: {ml_error}")
