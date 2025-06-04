@@ -30,8 +30,7 @@
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    {% set user_responses = current_user.survey_responses %}
-                    {% if user_responses %}
+                    {% if user_responses and user_responses|length > 0 %}
                         <!-- User has taken surveys -->
                         <div class="recommendations-container">
                             <!-- Survey Status Card -->
@@ -39,7 +38,7 @@
                                 <div class="card-header">
                                     <h3>
                                         <i class="fas fa-check-circle text-success me-2"></i>
-                                        Survey Completed
+                                        Survey Completed ({{ user_responses|length }} response{{ 's' if user_responses|length != 1 else '' }})
                                     </h3>
                                 </div>
                                 <div class="card-content">
@@ -48,8 +47,8 @@
                                             <div class="status-item">
                                                 <i class="fas fa-calendar-check"></i>
                                                 <div class="status-details">
-                                                    <h5>Survey Date</h5>
-                                                    <p>{{ user_responses.first().created_at.strftime('%B %d, %Y') if user_responses.first() else 'N/A' }}</p>
+                                                    <h5>Latest Survey Date</h5>
+                                                    <p>{{ user_responses[0].created_at.strftime('%B %d, %Y at %I:%M %p') if user_responses else 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -60,7 +59,7 @@
                                                     <h5>Analysis Status</h5>
                                                     <p class="text-success">
                                                         <i class="fas fa-check me-1"></i>
-                                                        Complete
+                                                        Complete ({{ user_responses|length }}/{{ max_submissions }} submissions)
                                                     </p>
                                                 </div>
                                             </div>

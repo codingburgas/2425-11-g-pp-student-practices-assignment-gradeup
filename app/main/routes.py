@@ -276,11 +276,17 @@ def recommendations():
     retakes_left = max(0, MAX_SUBMISSIONS - user_submissions)
     has_retakes = retakes_left > 0
     
+    # Explicitly get user's survey responses for the template
+    user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).order_by(SurveyResponse.created_at.desc()).all()
+    
+    logger.info(f"Recommendations page for user {current_user.id}: found {len(user_responses)} responses")
+    
     return render_template('main/recommendations.html', 
                          user_submissions=user_submissions,
                          retakes_left=retakes_left,
                          has_retakes=has_retakes,
-                         max_submissions=MAX_SUBMISSIONS)
+                         max_submissions=MAX_SUBMISSIONS,
+                         user_responses=user_responses)
 
 @bp.route('/favorites')
 @login_required
