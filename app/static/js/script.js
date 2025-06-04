@@ -702,16 +702,15 @@ function checkFlashMessages() {
             showNotification(text, type);
         }
         
-        
+        // Hide the original alert
         alert.style.display = 'none';
     });
     
-    
-    if (window.location.pathname === '/') {
-        setTimeout(() => {
-            showNotification('Welcome to GradeUP! Notification system is working.', 'info', 3000);
-        }, 1000);
-    }
+    // if (window.location.pathname === '/') {
+    //     setTimeout(() => {
+    //         showNotification('Welcome to GradeUP! Notification system is working.', 'info', 3000);
+    //     }, 1000);
+    // }
 }
 
 
