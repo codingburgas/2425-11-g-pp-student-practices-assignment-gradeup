@@ -30,8 +30,7 @@
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    {% set user_responses = current_user.survey_responses %}
-                    {% if user_responses %}
+                    {% if user_responses and user_responses|length > 0 %}
                         <!-- User has taken surveys -->
                         <div class="recommendations-container">
                             <!-- Survey Status Card -->
@@ -39,7 +38,7 @@
                                 <div class="card-header">
                                     <h3>
                                         <i class="fas fa-check-circle text-success me-2"></i>
-                                        Survey Completed
+                                        Survey Completed ({{ user_responses|length }} response{{ 's' if user_responses|length != 1 else '' }})
                                     </h3>
                                 </div>
                                 <div class="card-content">
@@ -48,8 +47,8 @@
                                             <div class="status-item">
                                                 <i class="fas fa-calendar-check"></i>
                                                 <div class="status-details">
-                                                    <h5>Survey Date</h5>
-                                                    <p>{{ user_responses.first().created_at.strftime('%B %d, %Y') if user_responses.first() else 'N/A' }}</p>
+                                                    <h5>Latest Survey Date</h5>
+                                                    <p>{{ user_responses[0].created_at.strftime('%B %d, %Y at %I:%M %p') if user_responses else 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -60,7 +59,7 @@
                                                     <h5>Analysis Status</h5>
                                                     <p class="text-success">
                                                         <i class="fas fa-check me-1"></i>
-                                                        Complete
+                                                        Complete ({{ user_responses|length }}/{{ max_submissions }} submissions)
                                                     </p>
                                                 </div>
                                             </div>
@@ -212,16 +211,36 @@
 
                             <!-- Action Buttons -->
                             <div class="recommendations-actions text-center" data-aos="fade-up" data-aos-delay="300">
-                                <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced ghost me-3">
-                                    <i class="fas fa-redo"></i>
-                                    <span>Retake Survey</span>
+                                {% if has_retakes %}
+                                <a href="{{ url_for('main.survey') }}" class="retake-survey-btn cosmic-enhanced">
+                                    <div class="btn-icon-wrapper">
+                                        <i class="fas fa-redo-alt"></i>
+                                    </div>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Retake Survey</span>
+                                        <span class="btn-subtitle">{{ retakes_left }} retake{{ 's' if retakes_left != 1 else '' }} remaining</span>
+                                    </div>
                                     <div class="btn-cosmic-glow"></div>
+                                    <div class="btn-particles"></div>
                                 </a>
+                                {% else %}
+                                <div class="retake-disabled-notice">
+                                    <div class="notice-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="notice-content">
+                                        <span class="notice-text">Survey Completed</span>
+                                        <span class="notice-subtitle">Maximum {{ max_submissions }} submissions reached</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- 
                                 <a href="{{ url_for('main.universities') }}" class="cosmic-btn-enhanced primary">
                                     <i class="fas fa-university"></i>
                                     <span>Explore Universities</span>
                                     <div class="btn-cosmic-glow"></div>
                                 </a>
+                                -->
                             </div>
                         </div>
 
@@ -266,10 +285,23 @@
                                     </div>
 
                                     <div class="cta-actions">
-                                        <a href="{{ url_for('main.survey') }}" class="cosmic-btn-enhanced primary btn-lg">
-                                            <i class="fas fa-play"></i>
-                                            <span>Take Survey Now</span>
-                                            <div class="btn-cosmic-glow"></div>
+                                        <a href="{{ url_for('main.survey') }}" class="cosmic-survey-btn">
+                                            <div class="btn-cosmic-bg"></div>
+                                            <div class="btn-content-wrapper">
+                                                <div class="btn-icon-cosmic">
+                                                    🚀
+                                                </div>
+                                                <div class="btn-text-content">
+                                                    <span class="btn-main-text">Take Survey Now</span>
+                                                    <span class="btn-sub-text">Discover Your Perfect University</span>
+                                                </div>
+                                                <div class="btn-arrow">
+                                                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                                    <span class="icon-fallback" style="display: none;">→</span>
+                                                </div>
+                                            </div>
+                                            <div class="btn-glow-effect"></div>
+                                            <div class="btn-particles-effect"></div>
                                         </a>
                                     </div>
                                 </div>
@@ -551,26 +583,728 @@
     margin-top: 2rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .cosmic-card {
-        padding: 1.5rem;
+/* Enhanced Retake Survey Button */
+.retake-survey-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.15) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 2px solid rgba(139, 92, 246, 0.4) !important;
+    border-radius: 20px !important;
+    color: var(--star-white) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: 
+        0 12px 40px rgba(139, 92, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    min-width: 280px;
+}
+
+.retake-survey-btn:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(6, 182, 212, 0.25) 100%) !important;
+    border-color: rgba(139, 92, 246, 0.7) !important;
+    box-shadow: 
+        0 20px 60px rgba(139, 92, 246, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    color: var(--star-white) !important;
+    text-decoration: none !important;
+}
+
+.btn-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-icon-wrapper i {
+    font-size: 1.4rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.retake-survey-btn:hover .btn-icon-wrapper {
+    transform: rotate(180deg) scale(1.1);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+}
+
+.btn-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.btn-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.btn-subtitle {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-weight: 400;
+    line-height: 1;
+}
+
+.btn-cosmic-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    animation: rotate 4s linear infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.retake-survey-btn:hover .btn-cosmic-glow {
+    opacity: 1;
+}
+
+.btn-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.btn-particles::before,
+.btn-particles::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: particleFloat 3s linear infinite;
+    opacity: 0;
+}
+
+.btn-particles::before {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.btn-particles::after {
+    left: 80%;
+    animation-delay: 1.5s;
+}
+
+.retake-survey-btn:hover .btn-particles::before,
+.retake-survey-btn:hover .btn-particles::after {
+    opacity: 1;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(100%) scale(0);
+        opacity: 0;
     }
-    
-    .analysis-metric {
-        flex-direction: column;
-        text-align: center;
+    10% {
+        opacity: 1;
     }
-    
-    .rec-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
+    90% {
+        opacity: 1;
     }
-    
-    .benefit-grid {
-        grid-template-columns: 1fr;
+    100% {
+        transform: translateY(-20px) scale(1);
+        opacity: 0;
     }
 }
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness for retake button */
+@media (max-width: 768px) {
+    .retake-survey-btn {
+        padding: 1.2rem 2rem !important;
+        gap: 1rem;
+        min-width: 260px;
+        font-size: 1rem !important;
+    }
+    
+    .btn-icon-wrapper {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .btn-icon-wrapper i {
+        font-size: 1.2rem;
+    }
+    
+    .btn-text {
+        font-size: 1.1rem;
+    }
+    
+    .btn-subtitle {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .retake-survey-btn {
+        padding: 1rem 1.5rem !important;
+        min-width: 240px;
+        gap: 0.8rem;
+    }
+    
+    .btn-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .btn-icon-wrapper i {
+        font-size: 1.1rem;
+    }
+}
+
+/* Retake Disabled Notice */
+.retake-disabled-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2.5rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    border-radius: 20px;
+    color: var(--star-white);
+    font-weight: 600;
+    font-size: 1.1rem;
+    min-width: 280px;
+    box-shadow: 
+        0 12px 40px rgba(16, 185, 129, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.notice-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #10B981, #34D399);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.notice-icon i {
+    font-size: 1.4rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.notice-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.notice-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.notice-subtitle {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-weight: 400;
+    line-height: 1;
+}
+
+/* Mobile responsiveness for disabled notice */
+@media (max-width: 768px) {
+    .retake-disabled-notice {
+        padding: 1.2rem 2rem;
+        gap: 1rem;
+        min-width: 260px;
+        font-size: 1rem;
+    }
+    
+    .notice-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .notice-icon i {
+        font-size: 1.2rem;
+    }
+    
+    .notice-text {
+        font-size: 1.1rem;
+    }
+    
+    .notice-subtitle {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .retake-disabled-notice {
+        padding: 1rem 1.5rem;
+        min-width: 240px;
+        gap: 0.8rem;
+    }
+    
+    .notice-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .notice-icon i {
+        font-size: 1.1rem;
+    }
+}
+
+/* Enhanced Cosmic Survey Button */
+.cosmic-survey-btn {
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    margin: 2rem 0;
+    text-decoration: none;
+    border-radius: 24px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 
+        0 8px 32px rgba(139, 92, 246, 0.3),
+        0 4px 16px rgba(6, 182, 212, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    font-family: inherit;
+}
+
+.cosmic-survey-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+        0 16px 48px rgba(139, 92, 246, 0.5),
+        0 8px 24px rgba(6, 182, 212, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+}
+
+.btn-cosmic-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        #8B5CF6 0%, 
+        #A855F7 25%, 
+        #06B6D4 50%, 
+        #3B82F6 75%, 
+        #8B5CF6 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 6s ease infinite;
+    z-index: 1;
+    border-radius: 24px;
+}
+
+.btn-content-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 2;
+    gap: 1.5rem;
+    border-radius: 24px;
+}
+
+.btn-icon-cosmic {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #06B6D4, #3B82F6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+    z-index: 3;
+    font-size: 1.4rem;
+    color: white;
+}
+
+.cosmic-survey-btn:hover .btn-icon-cosmic {
+    transform: rotate(15deg) scale(1.1);
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.6);
+}
+
+.btn-text-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.btn-main-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+}
+
+.btn-sub-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
+    margin-top: 0.25rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-arrow {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 3;
+}
+
+.btn-arrow i {
+    font-size: 1.2rem;
+    color: white;
+    transition: all 0.3s ease;
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", fontawesome, sans-serif;
+    font-weight: 900;
+    display: block;
+    text-align: center;
+    line-height: 1;
+    position: relative;
+    z-index: 5;
+}
+
+/* Primary fallback - use arrow character if FontAwesome fails */
+.btn-arrow i:before {
+    content: "→";
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1.2rem;
+    display: inline-block;
+}
+
+/* FontAwesome override - if FontAwesome loads, use the proper icon */
+.btn-arrow .fas.fa-arrow-right:before {
+    content: "\f061";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* Additional fallback for older FontAwesome versions */
+.btn-arrow .fa-arrow-right:before {
+    content: "\f061";
+    font-family: FontAwesome, "Font Awesome 5 Free", "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Force display if all else fails */
+.btn-arrow i:empty:before {
+    content: "→";
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.cosmic-survey-btn:hover .btn-arrow {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(4px);
+}
+
+.cosmic-survey-btn:hover .btn-arrow i {
+    transform: translateX(2px);
+}
+
+.btn-glow-effect {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent,
+        rgba(139, 92, 246, 0.4),
+        transparent,
+        rgba(6, 182, 212, 0.4),
+        transparent
+    );
+    animation: rotate 8s linear infinite;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 50%;
+}
+
+.cosmic-survey-btn:hover .btn-glow-effect {
+    opacity: 1;
+}
+
+.btn-particles-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 3;
+    overflow: hidden;
+    border-radius: 24px;
+}
+
+.btn-particles-effect::before,
+.btn-particles-effect::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: floatParticles 4s linear infinite;
+    opacity: 0;
+}
+
+.btn-particles-effect::before {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.btn-particles-effect::after {
+    left: 80%;
+    animation-delay: 2s;
+}
+
+.cosmic-survey-btn:hover .btn-particles-effect::before,
+.cosmic-survey-btn:hover .btn-particles-effect::after {
+    opacity: 1;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes floatParticles {
+    0% {
+        transform: translateY(100%) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Mobile responsiveness for enhanced button */
+@media (max-width: 768px) {
+    .cosmic-survey-btn {
+        margin: 1.5rem 0;
+        border-radius: 20px;
+    }
+    
+    .btn-cosmic-bg {
+        border-radius: 20px;
+    }
+    
+    .btn-content-wrapper {
+        padding: 1.2rem 2rem;
+        gap: 1rem;
+        border-radius: 20px;
+    }
+    
+    .btn-particles-effect {
+        border-radius: 20px;
+    }
+    
+    .btn-icon-cosmic {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .btn-icon-cosmic i {
+        font-size: 1.2rem;
+    }
+    
+    .btn-main-text {
+        font-size: 1.1rem;
+    }
+    
+    .btn-sub-text {
+        font-size: 0.85rem;
+    }
+    
+    .btn-arrow {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .btn-arrow i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .cosmic-survey-btn {
+        border-radius: 18px;
+    }
+    
+    .btn-cosmic-bg {
+        border-radius: 18px;
+    }
+    
+    .btn-content-wrapper {
+        padding: 1rem 1.5rem;
+        gap: 0.8rem;
+        border-radius: 18px;
+    }
+    
+    .btn-particles-effect {
+        border-radius: 18px;
+    }
+    
+    .btn-icon-cosmic {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .btn-main-text {
+        font-size: 1rem;
+    }
+    
+    .btn-sub-text {
+        font-size: 0.8rem;
+    }
+    
+    .btn-arrow {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .btn-arrow i {
+        font-size: 0.9rem;
+    }
+}
+
+/* Additional CSS to ensure icons are visible */
+.cosmic-survey-btn * {
+    font-family: inherit;
+}
+
+/* Force FontAwesome to load if available */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* Ensure proper icon rendering */
+.btn-icon-cosmic i,
+.btn-arrow i {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    speak: none;
+    /* Ensure icon content displays */
+    min-width: 1.2em;
+    min-height: 1.2em;
+    line-height: 1.2em;
+}
+
+/* Force visibility of pseudo-elements */
+.btn-icon-cosmic i:before,
+.btn-arrow i:before {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-block !important;
+}
 </style>
+
+<script>
+// JavaScript fallback to ensure icons are visible
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if FontAwesome has loaded
+    setTimeout(function() {
+        const rocketIcon = document.querySelector('.btn-icon-cosmic i');
+        const rocketFallback = document.querySelector('.btn-icon-cosmic .icon-fallback');
+        const arrowIcon = document.querySelector('.btn-arrow i');
+        const arrowFallback = document.querySelector('.btn-arrow .icon-fallback');
+        
+        // Function to check if an icon is properly displayed
+        function isIconDisplayed(element) {
+            if (!element) return false;
+            const style = window.getComputedStyle(element, ':before');
+            return element.offsetWidth > 5 && element.offsetHeight > 5;
+        }
+        
+        // Check rocket icon
+        if (rocketIcon && !isIconDisplayed(rocketIcon)) {
+            if (rocketFallback) {
+                rocketIcon.style.display = 'none';
+                rocketFallback.style.display = 'inline-block';
+                rocketFallback.style.fontSize = '1.4rem';
+                rocketFallback.style.color = 'white';
+            }
+        }
+        
+        // Check arrow icon
+        if (arrowIcon && !isIconDisplayed(arrowIcon)) {
+            if (arrowFallback) {
+                arrowIcon.style.display = 'none';
+                arrowFallback.style.display = 'inline-block';
+                arrowFallback.style.fontSize = '1.2rem';
+                arrowFallback.style.color = 'white';
+            }
+        }
+    }, 1000); // Wait 1 second for FontAwesome to load
+});
+</script>
 {% endblock %} 

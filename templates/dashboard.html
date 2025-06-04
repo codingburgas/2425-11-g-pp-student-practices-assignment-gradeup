@@ -53,7 +53,7 @@
                                     <span class="progress-percentage">{{ "%.0f"|format(overall_progress) }}%</span>
                                 </div>
                                 <div class="cosmic-progress-bar">
-                                    <div class="cosmic-progress-fill" style="width: {{ overall_progress }}%"></div>
+                                    <div class="cosmic-progress-fill" id="overall-progress-fill" data-width="{{ overall_progress }}"></div>
                                 </div>
                             </div>
                             
@@ -63,7 +63,7 @@
                                     <span class="progress-percentage">{{ "%.0f"|format(survey_progress) }}%</span>
                                 </div>
                                 <div class="cosmic-progress-bar">
-                                    <div class="cosmic-progress-fill" style="width: {{ survey_progress }}%"></div>
+                                    <div class="cosmic-progress-fill" id="survey-progress-fill" data-width="{{ survey_progress }}"></div>
                                 </div>
                             </div>
                             
@@ -73,7 +73,7 @@
                                     <span class="progress-percentage">{{ profile_completion }}%</span>
                                 </div>
                                 <div class="cosmic-progress-bar">
-                                    <div class="cosmic-progress-fill" style="width: {{ profile_completion }}%"></div>
+                                    <div class="cosmic-progress-fill" id="profile-progress-fill" data-width="{{ profile_completion }}"></div>
                                 </div>
                             </div>
                         </div>
@@ -236,6 +236,7 @@
                     <p>Get personalized recommendations</p>
                 </a>
                 
+                <!-- 
                 <a href="{{ url_for('main.universities') }}" class="action-card">
                     <div class="action-icon">
                         <i class="fas fa-university"></i>
@@ -243,6 +244,7 @@
                     <h4>Explore Universities</h4>
                     <p>Browse available institutions</p>
                 </a>
+                -->
                 
                 <a href="{{ url_for('main.specialties') }}" class="action-card">
                     <div class="action-icon">
@@ -274,6 +276,22 @@
 </div>
 
 <style>
+/* Dynamic Progress Bar Widths */
+#overall-progress-fill {
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
+#survey-progress-fill {
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
+#profile-progress-fill {
+    width: 0%;
+    transition: width 0.8s ease;
+}
+
 /* ===== COSMIC DASHBOARD STYLES ===== */
 .cosmic-dashboard-container {
     min-height: 100vh;
@@ -718,4 +736,19 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths from data attributes
+    setTimeout(function() {
+        var overallFill = document.getElementById('overall-progress-fill');
+        var surveyFill = document.getElementById('survey-progress-fill');
+        var profileFill = document.getElementById('profile-progress-fill');
+        
+        if (overallFill) overallFill.style.width = overallFill.dataset.width + '%';
+        if (surveyFill) surveyFill.style.width = surveyFill.dataset.width + '%';
+        if (profileFill) profileFill.style.width = profileFill.dataset.width + '%';
+    }, 100);
+});
+</script>
 {% endblock %} 
