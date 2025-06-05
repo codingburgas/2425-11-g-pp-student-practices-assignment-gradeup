@@ -23,6 +23,15 @@ logger = logging.getLogger(__name__)
 def index():
     return render_template('index.html', title='Home')
 
+@bp.route('/status')
+def simple_status():
+    """Simple status check that always works"""
+    return jsonify({
+        "status": "app_running",
+        "message": "Flask app is running successfully",
+        "timestamp": datetime.now().isoformat()
+    })
+
 @bp.route('/health')
 def health_check():
     """Health check endpoint for debugging"""
