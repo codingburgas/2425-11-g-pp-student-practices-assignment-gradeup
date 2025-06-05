@@ -26,6 +26,11 @@ class Config:
         SQLALCHEMY_DATABASE_URI = os.environ.get('LOCAL_DATABASE_URL') or \
             'postgresql://postgres:password@localhost/schoolrecommendation' or \
             f"mssql+pyodbc://sa:yo(!)urStrongPassword12@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server"
+    else:
+        # Fallback to SQLite for testing when no DATABASE_URL is set
+        SQLALCHEMY_DATABASE_URI = os.environ.get('LOCAL_DATABASE_URL') or \
+            f'sqlite:///{os.path.join(basedir, "app.db")}'
+        print("⚠️ Using SQLite database - set DATABASE_URL for production PostgreSQL")
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
