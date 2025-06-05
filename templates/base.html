@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
     <title>{% block title %}GradeUP{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,19 +12,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    {% block styles %}{% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Mobile Overlay for sidebar -->
+    <div class="mobile-overlay"></div>
+
     <!-- Animated Background -->
     <div class="cosmic-background">
         <div class="particles-container" id="particles"></div>
     </div>
 
     <!-- Sidebar Navigation -->
-    <nav class="sidebar">
+    <nav class="sidebar" role="navigation" aria-label="Main navigation" aria-hidden="true">
         <div class="sidebar-header">
             <h3 class="sidebar-brand">
-                <i class="fas fa-graduation-cap"></i>
+                <i class="fas fa-graduation-cap" aria-hidden="true"></i>
                 GradeUP
             </h3>
         </div>
@@ -33,58 +36,61 @@
         <!-- Survey-focused navigation for logged in users -->
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Survey</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item {% if request.endpoint == 'main.survey' %}active{% endif %}">
-                    <a href="{{ url_for('main.survey') }}" class="nav-link">
-                        <i class="fas fa-poll"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item {% if request.endpoint == 'main.survey' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.survey') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-poll" aria-hidden="true"></i>
                         <span>Take Survey</span>
                     </a>
                 </li>
-                <li class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-                    <a href="{{ url_for('main.dashboard') }}" class="nav-link">
-                        <i class="fas fa-tachometer-alt"></i>
+                <li class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li class="nav-item {% if request.endpoint == 'main.recommendations' %}active{% endif %}">
-                    <a href="{{ url_for('main.recommendations') }}" class="nav-link">
-                        <i class="fas fa-star"></i>
-                        <span>My Results</span>
+                <li class="nav-item {% if request.endpoint == 'main.recommendations' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.recommendations') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <span>My Recommendations</span>
                     </a>
                 </li>
             </ul>
         </div>
 
+        <!-- EXPLORE SECTION HIDDEN AS REQUESTED -->
+        <!--
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Explore</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item {% if request.endpoint == 'main.universities' %}active{% endif %}">
-                    <a href="{{ url_for('main.universities') }}" class="nav-link">
-                        <i class="fas fa-university"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item {% if request.endpoint == 'main.universities' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.universities') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-university" aria-hidden="true"></i>
                         <span>Universities</span>
                     </a>
                 </li>
-                <li class="nav-item {% if request.endpoint == 'main.specialties' %}active{% endif %}">
-                    <a href="{{ url_for('main.specialties') }}" class="nav-link">
-                        <i class="fas fa-star"></i>
+                <li class="nav-item {% if request.endpoint == 'main.specialties' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.specialties') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-star" aria-hidden="true"></i>
                         <span>Programs</span>
                     </a>
                 </li>
             </ul>
         </div>
+        -->
 
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Account</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.profile') }}" class="nav-link">
-                        <i class="fas fa-user"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item" role="none">
+                    <a href="{{ url_for('auth.profile') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-user" aria-hidden="true"></i>
                         <span>Profile</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.logout') }}" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i>
+                <li class="nav-item" role="none">
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                         <span>Logout</span>
                     </a>
                 </li>
@@ -95,10 +101,10 @@
         <!-- Public navigation for non-logged in users -->
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Navigation</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
-                    <a href="{{ url_for('main.index') }}" class="nav-link">
-                        <i class="fas fa-home"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}" role="none">
+                    <a href="{{ url_for('main.index') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-home" aria-hidden="true"></i>
                         <span>Home</span>
                     </a>
                 </li>
@@ -107,16 +113,16 @@
 
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Get Started</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.login') }}" class="nav-link">
-                        <i class="fas fa-sign-in-alt"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item" role="none">
+                    <a href="{{ url_for('auth.login') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
                         <span>Login</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('auth.register') }}" class="nav-link">
-                        <i class="fas fa-user-plus"></i>
+                <li class="nav-item" role="none">
+                    <a href="{{ url_for('auth.register') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>
                         <span>Register</span>
                     </a>
                 </li>
@@ -127,10 +133,10 @@
         {% if current_user.is_authenticated and current_user.is_admin %}
         <div class="sidebar-section">
             <h6 class="sidebar-section-title">Admin</h6>
-            <ul class="sidebar-nav">
-                <li class="nav-item">
-                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
-                        <i class="fas fa-cogs"></i>
+            <ul class="sidebar-nav" role="menubar">
+                <li class="nav-item" role="none">
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link" role="menuitem">
+                        <i class="fas fa-cogs" aria-hidden="true"></i>
                         <span>Settings</span>
                     </a>
                 </li>
@@ -140,23 +146,23 @@
     </nav>
 
     <!-- Top Navigation Bar -->
-    <nav class="top-navbar">
+    <nav class="top-navbar" role="navigation" aria-label="Top navigation">
         <div class="top-navbar-content">
             <div class="nav-left">
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <i class="fas fa-bars"></i>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation menu">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
                 <div class="nav-links">
                     {% if current_user.is_authenticated %}
                     <!-- Survey-focused top nav for logged in users -->
                     <a href="{{ url_for('main.survey') }}" class="nav-link {% if request.endpoint == 'main.survey' %}active{% endif %}">
-                        <i class="fas fa-poll me-1"></i>Survey
+                        <i class="fas fa-poll me-1" aria-hidden="true"></i>Survey
                     </a>
                     <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        <i class="fas fa-tachometer-alt me-1" aria-hidden="true"></i>Dashboard
                     </a>
                     <a href="{{ url_for('main.recommendations') }}" class="nav-link">
-                        <i class="fas fa-star me-1"></i>Results
+                        <i class="fas fa-star me-1" aria-hidden="true"></i>Results
                     </a>
                     {% else %}
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a>
@@ -166,7 +172,7 @@
             <div class="nav-actions">
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    <i class="fas fa-sign-out-alt me-1" aria-hidden="true"></i>Logout
                 </a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light me-2">Log In</a>
@@ -176,18 +182,15 @@
         </div>
     </nav>
 
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
-
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="main-content" role="main">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flash-messages">
+                <div class="flash-messages" role="alert">
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }} alert-dismissible fade show">
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 </div>
