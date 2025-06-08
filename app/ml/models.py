@@ -296,7 +296,7 @@ class CustomNeuralNetwork:
         """Predict class labels."""
         predictions = self.predict(X)
         if self.output_size == 1:
-            return (predictions > 0.5).astype(int)
+            return (predictions > 0.5).astype(int).flatten()
         else:
             return np.argmax(predictions, axis=1)
     
