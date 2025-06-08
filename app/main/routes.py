@@ -674,3 +674,164 @@ def api_preprocessing_status(survey_id):
     # except Exception as e:
     #     logger.error(f"Error getting preprocessing status: {e}")
     #     return jsonify({'error': str(e)}), 500 
+
+@bp.route('/ml-training')
+@login_required
+def ml_training():
+    """ML Training interface for testing the training system"""
+    return render_template('main/ml_training.html', title='ML Training System')
+
+@bp.route('/api/ml-train', methods=['POST'])
+@login_required
+def api_ml_train():
+    """API endpoint to run ML training with sample data"""
+    try:
+        from app.ml.training import LinearRegression, LogisticRegression, TrainingPipeline
+        import numpy as np
+        
+        # Get parameters from request
+        data = request.get_json()
+        model_type = data.get('model_type', 'linear_regression')
+        n_samples = data.get('n_samples', 1000)
+        learning_rate = data.get('learning_rate', 0.01)
+        max_iterations = data.get('max_iterations', 100)
+        
+        # Generate sample data
+        np.random.seed(42)
+        n_features = 5
+        X = np.random.randn(n_samples, n_features)
+        
+        if model_type == 'linear_regression':
+            # Regression target
+            y = X[:, 0] + 0.5 * X[:, 1] + np.random.randn(n_samples) * 0.1
+            model_class = LinearRegression
+        else:
+            # Classification target
+            y = (X[:, 0] + X[:, 1] > 0).astype(int)
+            model_class = LogisticRegression
+        
+        # Setup training pipeline
+        pipeline = TrainingPipeline(experiment_name="web_demo", auto_tracking=False)
+        
+        # Prepare data
+        pipeline.prepare_data(
+            X, y, 
+            test_size=0.2, 
+            preprocessing_config={'scaling_method': 'standard'}
+        )
+        
+        # Train model
+        model_config = {
+            'demo_model': {
+                'class': model_class,
+                'params': {
+                    'learning_rate': learning_rate,
+                    'max_iterations': max_iterations
+                }
+            }
+        }
+        
+        results = pipeline.compare_models(model_config)
+        
+        # Get test metrics
+        demo_model_info = pipeline.trained_models['demo_model']
+        test_metrics = demo_model_info['test_metrics']
+        
+        return jsonify({
+            'status': 'success',
+            'model_type': model_type,
+            'test_metrics': test_metrics,
+            'training_time': demo_model_info['training_result'].training_time,
+            'data_shape': [n_samples, n_features],
+            'message': f'Successfully trained {model_type} model!'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@bp.route('/api/university-recommendation-demo', methods=['POST'])
+@login_required
+def api_university_recommendation_demo():
+    """Demo API for university recommendation using ML"""
+    try:
+        from app.ml.training import LogisticRegression, TrainingPipeline
+        import numpy as np
+        
+        # Get student preferences from request
+        data = request.get_json()
+        student_preferences = data.get('preferences', {})
+        
+        # Create mock training data (in real app, this would come from database)
+        np.random.seed(42)
+        n_students = 500
+        n_features = 6  # Academic focus, location pref, budget, social, career, research
+        
+        # Generate training data
+        X_training = np.random.rand(n_students, n_features)
+        
+        # Generate satisfaction based on weighted preferences
+        satisfaction_scores = (
+            X_training[:, 0] * 0.25 +  # Academic focus
+            X_training[:, 1] * 0.20 +  # Location preference
+            X_training[:, 2] * 0.15 +  # Budget fit
+            X_training[:, 3] * 0.15 +  # Social environment
+            X_training[:, 4] * 0.15 +  # Career prospects
+            X_training[:, 5] * 0.10    # Research opportunities
+        )
+        y_satisfaction = (satisfaction_scores > 0.5).astype(int)
+        
+        # Train recommendation model
+        pipeline = TrainingPipeline(experiment_name="uni_rec_demo", auto_tracking=False)
+        pipeline.prepare_data(X_training, y_satisfaction, test_size=0.2)
+        
+        model_config = {
+            'recommendation_model': {
+                'class': LogisticRegression,
+                'params': {'learning_rate': 0.1, 'max_iterations': 100}
+            }
+        }
+        
+        pipeline.compare_models(model_config)
+        
+        # Convert student preferences to feature vector
+        student_vector = np.array([[
+            student_preferences.get('academic_focus', 0.5),
+            student_preferences.get('location_preference', 0.5), 
+            student_preferences.get('budget_fit', 0.5),
+            student_preferences.get('social_environment', 0.5),
+            student_preferences.get('career_prospects', 0.5),
+            student_preferences.get('research_opportunities', 0.5)
+        ]])
+        
+        # Get prediction
+        best_model_name, best_trainer = pipeline.get_best_model('accuracy')
+        satisfaction_probability = best_trainer.predict(student_vector)[0]
+        
+        # Generate mock university recommendations
+        universities = [
+            {"name": "Sofia University", "match_score": satisfaction_probability * 0.95},
+            {"name": "Technical University Sofia", "match_score": satisfaction_probability * 0.88},
+            {"name": "UNWE", "match_score": satisfaction_probability * 0.82},
+            {"name": "University of Plovdiv", "match_score": satisfaction_probability * 0.78},
+            {"name": "Burgas Free University", "match_score": satisfaction_probability * 0.71}
+        ]
+        
+        # Sort by match score
+        universities.sort(key=lambda x: x['match_score'], reverse=True)
+        
+        return jsonify({
+            'status': 'success',
+            'satisfaction_probability': float(satisfaction_probability),
+            'recommendations': universities[:3],  # Top 3
+            'model_accuracy': pipeline.trained_models['recommendation_model']['test_metrics']['accuracy'],
+            'message': 'University recommendations generated successfully!'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500 

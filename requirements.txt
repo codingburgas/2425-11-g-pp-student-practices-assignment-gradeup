@@ -7,8 +7,8 @@ Flask-Migrate==4.0.5
 Flask-Mail==0.9.1
 python-dotenv==1.0.1
 email-validator==2.1.0.post1
-pyodbc==5.0.1
-psycopg2-binary==2.9.7
+pyodbc
+psycopg2-binary
 Werkzeug==3.0.1
 SQLAlchemy==2.0.27
 alembic==1.13.1
