@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ProfileForm, UserPreferencesForm, ChangePasswordForm
-from app.auth.email import send_verification_email, send_welcome_email, send_resend_verification_email
+from app.auth.email import send_verification_email, send_welcome_email, send_resend_verification_email, send_password_reset_email
 from app.models import User
 import os
 from werkzeug.utils import secure_filename
@@ -83,11 +83,21 @@ def reset_password_request():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
-            
+            try:
+                # Generate token and commit to database
+                token = user.generate_password_reset_token()
+                db.session.commit()
+                
+                # Send password reset email
+                send_password_reset_email(user)
+                flash('Check your email for the instructions to reset your password', 'info')
+                return redirect(url_for('auth.login'))
+            except Exception as e:
+                flash('There was an error sending the password reset email. Please try again later.', 'danger')
+        else:
+            # Always show success message for security (don't reveal if email exists)
             flash('Check your email for the instructions to reset your password', 'info')
             return redirect(url_for('auth.login'))
-        else:
-            flash('Email not found in our records', 'warning')
     return render_template('auth/reset_password_request.html', title='Reset Password', form=form)
 
 @bp.route('/reset_password/<token>', methods=['GET', 'POST'])
@@ -95,16 +105,29 @@ def reset_password(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
-    user = User.query.first()  
+    # Find user by password reset token
+    user = User.query.filter_by(password_reset_token=token).first()
     if not user:
-        flash('Invalid or expired token', 'danger')
+        flash('Invalid or expired password reset token.', 'danger')
         return redirect(url_for('auth.reset_password_request'))
+    
+    # Verify token is not expired
+    if not user.verify_password_reset_token(token):
+        flash('The password reset token has expired. Please request a new one.', 'danger')
+        return redirect(url_for('auth.reset_password_request'))
+    
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        user.set_password(form.password.data)
-        db.session.commit()
-        flash('Your password has been reset.', 'success')
-        return redirect(url_for('auth.login'))
+        try:
+            # Set new password and clear reset token
+            user.set_password(form.password.data)
+            user.clear_password_reset_token()
+            db.session.commit()
+            flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            flash('There was an error resetting your password. Please try again.', 'danger')
+    
     return render_template('auth/reset_password.html', title='Reset Password', form=form)
 
 @bp.route('/profile', methods=['GET', 'POST'])
