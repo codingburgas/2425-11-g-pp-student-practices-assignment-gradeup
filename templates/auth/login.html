@@ -604,12 +604,15 @@ function resendVerification(email) {
     btn.disabled = true;
     btn.textContent = 'Sending...';
     
+    // Get CSRF token from the existing form
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    
     fetch('{{ url_for("auth.resend_verification_ajax") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'email=' + encodeURIComponent(email)
+        body: 'email=' + encodeURIComponent(email) + '&csrf_token=' + encodeURIComponent(csrfToken)
     })
     .then(response => response.json())
     .then(data => {

@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from app import db
@@ -318,6 +318,7 @@ def email_verification_status():
     return render_template('auth/email_verification_status.html', 
                          title='Email Verification Required',
                          user=current_user)
+
 
 
 @bp.route('/resend_verification_ajax', methods=['POST'])
