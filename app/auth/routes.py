@@ -36,7 +36,12 @@ def login():
         return render_template('auth/login.html', title='Sign In', form=form, 
                              error='Invalid email or password')
     
-    return render_template('auth/login.html', title='Sign In', form=form)
+    # Check if user just registered
+    just_registered = request.args.get('registered') == '1'
+    registered_email = request.args.get('email') if just_registered else None
+    
+    return render_template('auth/login.html', title='Sign In', form=form, 
+                         just_registered=just_registered, registered_email=registered_email)
 
 @bp.route('/logout')
 def logout():
@@ -71,7 +76,7 @@ def register():
             flash('Registration failed. Please try again.', 'danger')
             return render_template('auth/register.html', title='Register', form=form)
         
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login', registered=1, email=user.email))
     
     return render_template('auth/register.html', title='Register', form=form)
 
