@@ -207,6 +207,56 @@ class Recommendation(db.Model):
     def __repr__(self):
         return f'<Recommendation {self.id} for Program {self.program_id} with score {self.score}>'
 
+class PredictionHistory(db.Model):
+    __tablename__ = 'prediction_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    survey_response_id = db.Column(db.Integer, db.ForeignKey('survey_responses.id'), nullable=True)
+    
+    # Prediction input data (JSON stored as text)
+    input_features = db.Column(db.Text, nullable=False)
+    
+    # Prediction results
+    predictions = db.Column(db.Text, nullable=False)  # JSON array of predictions
+    confidence_scores = db.Column(db.Text, nullable=False)  # JSON array of confidence scores
+    model_version = db.Column(db.String(50), nullable=True)
+    
+    # Metadata
+    prediction_type = db.Column(db.String(50), default='individual')  # 'individual' or 'batch'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref=db.backref('prediction_history', lazy='dynamic'))
+    survey_response = db.relationship('SurveyResponse', backref=db.backref('prediction_history', lazy='dynamic'))
+    
+    def get_input_features(self):
+        """Get input features as a dictionary"""
+        return json.loads(self.input_features)
+    
+    def set_input_features(self, features_dict):
+        """Set input features from a dictionary"""
+        self.input_features = json.dumps(features_dict)
+    
+    def get_predictions(self):
+        """Get predictions as a list"""
+        return json.loads(self.predictions)
+    
+    def set_predictions(self, predictions_list):
+        """Set predictions from a list"""
+        self.predictions = json.dumps(predictions_list)
+    
+    def get_confidence_scores(self):
+        """Get confidence scores as a list"""
+        return json.loads(self.confidence_scores)
+    
+    def set_confidence_scores(self, scores_list):
+        """Set confidence scores from a list"""
+        self.confidence_scores = json.dumps(scores_list)
+    
+    def __repr__(self):
+        return f'<PredictionHistory {self.id} for User {self.user_id}>'
+
 class Favorite(db.Model):
     __tablename__ = 'favorites'
     

@@ -24,10 +24,8 @@ class Config:
         )
     else:  # Windows/Linux
         DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-        SQLALCHEMY_DATABASE_URI = (
-            f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-            f"?driver={DB_DRIVER.replace(' ', '+')}"
-        )
+        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+            'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
