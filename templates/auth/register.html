@@ -450,10 +450,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize spider web particles
     initWebParticles();
 
-    // Form validation
+
+
+    // Form validation and prevent double submission
     const authForm = document.querySelector('.auth-form');
     if (authForm) {
+        let isSubmitting = false;
+        
         authForm.addEventListener('submit', function(e) {
+            // Prevent double submission
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+            
             const inputs = this.querySelectorAll('.auth-input');
             let isValid = true;
             
@@ -465,6 +475,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     input.style.borderColor = 'rgba(139, 92, 246, 0.3)';
                 }
             });
+            
+            if (isValid) {
+                isSubmitting = true;
+                // Disable the submit button
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating Account...';
+                }
+            }
         });
     }
 });
