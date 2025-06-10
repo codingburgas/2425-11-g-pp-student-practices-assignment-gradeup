@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db, login
 import json
+import secrets
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -12,6 +13,11 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(400))
     is_admin = db.Column(db.Boolean, default=False)
+    email_verified = db.Column(db.Boolean, default=False)
+    email_verification_token = db.Column(db.String(100), nullable=True)
+    email_verification_token_expires = db.Column(db.DateTime, nullable=True)
+    password_reset_token = db.Column(db.String(100), nullable=True)
+    password_reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     profile_picture = db.Column(db.String(255), nullable=True)
     bio = db.Column(db.Text, nullable=True)
@@ -42,6 +48,54 @@ class User(UserMixin, db.Model):
     def set_preferences(self, prefs_dict):
         """Set user preferences from a dictionary"""
         self.preferences = json.dumps(prefs_dict)
+    
+    def generate_email_verification_token(self):
+        """Generate a new email verification token"""
+        self.email_verification_token = secrets.token_urlsafe(32)
+        self.email_verification_token_expires = datetime.utcnow() + timedelta(hours=24)
+        return self.email_verification_token
+    
+    def verify_email_token(self, token):
+        """Verify email verification token"""
+        if (self.email_verification_token == token and 
+            self.email_verification_token_expires and
+            self.email_verification_token_expires > datetime.utcnow()):
+            self.email_verified = True
+            self.email_verification_token = None
+            self.email_verification_token_expires = None
+            return True
+        return False
+    
+    def is_email_verification_token_expired(self):
+        """Check if email verification token is expired"""
+        if not self.email_verification_token_expires:
+            return True
+        return self.email_verification_token_expires < datetime.utcnow()
+    
+    def generate_password_reset_token(self):
+        """Generate a new password reset token"""
+        self.password_reset_token = secrets.token_urlsafe(32)
+        self.password_reset_token_expires = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+        return self.password_reset_token
+    
+    def verify_password_reset_token(self, token):
+        """Verify password reset token"""
+        if (self.password_reset_token == token and 
+            self.password_reset_token_expires and
+            self.password_reset_token_expires > datetime.utcnow()):
+            return True
+        return False
+    
+    def clear_password_reset_token(self):
+        """Clear password reset token after successful reset"""
+        self.password_reset_token = None
+        self.password_reset_token_expires = None
+    
+    def is_password_reset_token_expired(self):
+        """Check if password reset token is expired"""
+        if not self.password_reset_token_expires:
+            return True
+        return self.password_reset_token_expires < datetime.utcnow()
 
 @login.user_loader
 def load_user(id):

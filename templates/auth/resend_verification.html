@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome Back - GradeUP{% endblock %}
+{% block title %}Resend Email Verification - GradeUP{% endblock %}
 
 {% block content %}
 <div class="auth-page">
@@ -11,85 +11,30 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-icon">
-                    <i class="fas fa-rocket"></i>
+                    <i class="fas fa-envelope"></i>
                 </div>
-                <h2>Welcome Back</h2>
-                <p>Continue your cosmic journey</p>
+                <h2>Resend Verification</h2>
+                <p>Get a new email verification link</p>
             </div>
-            
-            {% if error %}
-            <div class="cosmic-alert error">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                {{ error }}
-            </div>
-            {% endif %}
-            
-            {% if show_resend_verification %}
-            <div class="cosmic-alert info">
-                <i class="fas fa-envelope me-2"></i>
-                <span>Email not verified. </span>
-                <button type="button" class="verification-resend-btn" onclick="resendVerification('{{ user_email }}')">
-                    Resend verification email
-                </button>
-            </div>
-            {% endif %}
             
             <form method="POST" class="auth-form" novalidate>
-                {{ form.hidden_tag() }}
-                
                 <div class="form-group">
                     <div class="input-container">
                         <i class="fas fa-envelope input-icon"></i>
-                        {{ form.email(class="auth-input", placeholder="Email address") }}
-                    </div>
-                    {% if form.email.errors %}
-                        <div class="field-errors">
-                            {% for error in form.email.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    <div class="input-container">
-                        <i class="fas fa-lock input-icon"></i>
-                        {{ form.password(class="auth-input", placeholder="Password") }}
-                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password.errors %}
-                        <div class="field-errors">
-                            {% for error in form.password.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="forgot-password-link">
-                        <a href="{{ url_for('auth.reset_password_request') }}" class="cosmic-link">
-                            Forgot your password?
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <div class="checkbox-wrapper">
-                        {{ form.remember_me(class="form-checkbox") }}
-                        {{ form.remember_me.label(class="checkbox-label") }}
+                        <input type="email" name="email" class="auth-input" placeholder="Enter your email address" required>
                     </div>
                 </div>
                 
                 <button type="submit" class="btn-cosmic-primary">
-                    Login
-                    <i class="fas fa-arrow-right ms-2"></i>
+                    Send Verification Email
+                    <i class="fas fa-paper-plane ms-2"></i>
                 </button>
             </form>
             
             <div class="auth-footer">
                 <p class="auth-switch">
-                    Don't have an account? 
-                    <a href="{{ url_for('auth.register') }}" class="auth-link">Join GradeUP</a>
+                    Remember your password? 
+                    <a href="{{ url_for('auth.login') }}" class="auth-link">Back to Login</a>
                 </p>
             </div>
         </div>
@@ -287,49 +232,6 @@
     color: rgba(248, 250, 252, 0.5);
 }
 
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: rgba(248, 250, 252, 0.6);
-    cursor: pointer;
-    z-index: 10;
-    font-size: 1rem;
-    transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-    color: #8B5CF6;
-}
-
-.checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-checkbox {
-    width: 18px;
-    height: 18px;
-    background: rgba(15, 15, 35, 0.8);
-    border: 2px solid rgba(139, 92, 246, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.form-checkbox:checked {
-    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
-    border-color: #8B5CF6;
-}
-
-.checkbox-label {
-    color: rgba(248, 250, 252, 0.8);
-    font-size: 0.9rem;
-    margin: 0;
-    cursor: pointer;
-}
-
 /* ===== BUTTON STYLES ===== */
 .btn-cosmic-primary {
     width: 100%;
@@ -377,16 +279,6 @@
     color: #06B6D4;
 }
 
-.field-errors {
-    margin-top: 0.5rem;
-}
-
-.error-text {
-    color: #ff6b6b;
-    font-size: 0.875rem;
-    display: block;
-}
-
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .auth-page {
@@ -407,126 +299,14 @@
         font-size: 1.5rem;
     }
 }
-
-/* ===== COSMIC ALERTS ===== */
-.cosmic-alert {
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid;
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    animation: slideInDown 0.3s ease;
-}
-
-.cosmic-alert.error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #FCA5A5;
-}
-
-.cosmic-alert.success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-    border-color: rgba(16, 185, 129, 0.3);
-    color: #6EE7B7;
-}
-
-.cosmic-alert.info {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #93C5FD;
-}
-
-@keyframes slideInDown {
-    0% { transform: translateY(-20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-}
-
-/* ===== FORGOT PASSWORD LINK ===== */
-.forgot-password-link {
-    text-align: right;
-    margin-top: 0.5rem;
-}
-
-.forgot-password-link .cosmic-link {
-    font-size: 0.9rem;
-    color: rgba(139, 92, 246, 0.8);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.forgot-password-link .cosmic-link:hover {
-    color: var(--cosmic-purple);
-    text-decoration: underline;
-}
-
-/* ===== EMAIL VERIFICATION STYLES ===== */
-.verification-resend-btn {
-    background: none;
-    border: none;
-    color: #06B6D4;
-    text-decoration: underline;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: inherit;
-    padding: 0;
-    margin-left: 0.5rem;
-    transition: color 0.3s ease;
-}
-
-.verification-resend-btn:hover {
-    color: #8B5CF6;
-}
-
-.verification-resend-btn:disabled {
-    color: rgba(248, 250, 252, 0.5);
-    cursor: not-allowed;
-    text-decoration: none;
-}
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Password toggle functionality
-function togglePassword(fieldId) {
-    const passwordField = document.getElementById(fieldId) || document.querySelector(`input[name="${fieldId}"]`);
-    const toggleBtn = passwordField.parentNode.querySelector('.password-toggle i');
-    
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        toggleBtn.classList.remove('fa-eye');
-        toggleBtn.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        toggleBtn.classList.remove('fa-eye-slash');
-        toggleBtn.classList.add('fa-eye');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize spider web particles
     initWebParticles();
-
-    // Form validation
-    const authForm = document.querySelector('.auth-form');
-    if (authForm) {
-        authForm.addEventListener('submit', function(e) {
-            const inputs = this.querySelectorAll('.auth-input');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    input.style.borderColor = '#ff6b6b';
-                    isValid = false;
-                } else {
-                    input.style.borderColor = 'rgba(139, 92, 246, 0.3)';
-                }
-            });
-        });
-    }
 });
 
 // Spider Web Particles System
@@ -594,52 +374,6 @@ function createWebLine(container) {
             createWebLine(container);
         }
     }, (Math.random() * 8 + 5) * 1000);
-}
-
-// Email verification resend functionality
-function resendVerification(email) {
-    const btn = document.querySelector('.verification-resend-btn');
-    const originalText = btn.textContent;
-    
-    btn.disabled = true;
-    btn.textContent = 'Sending...';
-    
-    fetch('{{ url_for("auth.resend_verification_ajax") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'email=' + encodeURIComponent(email)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            btn.textContent = 'Sent!';
-            btn.style.color = '#10B981';
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.textContent = originalText;
-                btn.style.color = '';
-            }, 3000);
-        } else {
-            btn.textContent = 'Error';
-            btn.style.color = '#EF4444';
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.textContent = originalText;
-                btn.style.color = '';
-            }, 3000);
-        }
-    })
-    .catch(error => {
-        btn.textContent = 'Error';
-        btn.style.color = '#EF4444';
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.textContent = originalText;
-            btn.style.color = '';
-        }, 3000);
-    });
 }
 </script>
 {% endblock %} 
