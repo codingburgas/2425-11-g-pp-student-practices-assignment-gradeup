@@ -401,11 +401,17 @@ class TestMLIntegration(unittest.TestCase):
             "question_4": "Urban"
         }
         
-        features = extract_features_from_survey_response(survey_data)
+        # Test dictionary output (new behavior)
+        features_dict = extract_features_from_survey_response(survey_data)
+        self.assertIsInstance(features_dict, dict)
+        self.assertGreater(len(features_dict), 0)
         
-        self.assertIsInstance(features, np.ndarray)
-        self.assertEqual(len(features.shape), 2)  # Should be 2D array
-        self.assertEqual(features.shape[0], 1)  # Single sample
+        # Test array output (for ML models that need arrays)
+        from app.ml.utils import extract_features_as_array
+        features_array = extract_features_as_array(survey_data)
+        self.assertIsInstance(features_array, np.ndarray)
+        self.assertEqual(len(features_array.shape), 2)  # Should be 2D array
+        self.assertEqual(features_array.shape[0], 1)  # Single sample
 
 
 if __name__ == '__main__':
