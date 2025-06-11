@@ -1,7 +1,9 @@
-from flask import render_template, redirect, url_for, request, jsonify, flash, current_app
+from flask import render_template, redirect, url_for, request, jsonify, flash, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
+from sqlalchemy import or_, and_, desc, asc, func
 from app.main import bp
+from app.main.forms import UserSearchForm
 from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User
 from app import db
 # from app.preprocessing import PreprocessingPipeline
@@ -164,6 +166,121 @@ def universities():
                            title='Universities', 
                            universities=universities, 
                            search=search)
+
+@bp.route('/users')
+@login_required
+def users():
+    """User directory page with search and filtering"""
+    page = request.args.get('page', 1, type=int)
+    form = UserSearchForm()
+    
+    # Build base query - only show verified users
+    query = User.query.filter_by(email_verified=True)
+    
+    # Apply search filter
+    search = request.args.get('search', '', type=str)
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            or_(
+                User.username.ilike(search_filter),
+                User.location.ilike(search_filter),
+                User.bio.ilike(search_filter)
+            )
+        )
+    
+    # Apply location filter
+    location_filter = request.args.get('location_filter', '', type=str)
+    if location_filter:
+        query = query.filter(User.location == location_filter)
+    
+    # Apply sorting
+    sort_by = request.args.get('sort_by', 'username', type=str)
+    if sort_by == 'created_at_desc':
+        query = query.order_by(User.created_at.desc())
+    elif sort_by == 'created_at_asc':
+        query = query.order_by(User.created_at.asc())
+    elif sort_by == 'location':
+        query = query.order_by(User.location.asc().nullslast(), User.username.asc())
+    else:  # default to username
+        query = query.order_by(User.username.asc())
+    
+    # Paginate results
+    users_pagination = query.paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    # Get statistics
+    total_users = User.query.filter_by(email_verified=True).count()
+    recent_users = User.query.filter_by(email_verified=True)\
+        .order_by(User.created_at.desc()).limit(5).all()
+    
+    # Pre-populate form with current values
+    form.search.data = search
+    form.location_filter.data = location_filter
+    form.sort_by.data = sort_by
+    
+    return render_template('main/users.html',
+                         title='User Directory',
+                         users=users_pagination,
+                         form=form,
+                         search=search,
+                         location_filter=location_filter,
+                         sort_by=sort_by,
+                         total_users=total_users,
+                         recent_users=recent_users)
+
+@bp.route('/users/<username>')
+@login_required
+def user_profile(username):
+    """View individual user profile"""
+    # Case-insensitive username lookup
+    user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
+    
+    if not user:
+        flash(f'User "{username}" not found.', 'error')
+        return redirect(url_for('main.users'))
+    
+    # Check if user is verified and profile can be viewed
+    if not user.email_verified:
+        flash('This user profile is not available.', 'warning')
+        return redirect(url_for('main.users'))
+    
+    if not user.can_view_profile(current_user):
+        flash('You do not have permission to view this profile.', 'error')
+        return redirect(url_for('main.users'))
+    
+    # Get user's public profile data
+    profile_data = user.get_public_profile()
+    
+    # Get recent survey responses (count only for privacy)
+    recent_survey_count = user.survey_responses.count()
+    
+    # Get favorite schools count
+    favorites_count = user.favorites.count()
+    
+    # Check if viewing own profile
+    is_own_profile = current_user.id == user.id
+    
+    # Get some related users (from same location or similar activity)
+    related_users = []
+    if user.location:
+        related_users = User.query.filter(
+            and_(
+                User.location == user.location,
+                User.id != user.id,
+                User.email_verified == True
+            )
+        ).limit(3).all()
+    
+    return render_template('main/user_profile.html',
+                         title=f'{user.get_display_name()}\' Profile',
+                         user=user,
+                         profile_data=profile_data,
+                         recent_survey_count=recent_survey_count,
+                         favorites_count=favorites_count,
+                         is_own_profile=is_own_profile,
+                         related_users=related_users)
 
 @bp.route('/survey')
 def survey():
