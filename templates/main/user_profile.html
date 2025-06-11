@@ -23,7 +23,7 @@
                          alt="{{ user.username }}" class="avatar-image">
                 {% else %}
                     <div class="avatar-placeholder">
-                        <i class="fas fa-user-astronaut"></i>
+                        <i class="fas fa-user"></i>
                     </div>
                 {% endif %}
                 <div class="avatar-ring"></div>
@@ -188,15 +188,27 @@
                                 </div>
                                 {% endif %}
                                 
-                                <!-- Placeholder badges for future achievements -->
-                                {% if recent_survey_count < 5 %}
-                                <div class="achievement-badge locked">
+                                {% if user.location and user.bio %}
+                                <div class="achievement-badge earned">
+                                    <div class="badge-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="badge-info">
+                                        <h6>Well-Rounded</h6>
+                                        <p>Complete profile with bio and location</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Survey Master - only show if earned -->
+                                {% if recent_survey_count >= 5 %}
+                                <div class="achievement-badge earned">
                                     <div class="badge-icon">
                                         <i class="fas fa-trophy"></i>
                                     </div>
                                     <div class="badge-info">
                                         <h6>Survey Master</h6>
-                                        <p>Complete 5 surveys</p>
+                                        <p>Completed 5+ surveys</p>
                                     </div>
                                 </div>
                                 {% endif %}
