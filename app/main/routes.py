@@ -37,7 +37,13 @@ def simple_status():
 
 @bp.route('/health')
 def health_check():
-    """Health check endpoint for debugging"""
+    """
+    Health check endpoint for debugging
+    
+    Fixed for SQL Server compatibility:
+    - Combined queries to avoid connection busy issues
+    - Added fallback logic for database checks
+    """
     try:
         # Check if DATABASE_URL is set
         db_url = os.environ.get('DATABASE_URL')
