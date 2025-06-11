@@ -96,6 +96,29 @@ class User(UserMixin, db.Model):
         if not self.password_reset_token_expires:
             return True
         return self.password_reset_token_expires < datetime.utcnow()
+    
+    def get_public_profile(self):
+        """Get publicly visible profile information"""
+        return {
+            'id': self.id,
+            'username': self.username,
+            'bio': self.bio,
+            'location': self.location,
+            'created_at': self.created_at,
+            'profile_picture': self.profile_picture,
+            'survey_count': self.survey_responses.count(),
+            'favorites_count': self.favorites.count()
+        }
+    
+    def can_view_profile(self, viewer=None):
+        """Check if a user can view this profile"""
+        # For now, all profiles are public
+        # Can be extended for privacy controls later
+        return True
+    
+    def get_display_name(self):
+        """Get display name for the user"""
+        return self.username
 
 @login.user_loader
 def load_user(id):
