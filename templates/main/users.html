@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+
+{% block title %}User Directory - GradeUP{% endblock %}
+
+{% block content %}
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="users-page">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header animate-fade-in">
+            <div class="header-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h1 class="page-title">
+                User Directory
+                <span class="cosmic-badge">{{ total_users }} Members</span>
+            </h1>
+            <p class="page-subtitle">Connect with fellow students and explore their academic journeys</p>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4 animate-slide-up" data-delay="200">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-search me-2"></i>Search & Filters</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" class="search-form">
+                            <div class="row align-items-end">
+                                <div class="col-md-4">
+                                    {{ form.search.label(class="form-label") }}
+                                    {{ form.search(class="cosmic-input") }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.location_filter.label(class="form-label") }}
+                                    {{ form.location_filter(class="cosmic-select") }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.sort_by.label(class="form-label") }}
+                                    {{ form.sort_by(class="cosmic-select") }}
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn-cosmic w-100">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                            {% if search or location_filter %}
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <a href="{{ url_for('main.users') }}" class="btn-cosmic-outline">
+                                        <i class="fas fa-times me-1"></i>Clear Filters
+                                    </a>
+                                    <span class="filter-info ms-3">
+                                        Showing {{ users.total }} result{{ 's' if users.total != 1 else '' }}
+                                        {% if search %} for "{{ search }}"{% endif %}
+                                        {% if location_filter %} in {{ location_filter }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users Sidebar -->
+        {% if recent_users and not search %}
+        <div class="row mb-4 animate-slide-up" data-delay="300">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-user-plus me-2"></i>Recently Joined</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="recent-users-list">
+                            {% for user in recent_users %}
+                            <div class="recent-user-item">
+                                <div class="user-avatar">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ url_for('static', filename='profile_pics/' + user.profile_picture) }}" 
+                                             alt="{{ user.username }}" class="avatar-img">
+                                    {% else %}
+                                        <div class="avatar-placeholder">{{ user.username[0].upper() }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="user-info">
+                                    <a href="{{ url_for('main.user_profile', username=user.username) }}" 
+                                       class="user-name">{{ user.username }}</a>
+                                    <div class="user-meta">
+                                        {% if user.location %}
+                                            <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                                        {% endif %}
+                                        <span class="join-date">
+                                            <i class="fas fa-calendar me-1"></i>{{ user.created_at.strftime('%b %d') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Users Grid -->
+        <div class="row animate-slide-up" data-delay="400">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-th-large me-2"></i>Community Members</h5>
+                            <div class="view-toggle">
+                                <button class="btn-cosmic-outline btn-sm active" data-view="grid">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn-cosmic-outline btn-sm" data-view="list">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if users.items %}
+                        <div class="users-grid" id="usersContainer">
+                            {% for user in users.items %}
+                            <div class="user-card">
+                                <div class="user-card-header">
+                                    <div class="user-avatar-large">
+                                        {% if user.profile_picture %}
+                                            <img src="{{ url_for('static', filename='profile_pics/' + user.profile_picture) }}" 
+                                                 alt="{{ user.username }}" class="avatar-img">
+                                        {% else %}
+                                            <div class="avatar-placeholder-large">{{ user.username[0].upper() }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-status-indicator"></div>
+                                </div>
+                                <div class="user-card-body">
+                                    <h6 class="user-name">
+                                        <a href="{{ url_for('main.user_profile', username=user.username) }}">
+                                            {{ user.username }}
+                                        </a>
+                                    </h6>
+                                    {% if user.bio %}
+                                    <p class="user-bio">{{ user.bio[:80] }}{% if user.bio|length > 80 %}...{% endif %}</p>
+                                    {% endif %}
+                                    <div class="user-meta">
+                                        {% if user.location %}
+                                        <div class="meta-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{{ user.location }}</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="meta-item">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>Joined {{ user.created_at.strftime('%b %Y') }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-stats">
+                                        <div class="stat-item">
+                                            <i class="fas fa-poll"></i>
+                                            <span>{{ user.survey_responses.count() }} surveys</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="fas fa-star"></i>
+                                            <span>{{ user.favorites.count() }} favorites</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="user-card-footer">
+                                    <a href="{{ url_for('main.user_profile', username=user.username) }}" 
+                                       class="btn-cosmic-outline btn-sm w-100">
+                                        <i class="fas fa-eye me-1"></i>View Profile
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if users.pages > 1 %}
+                        <div class="cosmic-pagination mt-4">
+                            <nav aria-label="Users pagination">
+                                <ul class="pagination-list">
+                                    {% if users.has_prev %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('main.users', page=users.prev_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in users.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != users.page %}
+                                            <li class="pagination-item">
+                                                <a class="pagination-link" href="{{ url_for('main.users', page=page_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">{{ page_num }}</a>
+                                            </li>
+                                            {% else %}
+                                            <li class="pagination-item active">
+                                                <span class="pagination-link">{{ page_num }}</span>
+                                            </li>
+                                            {% endif %}
+                                        {% else %}
+                                        <li class="pagination-item disabled">
+                                            <span class="pagination-link">...</span>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if users.has_next %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('main.users', page=users.next_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+
+                        {% else %}
+                        <div class="no-results">
+                            <div class="no-results-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>No users found</h4>
+                            <p>{% if search or location_filter %}No users match your search criteria.{% else %}No users are currently available.{% endif %}</p>
+                            {% if search or location_filter %}
+                            <a href="{{ url_for('main.users') }}" class="btn-cosmic">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== USERS PAGE STYLES ===== */
+.users-page {
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: rgba(15, 15, 35, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.header-icon {
+    margin-bottom: 1rem;
+}
+
+.header-icon i {
+    font-size: 4rem;
+    color: var(--cosmic-purple);
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
+}
+
+.page-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.page-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Search Form */
+.search-form .cosmic-input,
+.search-form .cosmic-select {
+    background: rgba(15, 15, 35, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    color: var(--star-white);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-form .cosmic-input:focus,
+.search-form .cosmic-select:focus {
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    outline: none;
+}
+
+.filter-info {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+/* Recent Users */
+.recent-users-list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.recent-user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    min-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.recent-user-item:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.user-name {
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-name:hover {
+    color: var(--cosmic-purple);
+}
+
+.user-meta {
+    font-size: 0.8rem;
+    color: rgba(248, 250, 252, 0.6);
+    margin-top: 0.25rem;
+}
+
+.user-meta i {
+    color: var(--cosmic-purple);
+}
+
+/* Users Grid */
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-toggle .btn-cosmic-outline.active {
+    background: var(--cosmic-purple);
+    color: white;
+    border-color: var(--cosmic-purple);
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.user-card {
+    background: rgba(15, 15, 35, 0.6);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+.user-card-header {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.user-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    border: 3px solid var(--cosmic-purple);
+}
+
+.avatar-placeholder-large {
+    width: 100%;
+    height: 100%;
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.user-status-indicator {
+    position: absolute;
+    top: -5px;
+    right: calc(50% - 45px);
+    width: 12px;
+    height: 12px;
+    background: #10B981;
+    border: 2px solid rgba(15, 15, 35, 0.8);
+    border-radius: 50%;
+}
+
+.user-card-body h6 {
+    color: var(--star-white);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.user-card-body h6 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.user-card-body h6 a:hover {
+    color: var(--cosmic-purple);
+}
+
+.user-bio {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.85rem;
+}
+
+.meta-item i {
+    color: var(--cosmic-purple);
+    width: 12px;
+}
+
+.user-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.8rem;
+}
+
+.stat-item i {
+    color: var(--cosmic-purple);
+}
+
+/* No Results */
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.no-results-icon {
+    margin-bottom: 1rem;
+}
+
+.no-results-icon i {
+    font-size: 3rem;
+    color: rgba(139, 92, 246, 0.5);
+}
+
+.no-results h4 {
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recent-users-list {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .recent-user-item {
+        min-width: auto;
+    }
+    
+    .search-form .row > div {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initParticlesBackground();
+    initViewToggle();
+    initAnimations();
+});
+
+// View toggle functionality
+function initViewToggle() {
+    const toggleButtons = document.querySelectorAll('.view-toggle button');
+    const usersContainer = document.getElementById('usersContainer');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Update active state
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update container class
+            usersContainer.className = view === 'list' ? 'users-list' : 'users-grid';
+        });
+    });
+}
+
+// Initialize animations
+function initAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.user-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+}
+
+// Initialize particles background
+function initParticlesBackground() {
+    const container = document.getElementById('particlesBackground');
+    if (!container) return;
+    
+    for (let i = 0; i < 20; i++) {
+        createParticle(container);
+    }
+}
+
+function createParticle(container) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.cssText = `
+        position: absolute;
+        width: ${Math.random() * 4 + 1}px;
+        height: ${Math.random() * 4 + 1}px;
+        background: rgba(139, 92, 246, ${Math.random() * 0.5 + 0.2});
+        border-radius: 50%;
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        animation: float ${Math.random() * 10 + 10}s infinite linear;
+    `;
+    container.appendChild(particle);
+}
+</script>
+{% endblock %} 
