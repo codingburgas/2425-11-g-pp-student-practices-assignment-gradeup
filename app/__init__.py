@@ -52,6 +52,10 @@ def create_app(config_class=Config):
     from app.ml.prediction_blueprint import prediction_bp
     app.register_blueprint(prediction_bp)
     
+    # Register Recommendation Engine blueprint
+    from app.ml.recommendation_blueprint import recommendation_bp
+    app.register_blueprint(recommendation_bp)
+
     # Initialize prediction system with proper app context
     with app.app_context():
         try:
@@ -60,6 +64,14 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.warning(f"ML service initialization warning: {e}")
             # Application will continue to work in demo mode
+            
+        # Initialize recommendation engine
+        try:
+            from app.ml.recommendation_engine import recommendation_engine
+            recommendation_engine.initialize()
+            app.logger.info("Recommendation engine initialized successfully")
+        except Exception as e:
+            app.logger.warning(f"Recommendation engine initialization warning: {e}")
 
     
     import os

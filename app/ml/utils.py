@@ -85,4 +85,29 @@ def extract_features_as_array(survey_response: Dict[str, Any]) -> np.ndarray:
     if not features_list:
         return np.array([]).reshape(1, -1)
     
-    return np.array(features_list).reshape(1, -1) 
+    return np.array(features_list).reshape(1, -1)
+
+
+"""
+Utility functions for the recommendation engine
+"""
+
+def normalize_score(score: float, min_score: float = 0.0, max_score: float = 1.0) -> float:
+    """Normalize a score to a specific range"""
+    return max(min_score, min(max_score, score))
+
+def calculate_weighted_average(scores: list, weights: list) -> float:
+    """Calculate weighted average of scores"""
+    if not scores or not weights or len(scores) != len(weights):
+        return 0.0
+    
+    total_weight = sum(weights)
+    if total_weight == 0:
+        return 0.0
+    
+    weighted_sum = sum(score * weight for score, weight in zip(scores, weights))
+    return weighted_sum / total_weight
+
+def format_match_percentage(score: float) -> str:
+    """Format match score as percentage"""
+    return f"{int(score * 100)}%" 
