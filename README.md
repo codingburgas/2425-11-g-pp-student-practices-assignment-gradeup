@@ -52,7 +52,7 @@ A web application that helps students find the perfect educational institution b
 - 🛠️ Admin panel for user and system management  
 - 🏫 School and program browsing  
 - ⭐ Favorites system to save and compare schools
-
+>You can view the full list of user stories [here](documentation/UserStories_GradeUp).
 ---
 
 ## 🛠️ Installation
