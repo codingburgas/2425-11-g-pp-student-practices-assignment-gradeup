@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, request, jsonify, flash, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
+from sqlalchemy import or_, and_, desc, asc, func
 from app.main import bp
 from app.main.forms import UserSearchForm
 from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User
@@ -181,7 +182,7 @@ def users():
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
-            db.or_(
+            or_(
                 User.username.ilike(search_filter),
                 User.location.ilike(search_filter),
                 User.bio.ilike(search_filter)
@@ -233,10 +234,12 @@ def users():
 @login_required
 def user_profile(username):
     """View individual user profile"""
-    user = User.query.filter_by(username=username).first()
+    # Case-insensitive username lookup
+    user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
     
     if not user:
-        abort(404)
+        flash(f'User "{username}" not found.', 'error')
+        return redirect(url_for('main.users'))
     
     # Check if user is verified and profile can be viewed
     if not user.email_verified:
@@ -259,13 +262,25 @@ def user_profile(username):
     # Check if viewing own profile
     is_own_profile = current_user.id == user.id
     
+    # Get some related users (from same location or similar activity)
+    related_users = []
+    if user.location:
+        related_users = User.query.filter(
+            and_(
+                User.location == user.location,
+                User.id != user.id,
+                User.email_verified == True
+            )
+        ).limit(3).all()
+    
     return render_template('main/user_profile.html',
                          title=f'{user.get_display_name()}\' Profile',
                          user=user,
                          profile_data=profile_data,
                          recent_survey_count=recent_survey_count,
                          favorites_count=favorites_count,
-                         is_own_profile=is_own_profile)
+                         is_own_profile=is_own_profile,
+                         related_users=related_users)
 
 @bp.route('/survey')
 def survey():
