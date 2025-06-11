@@ -33,6 +33,15 @@ class RecommendationEngine:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        
+        # Create console handler if not exists
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        
         self.scaler = StandardScaler()
         self.is_initialized = False
         
