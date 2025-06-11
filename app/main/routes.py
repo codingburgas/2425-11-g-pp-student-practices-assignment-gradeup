@@ -17,6 +17,7 @@ import os
 import logging
 from datetime import datetime
 import numpy as np
+from app.ml.recommendation_engine import recommendation_engine
 
 logger = logging.getLogger(__name__)
 
@@ -42,17 +43,37 @@ def health_check():
         db_url = os.environ.get('DATABASE_URL')
         db_status = "✅ Set" if db_url else "❌ Not set"
         
-        # Test database connection
+        # Test database connection with simple approach
         from sqlalchemy import text
-        result = db.session.execute(text('SELECT 1'))
-        db_connection = "✅ Connected"
         
-        # Count tables
-        tables_result = db.session.execute(text("""
-            SELECT COUNT(*) FROM information_schema.tables 
-            WHERE table_schema = 'public'
-        """))
-        table_count = tables_result.scalar()
+        db_connection = "❌ Failed"
+        table_count = 0
+        
+        try:
+            # Use a single combined query to avoid connection busy issues
+            result = db.session.execute(text("""
+                SELECT 
+                    1 as connection_test,
+                    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                     WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = DB_NAME()) as table_count
+            """))
+            row = result.fetchone()
+            
+            if row and row[0] == 1:
+                db_connection = "✅ Connected"
+                table_count = row[1] if row[1] is not None else 0
+            
+        except Exception as conn_error:
+            # If SQL Server query fails, try a simpler test
+            try:
+                simple_result = db.session.execute(text('SELECT 1'))
+                if simple_result.scalar() == 1:
+                    db_connection = "✅ Connected (basic)"
+                    # Try to count User table as fallback
+                    user_count = User.query.count()
+                    table_count = f"Users: {user_count}"
+            except Exception:
+                db_connection = f"❌ Failed: {str(conn_error)[:100]}"
         
         return jsonify({
             "status": "healthy",
@@ -66,7 +87,7 @@ def health_check():
         return jsonify({
             "status": "error",
             "database_url": db_status if 'db_status' in locals() else "unknown",
-            "error": str(e),
+            "error": str(e)[:200],  # Limit error message length
             "environment": "azure" if os.environ.get('DATABASE_URL') else "local"
         }), 500
 
@@ -104,37 +125,77 @@ def dashboard():
     survey_progress = (completed_surveys / max(total_surveys, 1)) * 100
     overall_progress = (survey_progress + profile_completion) / 2
     
-    # Next steps suggestions
-    next_steps = []
-    if completed_surveys == 0:
-        next_steps.append({
-            'icon': 'fas fa-poll',
-            'title': 'Take Your First Survey',
-            'description': 'Complete our survey to get personalized university recommendations',
-            'link': url_for('main.survey'),
-            'priority': 1
-        })
+    # Get personalized suggestions from recommendation engine
+    personalized_suggestions = []
+    try:
+        suggestions = recommendation_engine.get_personalized_suggestions(
+            user_id=current_user.id,
+            limit=3
+        )
+        # Convert completion suggestions to dashboard format
+        for suggestion in suggestions.get('completion_suggestions', []):
+            personalized_suggestions.append({
+                'icon': 'fas fa-' + ('poll' if suggestion['type'] == 'survey' else 
+                                   'star' if suggestion['type'] == 'favorites' else 'user-edit'),
+                'title': suggestion['title'],
+                'description': suggestion['description'],
+                'link': suggestion['action_url'],
+                'priority': suggestion['priority']
+            })
+    except Exception as e:
+        logger.warning(f"Error getting personalized suggestions: {e}")
     
-    if not current_user.bio:
-        next_steps.append({
-            'icon': 'fas fa-user-edit',
-            'title': 'Complete Your Profile',
-            'description': 'Add a bio and preferences to improve recommendations',
-            'link': url_for('auth.profile'),
-            'priority': 2
-        })
+    # Next steps suggestions (fallback if recommendation engine fails)
+    next_steps = personalized_suggestions if personalized_suggestions else []
     
-    if favorites_count == 0:
-        next_steps.append({
-            'icon': 'fas fa-star',
-            'title': 'Explore Universities',
-            'description': 'Browse universities and save your favorites',
-            'link': url_for('main.universities'),
-            'priority': 3
-        })
+    if not next_steps:
+        if completed_surveys == 0:
+            next_steps.append({
+                'icon': 'fas fa-poll',
+                'title': 'Take Your First Survey',
+                'description': 'Complete our survey to get personalized university recommendations',
+                'link': url_for('main.survey'),
+                'priority': 1
+            })
+        
+        if not current_user.bio:
+            next_steps.append({
+                'icon': 'fas fa-user-edit',
+                'title': 'Complete Your Profile',
+                'description': 'Add a bio and preferences to improve recommendations',
+                'link': url_for('auth.profile'),
+                'priority': 2
+            })
+        
+        if favorites_count == 0:
+            next_steps.append({
+                'icon': 'fas fa-star',
+                'title': 'Explore Universities',
+                'description': 'Browse universities and save your favorites',
+                'link': url_for('main.universities'),
+                'priority': 3
+            })
     
     # Sort by priority
     next_steps.sort(key=lambda x: x['priority'])
+
+    # Get quick recommendations for dashboard
+    quick_recommendations = []
+    try:
+        user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
+        if user_responses:
+            latest_response = user_responses[-1]
+            survey_data = latest_response.get_answers()
+            
+            quick_recs = recommendation_engine.recommend_programs(
+                user_id=current_user.id,
+                survey_data=survey_data,
+                user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                top_k=3
+            )
+            quick_recommendations = quick_recs
+    except Exception as e:
+        logger.warning(f"Error getting quick recommendations: {e}")
     
     dashboard_data = {
         'total_surveys': total_surveys,
@@ -145,7 +206,8 @@ def dashboard():
         'favorites_count': favorites_count,
         'recent_recommendations': recent_recommendations,
         'recent_favorites': recent_favorites,
-        'next_steps': next_steps[:3]  # Show top 3 suggestions
+        'next_steps': next_steps[:3],  # Show top 3 suggestions
+        'quick_recommendations': quick_recommendations
     }
     
     return render_template('main/dashboard.html', **dashboard_data)
@@ -431,25 +493,77 @@ def specialties():
 @bp.route('/recommendations')
 @login_required
 def recommendations():
-    from app.models import SurveyResponse
-    
-    # Calculate retakes information
-    MAX_SUBMISSIONS = 3
-    user_submissions = SurveyResponse.query.filter_by(user_id=current_user.id).count()
-    retakes_left = max(0, MAX_SUBMISSIONS - user_submissions)
-    has_retakes = retakes_left > 0
-    
-    # Explicitly get user's survey responses for the template
-    user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).order_by(SurveyResponse.created_at.desc()).all()
-    
-    logger.info(f"Recommendations page for user {current_user.id}: found {len(user_responses)} responses")
-    
-    return render_template('main/recommendations.html', 
-                         user_submissions=user_submissions,
-                         retakes_left=retakes_left,
-                         has_retakes=has_retakes,
-                         max_submissions=MAX_SUBMISSIONS,
-                         user_responses=user_responses)
+    """Enhanced recommendations page with new recommendation engine."""
+    try:
+        # Get user's survey responses
+        user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
+        
+        recommendations_data = {
+            'program_recommendations': [],
+            'university_recommendations': [],
+            'personalized_suggestions': {},
+            'recommendation_history': []
+        }
+        
+        # Get program recommendations if user has survey data
+        if user_responses:
+            latest_response = user_responses[-1]  # Get most recent response
+            survey_data = latest_response.get_answers()
+            
+            # Get program recommendations
+            program_recs = recommendation_engine.recommend_programs(
+                user_id=current_user.id,
+                survey_data=survey_data,
+                user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                top_k=8
+            )
+            recommendations_data['program_recommendations'] = program_recs
+            
+            # Get university recommendations
+            university_recs = recommendation_engine.match_universities(
+                user_preferences=current_user.get_preferences() if current_user.preferences else {},
+                survey_data=survey_data,
+                top_k=6
+            )
+            recommendations_data['university_recommendations'] = university_recs
+            
+            # Store recommendations in history
+            if program_recs:
+                recommendation_engine.store_recommendation_history(
+                    user_id=current_user.id,
+                    survey_response_id=latest_response.id,
+                    recommendations=program_recs,
+                    recommendation_type='program'
+                )
+        
+        # Get personalized suggestions
+        personalized = recommendation_engine.get_personalized_suggestions(
+            user_id=current_user.id,
+            limit=5
+        )
+        recommendations_data['personalized_suggestions'] = personalized
+        
+        # Get recommendation history
+        history = recommendation_engine.get_recommendation_history(
+            user_id=current_user.id,
+            limit=10
+        )
+        recommendations_data['recommendation_history'] = history
+        
+        logger.info(f"Enhanced recommendations page for user {current_user.id}: "
+                   f"Programs: {len(recommendations_data['program_recommendations'])}, "
+                   f"Universities: {len(recommendations_data['university_recommendations'])}")
+        
+        return render_template('main/recommendations.html', **recommendations_data)
+        
+    except Exception as e:
+        logger.error(f"Error in recommendations page: {e}")
+        flash('Error loading recommendations. Please try again.', 'error')
+        return render_template('main/recommendations.html', 
+                             program_recommendations=[],
+                             university_recommendations=[],
+                             personalized_suggestions={},
+                             recommendation_history=[])
 
 @bp.route('/favorites')
 @login_required
