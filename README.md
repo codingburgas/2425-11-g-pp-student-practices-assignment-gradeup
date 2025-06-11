@@ -78,6 +78,12 @@ You can view the ERD for this project here:
 
 >👉 [View ER Diagram For GradeUp HERE](https://lucid.app/lucidchart/61f65033-3af4-4cf8-bc17-acb81d5eca5f/edit?invitationId=inv_82560b78-52e7-4ab8-ae9b-d66805a27391)
 ---
+## 🧩 Class Diagram
+
+You can view the Class Diagram for this project here:
+
+>👉 [View Class Diagram For GradeUp HERE](https://lucid.app/lucidchart/1c0cb330-9383-4fa2-b729-de0712e22a35/edit?invitationId=inv_92692c0c-2064-46d6-8558-c64fcabbd25f)
+---
 
 ## 💻 Technology Stack
 
