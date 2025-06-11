@@ -84,6 +84,12 @@ You can view the Class Diagram for this project here:
 
 >👉 [View Class Diagram For GradeUp HERE](https://lucid.app/lucidchart/1c0cb330-9383-4fa2-b729-de0712e22a35/edit?invitationId=inv_92692c0c-2064-46d6-8558-c64fcabbd25f)
 ---
+## 🧩 Use Case Diagram
+
+You can view the Use Case Diagram for this project here:
+
+>👉 [View Use Case Diagram For GradeUp HERE](https://lucid.app/lucidchart/8118d3f6-516f-424c-afa6-288fe6a2db89/edit?invitationId=inv_7fbc60f6-2588-4ccd-960f-ecb69aadf4cd)
+---
 
 ## 💻 Technology Stack
 
