@@ -9,6 +9,7 @@ from flask_login import login_required, current_user
 from app.models import User, SurveyResponse
 from .recommendation_engine import recommendation_engine
 import json
+from flask import current_app
 
 recommendation_bp = Blueprint('recommendations', __name__, url_prefix='/api/recommendations')
 
@@ -16,20 +17,20 @@ recommendation_bp = Blueprint('recommendations', __name__, url_prefix='/api/reco
 @recommendation_bp.route('/universities', methods=['POST'])
 @login_required
 def get_university_recommendations():
-    """Get university recommendations for the current user."""
+    """Get university recommendations based on user preferences and survey data."""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
             
-        user_preferences = data.get('preferences', {})
+        user_preferences = data.get('user_preferences', {})
         survey_data = data.get('survey_data')
         top_k = data.get('top_k', 10)
         
-        # Get user preferences from profile if not provided
-        if not user_preferences and current_user.preferences:
-            user_preferences = current_user.get_preferences()
-            
+        # Validate required fields
+        if not user_preferences and not survey_data:
+            return jsonify({'error': 'Either user_preferences or survey_data must be provided'}), 400
+        
         recommendations = recommendation_engine.match_universities(
             user_preferences=user_preferences,
             survey_data=survey_data,
@@ -37,13 +38,14 @@ def get_university_recommendations():
         )
         
         return jsonify({
-            'success': True,
+            'status': 'success',
             'recommendations': recommendations,
             'count': len(recommendations)
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error(f"Error in university recommendations: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @recommendation_bp.route('/programs', methods=['POST'])
