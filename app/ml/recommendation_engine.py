@@ -1,11 +1,14 @@
 """
-Advanced Recommendation Engine for GradeUp
+Advanced Recommendation Engine for GradeUp School Recommendation System
 
-This module provides comprehensive recommendation capabilities including:
-- University matching algorithms
-- Program recommendation systems
-- Personalized suggestions
-- Recommendation history tracking
+This module implements a comprehensive recommendation engine with the following components:
+1. University matching algorithm based on location and program preferences
+2. Program recommendation system using interest alignment and career goals
+3. Personalized suggestions including trending programs and completion suggestions
+4. Recommendation history tracking and pattern analysis
+
+Author: GradeUp Development Team
+Version: 1.0
 """
 
 import numpy as np
