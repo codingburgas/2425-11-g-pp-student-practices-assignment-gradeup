@@ -741,6 +741,8 @@
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
     width: 90%;
+    margin: 0 auto;
+    justify-content: center;
 }
 
 .stat-card {
@@ -760,10 +762,11 @@
 
 .stat-visual {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     margin-bottom: 1rem;
     min-width: 0;
+    min-height: 60px;
 }
 
 .stat-icon {
@@ -775,6 +778,7 @@
     justify-content: center;
     font-size: 1.3rem;
     flex-shrink: 0;
+    margin-top: 1.5rem;
 }
 
 .stat-card.surveys .stat-icon {
