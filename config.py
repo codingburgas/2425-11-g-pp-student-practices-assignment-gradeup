@@ -24,8 +24,10 @@ class Config:
         )
     else:  # Windows/Linux
         DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-            'mssql+pyodbc://admin123:Adminparolchik123@grade-up-srv.database.windows.net/grade-up-db?driver=ODBC+Driver+17+for+SQL+Server'
+        SQLALCHEMY_DATABASE_URI = (
+    "mssql+pyodbc://admin123:Adminparolchik123@grade-up-srv.database.windows.net:1433/grade-up-db"
+    "?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no"
+)
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
