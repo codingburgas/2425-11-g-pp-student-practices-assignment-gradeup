@@ -524,36 +524,42 @@ def recommendations():
             
             # Map survey data to format expected by recommendation engine
             from app.ml.utils import map_survey_data_to_recommendation_format
-            survey_data = map_survey_data_to_recommendation_format(raw_survey_data)
             
-            logger.info(f"Raw survey data: {raw_survey_data}")
-            logger.info(f"Mapped survey data: {survey_data}")
+            try:
+                survey_data = map_survey_data_to_recommendation_format(raw_survey_data)
+                logger.info(f"Successfully mapped survey data for user {current_user.id}")
+                logger.debug(f"Raw survey data: {raw_survey_data}")
+                logger.debug(f"Mapped survey data: {survey_data}")
+            except Exception as mapping_error:
+                logger.error(f"Error mapping survey data for user {current_user.id}: {mapping_error}")
+                survey_data = {}  # Use empty dict as fallback
             
             # Get program recommendations
-            program_recs = recommendation_engine.recommend_programs(
-                user_id=current_user.id,
-                survey_data=survey_data,
-                user_preferences=current_user.get_preferences() if current_user.preferences else None,
-                top_k=8
-            )
-            recommendations_data['program_recommendations'] = program_recs
+            try:
+                program_recs = recommendation_engine.recommend_programs(
+                    user_id=current_user.id,
+                    survey_data=survey_data,
+                    user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                    top_k=8
+                )
+                logger.info(f"Generated {len(program_recs)} program recommendations for user {current_user.id}")
+                recommendations_data['program_recommendations'] = program_recs
+            except Exception as program_error:
+                logger.error(f"Error generating program recommendations for user {current_user.id}: {program_error}")
+                recommendations_data['program_recommendations'] = []
             
             # Get university recommendations
-            university_recs = recommendation_engine.match_universities(
-                user_preferences=current_user.get_preferences() if current_user.preferences else {},
-                survey_data=survey_data,
-                top_k=6
-            )
-            recommendations_data['university_recommendations'] = university_recs
-            
-            # Store recommendations in history
-            if program_recs:
-                recommendation_engine.store_recommendation_history(
-                    user_id=current_user.id,
-                    survey_response_id=latest_response.id,
-                    recommendations=program_recs,
-                    recommendation_type='program'
+            try:
+                university_recs = recommendation_engine.match_universities(
+                    user_preferences=current_user.get_preferences() if current_user.preferences else {},
+                    survey_data=survey_data,
+                    top_k=6
                 )
+                logger.info(f"Generated {len(university_recs)} university recommendations for user {current_user.id}")
+                recommendations_data['university_recommendations'] = university_recs
+            except Exception as university_error:
+                logger.error(f"Error generating university recommendations for user {current_user.id}: {university_error}")
+                recommendations_data['university_recommendations'] = []
         
         # Get personalized suggestions
         personalized = recommendation_engine.get_personalized_suggestions(
