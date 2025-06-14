@@ -116,11 +116,41 @@ def map_survey_data_to_recommendation_format(survey_data):
     """
     Map actual survey responses to the format expected by the recommendation engine.
     
+    This function transforms raw survey data (with numeric question IDs) into the 
+    standardized format required by the ML recommendation system. It handles the
+    conversion of categorical responses, rating scales, and multi-select answers
+    into appropriate numeric and text values.
+    
+    Survey Question Mapping:
+    - Q1: Subject preferences → interest scores and preferred_subject
+    - Q2: Career interests → career_goal and adjusted interest scores  
+    - Q8: Grade ranges → grades_average (numeric)
+    - Q9: Activities → extracurricular flags and interest adjustments
+    - Q10: Skills → leadership and teamwork preferences
+    - Q7: Language preferences → languages_spoken array
+    
     Args:
-        survey_data: Dict with keys '1', '2', etc. from actual survey
+        survey_data (dict): Raw survey responses with keys '1', '2', etc.
+                           Example: {'1': 'Physics', '2': 'Education', '3': 5, ...}
         
     Returns:
-        Dict with standardized field names for recommendation engine
+        dict: Standardized data for recommendation engine with keys like:
+              - math_interest (int): 1-10 scale for math interest
+              - science_interest (int): 1-10 scale for science interest  
+              - art_interest (int): 1-10 scale for arts interest
+              - career_goal (str): Primary career interest
+              - grades_average (float): Academic performance score
+              - extracurricular (bool): Has extracurricular activities
+              - leadership_experience (bool): Has leadership experience
+              - languages_spoken (list): List of spoken languages
+              
+    Example:
+        >>> raw_data = {'1': 'Physics', '2': 'Education', '8': '5.0-5.5'}
+        >>> mapped = map_survey_data_to_recommendation_format(raw_data)
+        >>> mapped['science_interest']  # Returns 9 for Physics preference
+        9
+        >>> mapped['career_goal']  # Returns 'Education'
+        'Education'
     """
     
     # Initialize with default values
