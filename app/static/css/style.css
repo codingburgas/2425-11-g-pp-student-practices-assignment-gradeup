@@ -3057,3 +3057,702 @@ body.sidebar-open {
     margin-right: 12px !important;
   }
 }
+
+/* Enhanced University Recommendations Styles */
+.universities-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.university-item {
+    background: linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, rgba(6, 182, 212, 0.06) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.university-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    transition: left 0.6s;
+    z-index: 1;
+}
+
+.university-item:hover::before {
+    left: 100%;
+}
+
+.university-item:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 
+        0 20px 40px rgba(139, 92, 246, 0.15),
+        0 10px 20px rgba(6, 182, 212, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.uni-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.uni-rank {
+    width: 40px;
+    height: 40px;
+    background: var(--cosmic-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    position: relative;
+}
+
+.uni-rank::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--cosmic-gradient);
+    border-radius: 14px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.university-item:hover .uni-rank::after {
+    opacity: 0.6;
+    animation: pulse 2s infinite;
+}
+
+.uni-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.uni-info h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--star-white);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.uni-info p {
+    margin: 0;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.uni-info p i {
+    color: var(--cosmic-blue);
+    font-size: 0.8rem;
+}
+
+.uni-score {
+    text-align: center;
+    flex-shrink: 0;
+    background: rgba(15, 15, 35, 0.4);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    min-width: 80px;
+}
+
+.uni-score .score {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--cosmic-blue);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.uni-score small {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.uni-details {
+    position: relative;
+    z-index: 2;
+}
+
+.uni-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.uni-tags .tag {
+    background: rgba(139, 92, 246, 0.2);
+    color: rgba(248, 250, 252, 0.9);
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    transition: all 0.2s;
+}
+
+.university-item:hover .uni-tags .tag {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.5);
+    transform: translateY(-1px);
+}
+
+.uni-description {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.uni-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--cosmic-blue);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.uni-link:hover {
+    color: var(--star-white);
+    background: rgba(6, 182, 212, 0.2);
+    border-color: rgba(6, 182, 212, 0.4);
+    transform: translateY(-1px);
+}
+
+.uni-link i {
+    font-size: 0.75rem;
+    transition: transform 0.2s;
+}
+
+.uni-link:hover i {
+    transform: translateX(2px);
+}
+
+/* Empty State for Universities */
+.no-universities {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(15, 15, 35, 0.2);
+    border-radius: 16px;
+    border: 1px dashed rgba(139, 92, 246, 0.3);
+}
+
+.no-universities .empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.no-universities .empty-state i {
+    color: rgba(139, 92, 246, 0.5);
+    margin-bottom: 1rem;
+}
+
+.no-universities .empty-state h4 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.no-universities .empty-state p {
+    color: rgba(248, 250, 252, 0.7);
+    margin-bottom: 1rem;
+}
+
+.no-universities .empty-state ul {
+    text-align: left;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.no-universities .empty-state ul li {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design for Universities */
+@media (min-width: 768px) {
+    .universities-grid {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .university-item {
+        padding: 1.25rem;
+    }
+    
+    .uni-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    
+    .uni-score {
+        align-self: flex-end;
+        min-width: auto;
+        width: fit-content;
+    }
+    
+    .uni-info h4 {
+        font-size: 1.1rem;
+    }
+    
+    .uni-tags {
+        justify-content: center;
+    }
+    
+    .uni-link {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .universities-grid {
+        gap: 1rem;
+    }
+    
+    .university-item {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .uni-rank {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+    
+    .uni-score {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .uni-score .score {
+        font-size: 1.1rem;
+    }
+    
+    .no-universities {
+        padding: 2rem 1rem;
+    }
+}
+
+/* University Card Animation Enhancement */
+@keyframes universityCardGlow {
+    0%, 100% {
+        box-shadow: 
+            0 20px 40px rgba(139, 92, 246, 0.15),
+            0 10px 20px rgba(6, 182, 212, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 25px 50px rgba(139, 92, 246, 0.2),
+            0 15px 30px rgba(6, 182, 212, 0.15);
+    }
+}
+
+.university-item:hover {
+    animation: universityCardGlow 3s ease-in-out infinite;
+}
+
+/* Enhanced cosmic gradient for university section */
+.cosmic-card .card-header h3 {
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.cosmic-card .card-header p {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+/* University section specific card styling */
+.cosmic-card {
+    background: rgba(15, 15, 35, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.cosmic-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.03), transparent);
+    animation: rotate 30s linear infinite;
+    z-index: -1;
+}
+
+.cosmic-card .card-header {
+    padding: 1.5rem 1.5rem 0;
+    border-bottom: none;
+    background: none;
+}
+
+.cosmic-card .card-content {
+    padding: 0 1.5rem 1.5rem;
+}
+
+/* Enhanced University Recommendations - Additional Styles */
+.recommendations-summary {
+    margin-top: 1rem;
+}
+
+.summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--cosmic-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.summary-badge i {
+    font-size: 0.875rem;
+}
+
+/* Enhanced Rank with Glow Effect */
+.rank-glow {
+    position: absolute;
+    inset: -4px;
+    background: var(--cosmic-gradient);
+    border-radius: 16px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+    filter: blur(8px);
+}
+
+.university-item:hover .rank-glow {
+    opacity: 0.7;
+    animation: pulse 2s infinite;
+}
+
+/* Enhanced Score Container with SVG Ring */
+.score-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+}
+
+.score-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scale(0.8);
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.university-item:hover .score-ring {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.score-ring svg {
+    transform: rotate(-90deg);
+}
+
+.score-ring circle:last-child {
+    transition: stroke-dasharray 0.6s ease-in-out;
+}
+
+/* Enhanced Tags with Icons */
+.uni-tags .tag i {
+    font-size: 0.7rem;
+    margin-right: 0.25rem;
+    color: var(--cosmic-blue);
+}
+
+/* Enhanced Description Container */
+.uni-description-container {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(15, 15, 35, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+/* Enhanced Actions Layout */
+.uni-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.uni-link.primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    flex: 1;
+}
+
+.uni-link.primary:hover {
+    background: linear-gradient(135deg, #9333ea 0%, #0891b2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.uni-link.secondary {
+    background: transparent;
+    color: var(--cosmic-purple);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    cursor: pointer;
+    flex: 1;
+}
+
+.uni-link.secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--cosmic-purple);
+    border-color: rgba(139, 92, 246, 0.6);
+}
+
+.uni-link span {
+    margin-left: 0.25rem;
+}
+
+/* Decorative Particles */
+.uni-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.university-item:hover .uni-particles {
+    opacity: 1;
+}
+
+.uni-particles .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--cosmic-blue);
+    border-radius: 50%;
+    animation: particleFloat 3s ease-in-out infinite;
+}
+
+.uni-particles .particle-1 {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.uni-particles .particle-2 {
+    top: 60%;
+    right: 15%;
+    animation-delay: 1s;
+    background: var(--cosmic-purple);
+}
+
+.uni-particles .particle-3 {
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 2s;
+    background: var(--cosmic-cyan);
+}
+
+@keyframes particleFloat {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-10px) scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Enhanced Empty State */
+.empty-icon {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.empty-icon > i {
+    font-size: 4rem;
+    color: rgba(139, 92, 246, 0.5);
+    animation: float 3s ease-in-out infinite;
+}
+
+.icon-sparkles {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+}
+
+.icon-sparkles i {
+    font-size: 1.5rem;
+    color: var(--cosmic-cyan);
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+.suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateX(4px);
+}
+
+.suggestion-item i {
+    color: var(--cosmic-blue);
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.suggestion-item span {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.875rem;
+}
+
+.empty-state-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--cosmic-gradient);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.empty-state-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.empty-state-btn i {
+    font-size: 0.875rem;
+}
+
+/* Responsive Enhancements for New Elements */
+@media (max-width: 767px) {
+    .uni-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .suggestions-list {
+        gap: 0.75rem;
+    }
+    
+    .suggestion-item {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .score-container {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .score-ring svg {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .empty-icon > i {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .summary-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .uni-description-container {
+        padding: 0.5rem;
+    }
+    
+    .empty-state-btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.875rem;
+    }
+}

@@ -87,10 +87,17 @@
                                                     <div class="metric-content">
                                                         <h4>Match Score</h4>
                                                         <div class="score-display">
-                                                            <span class="score-number">87%</span>
-                                                            <div class="score-bar">
-                                                                <div class="score-fill" style="width: 87%;"></div>
-                                                            </div>
+                                                            {% if program_recommendations and program_recommendations|length > 0 %}
+                                                                <span class="score-number">{{ (program_recommendations[0].match_score * 100)|round|int }}%</span>
+                                                                <div class="score-bar">
+                                                                    <div class="score-fill" style="width: {{ (program_recommendations[0].match_score * 100)|round|int }}%;"></div>
+                                                                </div>
+                                                            {% else %}
+                                                                <span class="score-number">N/A</span>
+                                                                <div class="score-bar">
+                                                                    <div class="score-fill" style="width: 0%;"></div>
+                                                                </div>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -103,7 +110,7 @@
                                                     <div class="metric-content">
                                                         <h4>Programs Found</h4>
                                                         <div class="metric-value">
-                                                            <span class="number">12</span>
+                                                            <span class="number">{{ program_recommendations|length }}</span>
                                                             <span class="label">Matching Programs</span>
                                                         </div>
                                                     </div>
@@ -117,8 +124,13 @@
                                                     <div class="metric-content">
                                                         <h4>Best Match</h4>
                                                         <div class="metric-value">
-                                                            <span class="best-match">Computer Science</span>
-                                                            <span class="confidence">95% confidence</span>
+                                                            {% if program_recommendations and program_recommendations|length > 0 %}
+                                                                <span class="best-match">{{ program_recommendations[0].program_name }}</span>
+                                                                <span class="confidence">{{ (program_recommendations[0].match_score * 100)|round|int }}% confidence</span>
+                                                            {% else %}
+                                                                <span class="best-match">No matches yet</span>
+                                                                <span class="confidence">Take survey first</span>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -139,72 +151,182 @@
                                 </div>
                                 <div class="card-content">
                                     <div class="recommendations-grid">
-                                        <!-- Sample recommendations - in real app these would come from ML model -->
-                                        <div class="recommendation-item">
-                                            <div class="rec-header">
-                                                <div class="rec-rank">1</div>
-                                                <div class="rec-info">
-                                                    <h4>Computer Science</h4>
-                                                    <p>Technical University of Sofia</p>
+                                        {% if program_recommendations and program_recommendations|length > 0 %}
+                                            {% for recommendation in program_recommendations %}
+                                            <div class="recommendation-item">
+                                                <div class="rec-header">
+                                                    <div class="rec-rank">{{ loop.index }}</div>
+                                                    <div class="rec-info">
+                                                        <h4>{{ recommendation.program_name }}</h4>
+                                                        <p>{{ recommendation.school_name }}</p>
+                                                    </div>
+                                                    <div class="rec-score">
+                                                        <span class="score">{{ (recommendation.match_score * 100)|round|int }}%</span>
+                                                        <small>match</small>
+                                                    </div>
                                                 </div>
-                                                <div class="rec-score">
-                                                    <span class="score">95%</span>
-                                                    <small>match</small>
+                                                <div class="rec-details">
+                                                    <div class="rec-tags">
+                                                        {% if recommendation.program_duration %}
+                                                            <span class="tag">{{ recommendation.program_duration }}</span>
+                                                        {% endif %}
+                                                        {% if recommendation.language %}
+                                                            <span class="tag">{{ recommendation.language }}</span>
+                                                        {% endif %}
+                                                        <span class="tag">{{ (recommendation.match_score * 100)|round|int }}% match</span>
+                                                    </div>
+                                                    <p class="rec-description">
+                                                        {% if recommendation.recommendation_reasons %}
+                                                            {{ recommendation.recommendation_reasons|join('. ') }}.
+                                                        {% else %}
+                                                            Recommended based on your survey responses and interests.
+                                                        {% endif %}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div class="rec-details">
-                                                <div class="rec-tags">
-                                                    <span class="tag">4 years</span>
-                                                    <span class="tag">English</span>
-                                                    <span class="tag">High demand</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="no-recommendations">
+                                                <div class="empty-state">
+                                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                                                    <h4>No Program Recommendations Found</h4>
+                                                    <p>We couldn't find specific program recommendations based on your current survey data. This might be because:</p>
+                                                    <ul class="text-left">
+                                                        <li>Your survey responses need more specific preferences</li>
+                                                        <li>The database needs more program data</li>
+                                                        <li>You may want to retake the survey with different answers</li>
+                                                    </ul>
+                                                    <a href="{{ url_for('main.survey') }}" class="btn btn-primary mt-3">
+                                                        <i class="fas fa-redo"></i> Retake Survey
+                                                    </a>
                                                 </div>
-                                                <p class="rec-description">Perfect match for your mathematical interests and technology career goals.</p>
                                             </div>
-                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
 
-                                        <div class="recommendation-item">
-                                            <div class="rec-header">
-                                                <div class="rec-rank">2</div>
-                                                <div class="rec-info">
-                                                    <h4>Software Engineering</h4>
-                                                    <p>American University in Bulgaria</p>
-                                                </div>
-                                                <div class="rec-score">
-                                                    <span class="score">89%</span>
-                                                    <small>match</small>
-                                                </div>
-                                            </div>
-                                            <div class="rec-details">
-                                                <div class="rec-tags">
-                                                    <span class="tag">4 years</span>
-                                                    <span class="tag">English</span>
-                                                    <span class="tag">International</span>
-                                                </div>
-                                                <p class="rec-description">Excellent choice combining technical skills with practical application.</p>
-                                            </div>
+                            <!-- Recommended Universities -->
+                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="250">
+                                <div class="card-header">
+                                    <h3>
+                                        <i class="fas fa-university me-2"></i>
+                                        Top Recommended Universities
+                                    </h3>
+                                    <p>Universities that match your preferences and academic interests</p>
+                                    {% if university_recommendations and university_recommendations|length > 0 %}
+                                        <div class="recommendations-summary">
+                                            <span class="summary-badge">
+                                                <i class="fas fa-graduation-cap"></i>
+                                                {{ university_recommendations|length }} Perfect Matches Found
+                                            </span>
                                         </div>
-
-                                        <div class="recommendation-item">
-                                            <div class="rec-header">
-                                                <div class="rec-rank">3</div>
-                                                <div class="rec-info">
-                                                    <h4>Information Technology</h4>
-                                                    <p>University of Sofia</p>
+                                    {% endif %}
+                                </div>
+                                <div class="card-content">
+                                    <div class="universities-grid">
+                                        {% if university_recommendations and university_recommendations|length > 0 %}
+                                            {% for university in university_recommendations %}
+                                            <div class="university-item" data-aos="fade-up" data-aos-delay="{{ 300 + (loop.index0 * 100) }}">
+                                                <div class="uni-header">
+                                                    <div class="uni-rank">
+                                                        {{ loop.index }}
+                                                        <div class="rank-glow"></div>
+                                                    </div>
+                                                    <div class="uni-info">
+                                                        <h4>{{ university.school_name }}</h4>
+                                                        <p>
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                            {{ university.location or 'Location not specified' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="uni-score">
+                                                        <div class="score-container">
+                                                            <span class="score">{{ (university.match_score * 100)|round|int }}%</span>
+                                                            <div class="score-ring">
+                                                                <svg width="60" height="60">
+                                                                    <circle cx="30" cy="30" r="25" stroke="rgba(139, 92, 246, 0.2)" stroke-width="3" fill="none"/>
+                                                                    <circle cx="30" cy="30" r="25" stroke="var(--cosmic-blue)" stroke-width="3" fill="none" 
+                                                                            stroke-dasharray="{{ (university.match_score * 157)|round }}, 157" 
+                                                                            stroke-linecap="round" transform="rotate(-90 30 30)"/>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <small>match</small>
+                                                    </div>
                                                 </div>
-                                                <div class="rec-score">
-                                                    <span class="score">84%</span>
-                                                    <small>match</small>
+                                                <div class="uni-details">
+                                                    {% if university.match_reasons %}
+                                                        <div class="uni-tags">
+                                                            {% for reason in university.match_reasons[:3] %}
+                                                                <span class="tag">
+                                                                    <i class="fas fa-check-circle"></i>
+                                                                    {{ reason|truncate(30) }}
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if university.description %}
+                                                        <div class="uni-description-container">
+                                                            <p class="uni-description">{{ university.description|truncate(140) }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    <div class="uni-actions">
+                                                        {% if university.website %}
+                                                            <a href="{{ university.website }}" target="_blank" class="uni-link primary">
+                                                                <i class="fas fa-external-link-alt"></i>
+                                                                <span>Visit Website</span>
+                                                            </a>
+                                                        {% endif %}
+                                                        <button class="uni-link secondary" onclick="addToFavorites({{ university.school_id or 0 }})">
+                                                            <i class="fas fa-heart"></i>
+                                                            <span>Add to Favorites</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Decorative elements -->
+                                                <div class="uni-particles">
+                                                    <div class="particle particle-1"></div>
+                                                    <div class="particle particle-2"></div>
+                                                    <div class="particle particle-3"></div>
                                                 </div>
                                             </div>
-                                            <div class="rec-details">
-                                                <div class="rec-tags">
-                                                    <span class="tag">3 years</span>
-                                                    <span class="tag">Bulgarian</span>
-                                                    <span class="tag">Practical</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="no-universities">
+                                                <div class="empty-state">
+                                                    <div class="empty-icon">
+                                                        <i class="fas fa-university"></i>
+                                                        <div class="icon-sparkles">
+                                                            <i class="fas fa-sparkles"></i>
+                                                        </div>
+                                                    </div>
+                                                    <h4>No University Recommendations Found</h4>
+                                                    <p>We couldn't find university recommendations based on your current survey data.</p>
+                                                    <div class="suggestions-list">
+                                                        <div class="suggestion-item">
+                                                            <i class="fas fa-user-edit"></i>
+                                                            <span>Complete your profile with location preferences</span>
+                                                        </div>
+                                                        <div class="suggestion-item">
+                                                            <i class="fas fa-redo-alt"></i>
+                                                            <span>Retake the survey with more specific answers</span>
+                                                        </div>
+                                                        <div class="suggestion-item">
+                                                            <i class="fas fa-database"></i>
+                                                            <span>Check back as we add more universities</span>
+                                                        </div>
+                                                    </div>
+                                                    <a href="{{ url_for('main.survey') }}" class="empty-state-btn">
+                                                        <i class="fas fa-rocket"></i>
+                                                        <span>Retake Survey</span>
+                                                    </a>
                                                 </div>
-                                                <p class="rec-description">Great option for hands-on technology application and system management.</p>
                                             </div>
-                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

@@ -740,4 +740,41 @@ function debounce(func, wait, immediate) {
         timeout = setTimeout(later, wait);
         if (callNow) func.apply(context, args);
     };
+}
+
+// University Recommendation System - Interactive Features
+// Handles favorites functionality and user notifications
+
+/**
+ * Add a university to user's favorites list
+ * @param {string} schoolId - The unique identifier for the school
+ * @param {string} schoolName - The display name of the school
+ */
+function addToFavorites(schoolId, schoolName) {
+    // Validate input parameters
+    if (!schoolId || schoolId === 'unknown') {
+        showNotification('Unable to add to favorites: Invalid school ID', 'error');
+        return;
+    }
+    
+    // Performance optimization: debounce rapid clicks
+    if (addToFavorites.timeout) {
+        clearTimeout(addToFavorites.timeout);
+    }
+    
+    addToFavorites.timeout = setTimeout(() => {
+        // Simulate adding to favorites (replace with actual API call)
+        console.log(`Adding ${schoolName} (ID: ${schoolId}) to favorites`);
+        
+        // Show success notification
+        showNotification(`${schoolName} added to favorites!`, 'success');
+        
+        // Update button state to show it's been favorited
+        const button = event.target;
+        if (button) {
+            button.innerHTML = '⭐ Favorited';
+            button.disabled = true;
+            button.classList.add('favorited');
+        }
+    }, 300); // 300ms debounce delay
 } 
