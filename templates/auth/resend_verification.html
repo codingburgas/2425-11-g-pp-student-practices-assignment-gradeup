@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Join GradeUP{% endblock %}
+{% block title %}Resend Email Verification - GradeUP{% endblock %}
 
 {% block content %}
 <div class="auth-page">
@@ -11,94 +11,30 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-icon">
-                    <i class="fas fa-rocket"></i>
+                    <i class="fas fa-envelope"></i>
                 </div>
-                <h2>Join GradeUP</h2>
-                <p>Start your educational journey with us</p>
+                <h2>Resend Verification</h2>
+                <p>Get a new email verification link</p>
             </div>
             
-            {% if error %}
-            <div class="cosmic-alert error">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                {{ error }}
-            </div>
-            {% endif %}
-            
-            <form method="POST" class="auth-form">
-                {{ form.hidden_tag() }}
-                
-                <div class="form-group">
-                    <div class="input-container">
-                        <i class="fas fa-user input-icon"></i>
-                        {{ form.username(class="auth-input", placeholder="Username") }}
-                    </div>
-                    {% if form.username.errors %}
-                        <div class="field-errors">
-                            {% for error in form.username.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                
+            <form method="POST" class="auth-form" novalidate>
                 <div class="form-group">
                     <div class="input-container">
                         <i class="fas fa-envelope input-icon"></i>
-                        {{ form.email(class="auth-input", placeholder="Email address") }}
+                        <input type="email" name="email" class="auth-input" placeholder="Enter your email address" required>
                     </div>
-                    {% if form.email.errors %}
-                        <div class="field-errors">
-                            {% for error in form.email.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    <div class="input-container">
-                        <i class="fas fa-lock input-icon"></i>
-                        {{ form.password(class="auth-input", placeholder="Password") }}
-                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password.errors %}
-                        <div class="field-errors">
-                            {% for error in form.password.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
-                    <div class="input-container">
-                        <i class="fas fa-lock input-icon"></i>
-                        {{ form.password2(class="auth-input", placeholder="Confirm password") }}
-                        <button type="button" class="password-toggle" onclick="togglePassword('password2')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password2.errors %}
-                        <div class="field-errors">
-                            {% for error in form.password2.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
                 </div>
                 
                 <button type="submit" class="btn-cosmic-primary">
-                    Create Account
-                    <i class="fas fa-rocket ms-2"></i>
+                    Send Verification Email
+                    <i class="fas fa-paper-plane ms-2"></i>
                 </button>
             </form>
             
             <div class="auth-footer">
                 <p class="auth-switch">
-                    Already have an account? 
-                    <a href="{{ url_for('auth.login') }}" class="auth-link">Sign in here</a>
+                    Remember your password? 
+                    <a href="{{ url_for('auth.login') }}" class="auth-link">Back to Login</a>
                 </p>
             </div>
         </div>
@@ -296,22 +232,6 @@
     color: rgba(248, 250, 252, 0.5);
 }
 
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: rgba(248, 250, 252, 0.6);
-    cursor: pointer;
-    z-index: 10;
-    font-size: 1rem;
-    transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-    color: #8B5CF6;
-}
-
 /* ===== BUTTON STYLES ===== */
 .btn-cosmic-primary {
     width: 100%;
@@ -359,16 +279,6 @@
     color: #06B6D4;
 }
 
-.field-errors {
-    margin-top: 0.5rem;
-}
-
-.error-text {
-    color: #ff6b6b;
-    font-size: 0.875rem;
-    display: block;
-}
-
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .auth-page {
@@ -389,104 +299,14 @@
         font-size: 1.5rem;
     }
 }
-
-/* ===== COSMIC ALERTS ===== */
-.cosmic-alert {
-    padding: 1rem 1.5rem;
-    border-radius: 0.75rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid;
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    animation: slideInDown 0.3s ease;
-}
-
-.cosmic-alert.error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #FCA5A5;
-}
-
-.cosmic-alert.success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-    border-color: rgba(16, 185, 129, 0.3);
-    color: #6EE7B7;
-}
-
-.cosmic-alert.info {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #93C5FD;
-}
-
-@keyframes slideInDown {
-    0% { transform: translateY(-20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-}
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Password toggle functionality
-function togglePassword(fieldId) {
-    const passwordField = document.getElementById(fieldId) || document.querySelector(`input[name="${fieldId}"]`);
-    const toggleBtn = passwordField.parentNode.querySelector('.password-toggle i');
-    
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        toggleBtn.classList.remove('fa-eye');
-        toggleBtn.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        toggleBtn.classList.remove('fa-eye-slash');
-        toggleBtn.classList.add('fa-eye');
-    }
-}
-
-// Initialize spider web particles and form validation
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize spider web particles
     initWebParticles();
-
-
-
-    // Form validation and prevent double submission
-    const authForm = document.querySelector('.auth-form');
-    if (authForm) {
-        let isSubmitting = false;
-        
-        authForm.addEventListener('submit', function(e) {
-            // Prevent double submission
-            if (isSubmitting) {
-                e.preventDefault();
-                return false;
-            }
-            
-            const inputs = this.querySelectorAll('.auth-input');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    input.style.borderColor = '#ff6b6b';
-                    isValid = false;
-                } else {
-                    input.style.borderColor = 'rgba(139, 92, 246, 0.3)';
-                }
-            });
-            
-            if (isValid) {
-                isSubmitting = true;
-                // Disable the submit button
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Creating Account...';
-                }
-            }
-        });
-    }
 });
 
 // Spider Web Particles System

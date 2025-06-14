@@ -1,0 +1,1574 @@
+{% extends "base.html" %}
+
+{% block title %}User Directory - GradeUP{% endblock %}
+
+{% block content %}
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="users-page">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header animate-fade-in">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-users"></i>
+                    <div class="icon-glow"></div>
+                </div>
+                <div class="header-text">
+                    <h1 class="page-title">
+                        Community Members
+                        <span class="cosmic-badge text-center">{{ total_users }} Students</span>
+                    </h1>
+                    <p class="page-subtitle">Connect with fellow students and explore their academic journeys</p>
+                    <div class="page-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Active Community</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-globe"></i>
+                            <span>Worldwide Students</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4 animate-slide-up" data-delay="200">
+            <div class="col-12">
+                <div class="search-panel">
+                    <div class="search-header">
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                            <div class="search-icon-pulse"></div>
+                        </div>
+                        <div class="search-text">
+                            <h2>Find Members</h2>
+                            <p>Discover and connect with fellow students in your community</p>
+                        </div>
+                    </div>
+                    
+                    <form method="GET" class="search-form">
+                        <div class="search-grid">
+                            <!-- Main Search -->
+                            <div class="search-group primary">
+                                {{ form.search.label(class="search-label") }}
+                                <div class="search-input-wrapper">
+                                    <i class="fas fa-user search-input-icon"></i>
+                                    {{ form.search(class="search-input", placeholder="Search by username, bio or interests...") }}
+                                    <div class="search-input-glow"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Location Filter -->
+                            <div class="search-group">
+                                {{ form.location_filter.label(class="search-label") }}
+                                <div class="select-wrapper">
+                                    <i class="fas fa-map-marker-alt select-icon"></i>
+                                    {{ form.location_filter(class="search-select") }}
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Sort Options -->
+                            <div class="search-group">
+                                {{ form.sort_by.label(class="search-label") }}
+                                <div class="select-wrapper">
+                                    <i class="fas fa-sort-amount-down select-icon"></i>
+                                    {{ form.sort_by(class="search-select") }}
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Search Button -->
+                            <div class="search-group">
+                                <label class="search-label">&nbsp;</label>
+                                <button type="submit" class="search-btn">
+                                    <span class="btn-content">
+                                        <i class="fas fa-search"></i>
+                                        <span>Find Members</span>
+                                    </span>
+                                    <div class="btn-shine"></div>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Filters -->
+                        <div class="quick-filters">
+                            <span class="filter-label">Quick Filters:</span>
+                            <div class="filter-tags">
+                                <a href="?sort_by=newest" class="filter-tag {{ 'active' if request.args.get('sort_by') == 'newest' }}">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Recently Joined</span>
+                                </a>
+                                <a href="?sort_by=most_active" class="filter-tag {{ 'active' if request.args.get('sort_by') == 'most_active' }}">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Most Active</span>
+                                </a>
+                                <a href="?" class="filter-tag {{ 'active' if not request.args.get('sort_by') }}">
+                                    <i class="fas fa-star"></i>
+                                    <span>All Members</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        {% if search or location_filter %}
+                        <div class="active-filters">
+                            <div class="filter-results">
+                                <span class="results-count">
+                                    <i class="fas fa-filter"></i>
+                                    {{ users.total }} result{{ 's' if users.total != 1 else '' }} found
+                                </span>
+                                {% if search %}
+                                <span class="active-filter">
+                                    Search: "{{ search }}"
+                                    <a href="?" class="remove-filter"><i class="fas fa-times"></i></a>
+                                </span>
+                                {% endif %}
+                                {% if location_filter %}
+                                <span class="active-filter">
+                                    Location: {{ location_filter }}
+                                    <a href="?" class="remove-filter"><i class="fas fa-times"></i></a>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('main.users') }}" class="clear-all-btn">
+                                <i class="fas fa-times-circle"></i>
+                                Clear All Filters
+                            </a>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users Spotlight -->
+        {% if recent_users and not search %}
+        <div class="row mb-4 animate-slide-up" data-delay="300">
+            <div class="col-12">
+                <div class="recent-users-section">
+                    <div class="recent-header">
+                        <div class="recent-icon">
+                            <i class="fas fa-user-plus"></i>
+                            <div class="recent-icon-glow"></div>
+                        </div>
+                        <div class="recent-text text-center">
+                            <h3>Recently Joined New Members</h3>
+                            <p>Say hello to the latest additions to our community</p>
+                        </div>
+                        <a href="?sort_by=newest" class="view-all-btn">
+                            <span>View All</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="recent-users-carousel">
+                        {% for user in recent_users %}
+                        <div class="recent-user-card">
+                            <div class="recent-user-header">
+                                <div class="recent-user-avatar">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ url_for('static', filename='profile_pics/' + user.profile_picture) }}" 
+                                             alt="{{ user.username }}" class="avatar-img">
+                                    {% else %}
+                                        <div class="avatar-placeholder">{{ user.username[0].upper() }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="recent-user-info">
+                                <a href="{{ url_for('main.user_profile', username=user.username) }}" 
+                                   class="recent-user-name">{{ user.username }}</a>
+                                {% if user.location %}
+                                <div class="recent-user-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ user.location }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="recent-join-date">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Joined {{ user.created_at.strftime('%b %d') }}</span>
+                                </div>
+                            </div>
+                            <div class="recent-user-actions">
+                                <a href="{{ url_for('main.user_profile', username=user.username) }}" 
+                                   class="welcome-btn">
+                                    <i class="fas fa-hand-wave"></i>
+                                    <span>View Profile</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Users Grid -->
+        <div class="row animate-slide-up" data-delay="400">
+            <div class="col-12">
+                <div class="cosmic-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-th-large me-2"></i>Community Members</h5>
+                            <div class="view-toggle">
+                                <button class="btn-cosmic-outline btn-sm active" data-view="grid">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn-cosmic-outline btn-sm" data-view="list">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if users.items %}
+                        <div class="users-grid" id="usersContainer">
+                            {% for user in users.items %}
+                            <div class="user-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                                <div class="user-card-header">
+                                    <div class="user-avatar-container">
+                                        <div class="user-avatar-large">
+                                            {% if user.profile_picture %}
+                                                <img src="{{ url_for('static', filename='profile_pics/' + user.profile_picture) }}" 
+                                                     alt="{{ user.username }}" class="avatar-img">
+                                            {% else %}
+                                                <div class="avatar-placeholder-large">{{ user.username[0].upper() }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="avatar-glow"></div>
+                                    </div>
+                                </div>
+                                <div class="user-card-body">
+                                    <div class="user-name-section">
+                                        <h6 class="user-name">
+                                            <a href="{{ url_for('main.user_profile', username=user.username) }}">
+                                                {{ user.username }}
+                                            </a>
+                                        </h6>
+                                        {% if user.location %}
+                                        <div class="user-location">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{{ user.location }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if user.bio %}
+                                    <div class="user-bio-section">
+                                        <p class="user-bio">{{ user.bio[:100] }}{% if user.bio|length > 100 %}...{% endif %}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="user-stats-grid">
+                                        <div class="stat-item">
+                                            <div class="stat-icon surveys">
+                                                <i class="fas fa-poll"></i>
+                                            </div>
+                                            <div class="stat-content">
+                                                <span class="stat-number">{{ user.survey_responses.count() }}</span>
+                                                <span class="stat-label">Surveys</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-icon favorites">
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="stat-content">
+                                                <span class="stat-number">{{ user.favorites.count() }}</span>
+                                                <span class="stat-label">Favorites</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-icon member">
+                                                <i class="fas fa-calendar-check"></i>
+                                            </div>
+                                            <div class="stat-content">
+                                                <span class="stat-number">{{ ((user.created_at.now() - user.created_at).days // 30) + 1 }}</span>
+                                                <span class="stat-label">Months</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="user-join-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Joined {{ user.created_at.strftime('%B %Y') }}</span>
+                                    </div>
+                                </div>
+                                <div class="user-card-footer">
+                                    <a href="{{ url_for('main.user_profile', username=user.username) }}" 
+                                       class="btn-view-profile">
+                                        <span>View Profile</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if users.pages > 1 %}
+                        <div class="cosmic-pagination mt-4">
+                            <nav aria-label="Users pagination">
+                                <ul class="pagination-list">
+                                    {% if users.has_prev %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('main.users', page=users.prev_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in users.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != users.page %}
+                                            <li class="pagination-item">
+                                                <a class="pagination-link" href="{{ url_for('main.users', page=page_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">{{ page_num }}</a>
+                                            </li>
+                                            {% else %}
+                                            <li class="pagination-item active">
+                                                <span class="pagination-link">{{ page_num }}</span>
+                                            </li>
+                                            {% endif %}
+                                        {% else %}
+                                        <li class="pagination-item disabled">
+                                            <span class="pagination-link">...</span>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if users.has_next %}
+                                    <li class="pagination-item">
+                                        <a class="pagination-link" href="{{ url_for('main.users', page=users.next_num, search=search, location_filter=location_filter, sort_by=sort_by) }}">
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+
+                        {% else %}
+                        <div class="no-results">
+                            <div class="no-results-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>No users found</h4>
+                            <p>{% if search or location_filter %}No users match your search criteria.{% else %}No users are currently available.{% endif %}</p>
+                            {% if search or location_filter %}
+                            <a href="{{ url_for('main.users') }}" class="btn-cosmic">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== USERS PAGE STYLES ===== */
+.users-page {
+    min-height: 100vh;
+    padding: 2rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+.page-header {
+    margin-bottom: 3rem;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 70, 0.9) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 2rem;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(139, 92, 246, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.header-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.header-icon i {
+    font-size: 5rem;
+    color: var(--cosmic-purple);
+    filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.6));
+    position: relative;
+    z-index: 2;
+}
+
+.icon-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.header-text {
+    text-align: left;
+    flex: 1;
+    max-width: 600px;
+}
+
+.page-title {
+    color: var(--star-white);
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    line-height: 1.2;
+}
+
+.page-subtitle {
+    color: rgba(248, 250, 252, 0.9);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.page-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.page-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.page-stats .stat-item i {
+    color: var(--cosmic-purple);
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+/* Search Panel */
+.search-panel {
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 70, 0.9) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.search-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
+    animation: shimmer 4s ease-in-out infinite;
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.search-icon {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.search-icon-pulse {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 2s infinite;
+}
+
+.search-text h2 {
+    color: var(--star-white);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.search-text p {
+    color: rgba(248, 250, 252, 0.8);
+    margin: 0;
+    font-size: 1rem;
+}
+
+.search-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 1.5rem;
+    align-items: end;
+    position: relative;
+    z-index: 2;
+}
+
+.search-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-label {
+    color: var(--star-white);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background: rgba(15, 15, 35, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    outline: none;
+}
+
+.search-input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 3;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.search-select {
+    width: 100%;
+    padding: 1rem 2.5rem 1rem 3rem;
+    background: rgba(15, 15, 35, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    appearance: none;
+    cursor: pointer;
+}
+
+.search-select:focus {
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    outline: none;
+}
+
+.select-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cosmic-purple);
+    z-index: 2;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.search-btn {
+    padding: 1rem 2rem;
+    background: var(--cosmic-gradient);
+    border: 2px solid var(--cosmic-purple);
+    border-radius: 15px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 150px;
+}
+
+.search-btn:hover {
+    background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.search-btn:hover .btn-shine {
+    left: 100%;
+}
+
+.quick-filters {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.filter-label {
+    color: rgba(248, 250, 252, 0.8);
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 20px;
+    color: rgba(248, 250, 252, 0.8);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-tag:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: var(--star-white);
+    transform: translateY(-1px);
+}
+
+.filter-tag.active {
+    background: var(--cosmic-gradient);
+    border-color: var(--cosmic-purple);
+    color: white;
+}
+
+.active-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.filter-results {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.results-count {
+    color: var(--star-white);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.active-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    color: var(--star-white);
+    font-size: 0.85rem;
+}
+
+.remove-filter {
+    color: rgba(248, 250, 252, 0.6);
+    margin-left: 0.25rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.remove-filter:hover {
+    color: #EF4444;
+}
+
+.clear-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #EF4444;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.clear-all-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: white;
+}
+
+/* Recent Users */
+.recent-users-list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.recent-user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    min-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.recent-user-item:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.user-name {
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-name:hover {
+    color: var(--cosmic-purple);
+}
+
+.user-meta {
+    font-size: 0.8rem;
+    color: rgba(248, 250, 252, 0.6);
+    margin-top: 0.25rem;
+}
+
+.user-meta i {
+    color: var(--cosmic-purple);
+}
+
+/* Enhanced Recent Users Section */
+.recent-users-section {
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.9) 0%, rgba(30, 30, 70, 0.8) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.recent-icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.recent-icon-glow {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    border-radius: 50%;
+    animation: pulse-ring 2s infinite;
+}
+
+.recent-text h3 {
+    color: var(--star-white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.recent-text p {
+    color: rgba(248, 250, 252, 0.8);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.view-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    color: var(--cosmic-purple);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: var(--star-white);
+    transform: translateY(-1px);
+}
+
+.recent-users-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.recent-user-card {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 15px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.recent-user-card:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.recent-user-header {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.recent-user-avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto;
+    border: 2px solid var(--cosmic-purple);
+}
+
+
+
+.recent-user-info {
+    margin-bottom: 1rem;
+}
+
+.recent-user-name {
+    color: var(--star-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.recent-user-name:hover {
+    color: var(--cosmic-purple);
+}
+
+.recent-user-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.recent-user-location i {
+    color: var(--cosmic-purple);
+}
+
+.recent-join-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.75rem;
+}
+
+.recent-join-date i {
+    color: #10B981;
+}
+
+.recent-user-actions {
+    margin-top: 1rem;
+}
+
+.welcome-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    color: #10B981;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.welcome-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Users Grid */
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.view-toggle .btn-cosmic-outline.active {
+    background: var(--cosmic-purple);
+    color: white;
+    border-color: var(--cosmic-purple);
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+}
+
+.user-card {
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.8) 0%, rgba(30, 30, 70, 0.6) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 16px;
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(139, 92, 246, 0.05) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-card:hover::before {
+    opacity: 1;
+}
+
+.user-card:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 
+        0 20px 40px rgba(139, 92, 246, 0.2),
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-8px) scale(1.02);
+}
+
+.user-card-header {
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.user-avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.user-avatar-large {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 0.25rem;
+    border: 2px solid var(--cosmic-purple);
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 3px 10px rgba(139, 92, 246, 0.3);
+}
+
+.avatar-placeholder-large {
+    width: 100%;
+    height: 100%;
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+
+
+.avatar-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 65px;
+    height: 65px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse-avatar 3s ease-in-out infinite;
+}
+
+
+
+@keyframes pulse-avatar {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+}
+
+.user-name-section {
+    margin-bottom: 0.5rem;
+}
+
+.user-card-body h6 {
+    color: var(--star-white);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.user-card-body h6 a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.user-card-body h6 a:hover {
+    color: var(--cosmic-purple);
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.user-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.8rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    margin-top: 0.25rem;
+}
+
+.user-location i {
+    color: var(--cosmic-purple);
+}
+
+.user-bio-section {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.user-bio {
+    color: rgba(248, 250, 252, 0.9);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    font-style: italic;
+}
+
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.user-stats-grid .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.3rem;
+    background: rgba(15, 15, 35, 0.3);
+    border-radius: 6px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+}
+
+.user-stats-grid .stat-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.user-stats-grid .stat-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    margin-top: 1.25rem
+}
+
+.user-stats-grid .stat-icon.surveys { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+.user-stats-grid .stat-icon.favorites { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+.user-stats-grid .stat-icon.member { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+
+.user-stats-grid .stat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.user-stats-grid .stat-number {
+    color: var(--star-white);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.user-stats-grid .stat-label {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-join-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.user-join-date i {
+    color: var(--cosmic-purple);
+}
+
+.user-card-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.btn-view-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 1.2rem;
+    background: 
+        linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.2) 100%),
+        linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-view-profile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.btn-view-profile:hover::before {
+    left: 100%;
+}
+
+.btn-view-profile:hover {
+    background: 
+        linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.4) 100%),
+        linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-color: rgba(139, 92, 246, 0.6);
+    color: var(--star-white);
+    box-shadow: 
+        0 8px 25px rgba(139, 92, 246, 0.3),
+        0 0 0 1px rgba(139, 92, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-view-profile span {
+    position: relative;
+    z-index: 2;
+}
+
+.btn-view-profile i {
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.btn-view-profile:hover i {
+    transform: translateX(3px);
+}
+
+/* No Results */
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.no-results-icon {
+    margin-bottom: 1rem;
+}
+
+.no-results-icon i {
+    font-size: 3rem;
+    color: rgba(139, 92, 246, 0.5);
+}
+
+.no-results h4 {
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .user-card {
+        padding: 1.25rem 1rem;
+    }
+    
+    .search-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .search-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .quick-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .filter-tags {
+        justify-content: center;
+    }
+    
+    .recent-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .recent-users-carousel {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .active-filters {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-panel {
+        padding: 1.5rem;
+    }
+    
+    .recent-users-section {
+        padding: 1.5rem;
+    }
+    
+    .recent-users-carousel {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initParticlesBackground();
+    initViewToggle();
+    initAnimations();
+});
+
+// View toggle functionality
+function initViewToggle() {
+    const toggleButtons = document.querySelectorAll('.view-toggle button');
+    const usersContainer = document.getElementById('usersContainer');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Update active state
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update container class
+            usersContainer.className = view === 'list' ? 'users-list' : 'users-grid';
+        });
+    });
+}
+
+// Initialize animations
+function initAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.user-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+}
+
+// Initialize particles background
+function initParticlesBackground() {
+    const container = document.getElementById('particlesBackground');
+    if (!container) return;
+    
+    for (let i = 0; i < 20; i++) {
+        createParticle(container);
+    }
+}
+
+function createParticle(container) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.cssText = `
+        position: absolute;
+        width: ${Math.random() * 4 + 1}px;
+        height: ${Math.random() * 4 + 1}px;
+        background: rgba(139, 92, 246, ${Math.random() * 0.5 + 0.2});
+        border-radius: 50%;
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        animation: float ${Math.random() * 10 + 10}s infinite linear;
+    `;
+    container.appendChild(particle);
+}
+</script>
+{% endblock %} 

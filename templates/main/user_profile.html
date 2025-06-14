@@ -1,0 +1,1353 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.get_display_name() }}'s Profile - GradeUP{% endblock %}
+
+{% block content %}
+<!-- Moving Particles Background -->
+<div class="particles-background" id="particlesBackground"></div>
+
+<div class="profile-page">
+    <div class="container-fluid">
+        <!-- Navigation Bar -->
+        <div class="profile-nav-bar animate-fade-in">
+            <div class="nav-section">
+                <a href="{{ url_for('main.users') }}" class="nav-btn back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Community</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                {% if is_own_profile %}
+                <a href="{{ url_for('auth.profile') }}" class="nav-btn edit-btn">
+                    <i class="fas fa-edit"></i>
+                    <span>Edit Profile</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header animate-slide-down">
+            <div class="profile-container">
+                <div class="profile-hero">
+                    <div class="profile-avatar-container">
+                        <div class="profile-avatar">
+                            {% if user.profile_picture %}
+                                <img src="{{ url_for('static', filename='profile_pics/' + user.profile_picture) }}" 
+                                     alt="{{ user.username }}" class="avatar-image">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            <div class="avatar-border"></div>
+                        </div>
+                        <div class="status-indicator active" title="Active Member"></div>
+                    </div>
+                    
+                    <div class="profile-hero-content">
+                        <div class="profile-identity">
+                            <h1 class="profile-name">{{ user.get_display_name() }}</h1>
+                            <p class="profile-handle">@{{ user.username }}</p>
+                            <div class="profile-badges">
+                                <span class="badge verified">
+                                    <i class="fas fa-shield-check"></i>
+                                    <span>Verified</span>
+                                </span>
+                                <span class="badge member-since">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Since {{ user.created_at.strftime('%B %Y') }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        {% if user.bio %}
+                        <div class="profile-bio">
+                            <p>{{ user.bio }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="profile-meta">
+                            {% if user.location %}
+                            <div class="meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ user.location }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="meta-item">
+                                <i class="fas fa-user-clock"></i>
+                                <span>{{ ((user.created_at.now() - user.created_at).days) }} days active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content Tabs -->
+        <div class="profile-content animate-slide-up">
+            <div class="content-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="overview">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Overview</span>
+                    </button>
+                    <button class="tab-btn" data-tab="activity">
+                        <i class="fas fa-activity"></i>
+                        <span>Activity</span>
+                    </button>
+                    <button class="tab-btn" data-tab="achievements">
+                        <i class="fas fa-trophy"></i>
+                        <span>Achievements</span>
+                    </button>
+                </div>
+                
+                <!-- Overview Tab -->
+                <div class="tab-content active" id="overview">
+                    <div class="content-grid">
+                        <div class="grid-main">
+                            <!-- Stats Cards -->
+                            <div class="stats-section text-center">
+                                <h3 class="section-title">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span class="text-center">Activity Stats</span>
+                                </h3>
+                                <div class="stats-grid">
+                                    <div class="stat-card surveys">
+                                        <div class="stat-visual">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-poll"></i>
+                                            </div>
+                                            <div class="stat-progress">
+                                                <div class="progress-circle" data-percent="{{ (recent_survey_count * 20) if recent_survey_count <= 5 else 100 }}">
+                                                    <span class="progress-number">{{ recent_survey_count }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h4>Surveys</h4>
+                                            <p>Completed</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-card favorites">
+                                        <div class="stat-visual">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-heart"></i>
+                                            </div>
+                                            <div class="stat-progress">
+                                                <div class="progress-circle" data-percent="{{ (favorites_count * 25) if favorites_count <= 4 else 100 }}">
+                                                    <span class="progress-number">{{ favorites_count }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h4>Favorites</h4>
+                                            <p>Schools saved</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stat-card engagement">
+                                        <div class="stat-visual">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-fire"></i>
+                                            </div>
+                                            <div class="engagement-meter">
+                                                <div class="meter-bar">
+                                                    <div class="meter-fill {{ 'high' if recent_survey_count > 2 else 'medium' if recent_survey_count > 0 else 'low' }}"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-info">
+                                            <h4>Engagement</h4>
+                                            <p>{{ 'High' if recent_survey_count > 2 else 'Medium' if recent_survey_count > 0 else 'Low' }} Level</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="actions-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-rocket"></i>
+                                    <span>Quick Actions</span>
+                                </h3>
+                                <div class="action-grid">
+                                    <a href="{{ url_for('main.survey') }}" class="action-card primary">
+                                        <div class="action-icon">
+                                            <i class="fas fa-poll"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <h4>Take Survey</h4>
+                                            <p>Help us recommend the perfect school</p>
+                                        </div>
+                                        <div class="action-arrow">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </a>
+                                    
+                                    <a href="{{ url_for('main.universities') }}" class="action-card">
+                                        <div class="action-icon">
+                                            <i class="fas fa-university"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <h4>Explore Schools</h4>
+                                            <p>Discover universities that match you</p>
+                                        </div>
+                                        <div class="action-arrow">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </a>
+                                    
+                                    <a href="{{ url_for('main.dashboard') }}" class="action-card">
+                                        <div class="action-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="action-content">
+                                            <h4>Your Dashboard</h4>
+                                            <p>View your personalized insights</p>
+                                        </div>
+                                        <div class="action-arrow">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid-sidebar">
+                            <!-- Member Info -->
+                            <div class="info-card">
+                                <h3 class="section-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Member Info</span>
+                                </h3>
+                                <div class="info-list">
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="fas fa-user"></i>
+                                            <span>Username</span>
+                                        </div>
+                                        <div class="info-value">{{ user.username }}</div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="fas fa-calendar-plus"></i>
+                                            <span>Joined</span>
+                                        </div>
+                                        <div class="info-value">{{ user.created_at.strftime('%B %d, %Y') }}</div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="fas fa-chart-line"></i>
+                                            <span>Status</span>
+                                        </div>
+                                        <div class="info-value">
+                                            <span class="status-badge {{ 'active' if recent_survey_count > 0 else 'inactive' }}">
+                                                {{ 'Active' if recent_survey_count > 0 else 'Inactive' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if user.location %}
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>Location</span>
+                                        </div>
+                                        <div class="info-value">{{ user.location }}</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Tab -->
+                <div class="tab-content" id="activity">
+                    <div class="activity-timeline">
+                        <h3 class="section-title">
+                            <i class="fas fa-history"></i>
+                            <span>Recent Activity</span>
+                        </h3>
+                        <div class="timeline">
+                            {% if recent_survey_count > 0 %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot surveys"></div>
+                                <div class="timeline-content">
+                                    <h4>Completed Surveys</h4>
+                                    <p>{{ recent_survey_count }} survey{{ 's' if recent_survey_count != 1 else '' }} completed</p>
+                                    <span class="timeline-date">Recent activity</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if favorites_count > 0 %}
+                            <div class="timeline-item">
+                                <div class="timeline-dot favorites"></div>
+                                <div class="timeline-content">
+                                    <h4>Schools Favorited</h4>
+                                    <p>{{ favorites_count }} school{{ 's' if favorites_count != 1 else '' }} added to favorites</p>
+                                    <span class="timeline-date">Ongoing</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-dot joined"></div>
+                                <div class="timeline-content">
+                                    <h4>Joined GradeUP</h4>
+                                    <p>Became a community member</p>
+                                    <span class="timeline-date">{{ user.created_at.strftime('%B %d, %Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Achievements Tab -->
+                <div class="tab-content" id="achievements">
+                    <div class="achievements-showcase">
+                        <h3 class="section-title">
+                            <i class="fas fa-trophy"></i>
+                            <span>Achievements Unlocked</span>
+                        </h3>
+                        <div class="achievements-grid">
+                            {% if recent_survey_count > 0 %}
+                            <div class="achievement-card earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-play-circle"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Survey Starter</h4>
+                                    <p>Completed your first survey</p>
+                                    <div class="achievement-date">Earned</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recent_survey_count >= 3 %}
+                            <div class="achievement-card earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Survey Enthusiast</h4>
+                                    <p>Completed 3+ surveys</p>
+                                    <div class="achievement-date">Earned</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if favorites_count > 0 %}
+                            <div class="achievement-card earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>School Explorer</h4>
+                                    <p>Favorited schools</p>
+                                    <div class="achievement-date">Earned</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if user.bio %}
+                            <div class="achievement-card earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Profile Complete</h4>
+                                    <p>Added bio information</p>
+                                    <div class="achievement-date">Earned</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if ((user.created_at.now() - user.created_at).days) >= 30 %}
+                            <div class="achievement-card earned">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Veteran Member</h4>
+                                    <p>Member for 30+ days</p>
+                                    <div class="achievement-date">Earned</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if recent_survey_count >= 5 %}
+                            <div class="achievement-card earned legendary">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Survey Master</h4>
+                                    <p>Completed 5+ surveys</p>
+                                    <div class="achievement-date">Legendary</div>
+                                </div>
+                                <div class="achievement-shine"></div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Locked Achievements -->
+                            {% if recent_survey_count < 5 %}
+                            <div class="achievement-card locked">
+                                <div class="achievement-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="achievement-content">
+                                    <h4>Survey Master</h4>
+                                    <p>Complete 5 surveys</p>
+                                    <div class="achievement-progress">{{ recent_survey_count }}/5</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== REVAMPED USER PROFILE STYLES ===== */
+.profile-page {
+    min-height: 100vh;
+    padding: 1.5rem 0;
+    position: relative;
+    z-index: 2;
+}
+
+/* Navigation Bar */
+.profile-nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.nav-section {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 10px;
+    color: var(--star-white);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: var(--cosmic-purple);
+    transform: translateY(-1px);
+}
+
+.nav-btn.edit-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.nav-btn.edit-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Profile Header */
+.profile-header {
+    margin-bottom: 3rem;
+}
+
+.profile-container {
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 70, 0.9) 100%);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--cosmic-gradient);
+}
+
+.profile-hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.profile-avatar-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar-image,
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-placeholder {
+    background: var(--cosmic-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.avatar-border {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 3px solid var(--cosmic-purple);
+    border-radius: 50%;
+    opacity: 0.6;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid rgba(15, 15, 35, 0.9);
+    z-index: 3;
+}
+
+.status-indicator.active {
+    background: #10B981;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
+.profile-hero-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-identity {
+    margin-bottom: 1.5rem;
+}
+
+.profile-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.profile-handle {
+    font-size: 1.1rem;
+    color: rgba(248, 250, 252, 0.6);
+    margin-bottom: 1rem;
+}
+
+.profile-badges {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge.verified {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10B981;
+}
+
+.badge.member-since {
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--cosmic-purple);
+}
+
+.profile-bio {
+    margin-bottom: 1.5rem;
+}
+
+.profile-bio p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(248, 250, 252, 0.8);
+    margin: 0;
+}
+
+.profile-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.9rem;
+}
+
+.meta-item i {
+    color: var(--cosmic-purple);
+}
+
+/* Content Tabs */
+.content-tabs {
+    background: rgba(15, 15, 35, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--star-white);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.tab-btn.active {
+    color: var(--cosmic-purple);
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--cosmic-gradient);
+}
+
+.tab-content {
+    display: none;
+    padding: 2rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    max-width: 100%;
+}
+
+/* Stats Section */
+.stats-section {
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: none;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 1.5rem;
+}
+
+.section-title i {
+    color: var(--cosmic-purple);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    width: 90%;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+.stat-card {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    min-width: 0;
+}
+
+.stat-card:hover {
+    background: rgba(139, 92, 246, 0.12);
+    border-color: rgba(139, 92, 246, 0.25);
+    transform: translateY(-2px);
+}
+
+.stat-visual {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    min-width: 0;
+    min-height: 60px;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    margin-top: 1.5rem;
+}
+
+.stat-card.surveys .stat-icon {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+}
+
+.stat-card.favorites .stat-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+.stat-card.engagement .stat-icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.progress-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: conic-gradient(var(--cosmic-purple) 0deg, rgba(139, 92, 246, 0.2) 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.progress-circle::before {
+    content: '';
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(15, 15, 35, 0.9);
+}
+
+.progress-number {
+    position: relative;
+    z-index: 2;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--star-white);
+}
+
+.engagement-meter {
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.meter-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.meter-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.meter-fill.high {
+    width: 100%;
+    background: linear-gradient(90deg, #10B981, #059669);
+}
+
+.meter-fill.medium {
+    width: 60%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.meter-fill.low {
+    width: 30%;
+    background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
+.stat-info h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--star-white);
+    margin-bottom: 0.25rem;
+}
+
+.stat-info p {
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.6);
+}
+
+/* Actions Section */
+.actions-section {
+    margin-bottom: 2rem;
+}
+
+.action-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 16px;
+    color: var(--star-white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.5s;
+}
+
+.action-card:hover::before {
+    left: 100%;
+}
+
+.action-card:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+}
+
+.action-card.primary {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.action-card.primary:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--cosmic-purple);
+    flex-shrink: 0;
+}
+
+.action-card.primary .action-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.action-content p {
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.6);
+    margin: 0;
+}
+
+.action-arrow {
+    color: rgba(248, 250, 252, 0.4);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .action-arrow {
+    color: var(--star-white);
+    transform: translateX(4px);
+}
+
+/* Main Content Area */
+.grid-main {
+    min-width: 0;
+    width: 100%;
+}
+
+/* Sidebar */
+.grid-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-width: 280px;
+}
+
+.info-card {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(248, 250, 252, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-label i {
+    color: var(--cosmic-purple);
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--star-white);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.inactive {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9CA3AF;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+/* Activity Timeline */
+.activity-timeline {
+    max-width: 600px;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--cosmic-purple), rgba(139, 92, 246, 0.2));
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid rgba(15, 15, 35, 0.9);
+    z-index: 2;
+}
+
+.timeline-dot.surveys {
+    background: #3B82F6;
+}
+
+.timeline-dot.favorites {
+    background: #EF4444;
+}
+
+.timeline-dot.joined {
+    background: var(--cosmic-purple);
+}
+
+.timeline-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-content p {
+    color: rgba(248, 250, 252, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.timeline-date {
+    font-size: 0.8rem;
+    color: rgba(248, 250, 252, 0.5);
+    font-weight: 500;
+}
+
+/* Achievements */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.achievement-card {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.achievement-card.earned {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.achievement-card.legendary {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.15);
+}
+
+.achievement-card.locked {
+    background: rgba(75, 85, 99, 0.08);
+    border-color: rgba(75, 85, 99, 0.15);
+    opacity: 0.6;
+}
+
+.achievement-card.earned:hover {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+    transform: translateY(-2px);
+}
+
+.achievement-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.achievement-card.earned:hover .achievement-shine {
+    left: 100%;
+}
+
+.achievement-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.achievement-card.legendary .achievement-icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.achievement-card.locked .achievement-icon {
+    background: rgba(75, 85, 99, 0.2);
+    color: #6B7280;
+}
+
+.achievement-content h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--star-white);
+    margin-bottom: 0.5rem;
+}
+
+.achievement-content p {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    margin-bottom: 0.75rem;
+}
+
+.achievement-date {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #10B981;
+}
+
+.achievement-card.legendary .achievement-date {
+    color: #F59E0B;
+}
+
+.achievement-progress {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(248, 250, 252, 0.6);
+    background: rgba(139, 92, 246, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .grid-sidebar {
+        order: -1;
+        min-width: auto;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    
+    .profile-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+    }
+    
+    .tab-nav {
+        flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animations */
+@keyframes shimmer {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* JavaScript for Progress Circles */
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and contents
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+    
+    // Progress circles animation
+    const progressCircles = document.querySelectorAll('.progress-circle');
+    progressCircles.forEach(circle => {
+        const percent = circle.getAttribute('data-percent');
+        const degrees = (percent / 100) * 360;
+        circle.style.background = `conic-gradient(var(--cosmic-purple) ${degrees}deg, rgba(139, 92, 246, 0.2) ${degrees}deg)`;
+    });
+    
+    // Intersection Observer for animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe animated elements
+    document.querySelectorAll('.animate-slide-up, .animate-slide-down, .animate-fade-in').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
+    });
+});
+</script>
+
+{% endblock %} 

@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2><i class="fas fa-brain"></i> ML Training System</h2>
+            <p class="text-muted">Test the custom ML training system built from scratch</p>
+        </div>
+    </div>
+
+    <!-- ML Training Demo -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Model Training Demo</h5>
+                </div>
+                <div class="card-body">
+                    <form id="ml-training-form">
+                        <div class="form-group mb-3">
+                            <label for="model_type">Model Type:</label>
+                            <select class="form-control" id="model_type" name="model_type">
+                                <option value="linear_regression">Linear Regression</option>
+                                <option value="logistic_regression">Logistic Regression</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="n_samples">Number of Samples:</label>
+                            <input type="number" class="form-control" id="n_samples" name="n_samples" value="1000" min="100" max="5000">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="learning_rate">Learning Rate:</label>
+                            <input type="number" class="form-control" id="learning_rate" name="learning_rate" value="0.01" step="0.001" min="0.001" max="1">
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="max_iterations">Max Iterations:</label>
+                            <input type="number" class="form-control" id="max_iterations" name="max_iterations" value="100" min="10" max="1000">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Train Model
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Training Results</h5>
+                </div>
+                <div class="card-body">
+                    <div id="training-results" style="min-height: 200px;">
+                        <p class="text-muted text-center mt-5">Train a model to see results here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- University Recommendation Demo -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-university"></i> University Recommendation Demo</h5>
+                </div>
+                <div class="card-body">
+                    <form id="recommendation-form">
+                        <div class="form-group mb-3">
+                            <label for="academic_focus">Academic Focus (0-1):</label>
+                            <input type="range" class="form-range" id="academic_focus" name="academic_focus" min="0" max="1" step="0.1" value="0.5">
+                            <span id="academic_focus_value">0.5</span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="location_preference">Location Preference (0-1):</label>
+                            <input type="range" class="form-range" id="location_preference" name="location_preference" min="0" max="1" step="0.1" value="0.5">
+                            <span id="location_preference_value">0.5</span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="budget_fit">Budget Fit (0-1):</label>
+                            <input type="range" class="form-range" id="budget_fit" name="budget_fit" min="0" max="1" step="0.1" value="0.5">
+                            <span id="budget_fit_value">0.5</span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="social_environment">Social Environment (0-1):</label>
+                            <input type="range" class="form-range" id="social_environment" name="social_environment" min="0" max="1" step="0.1" value="0.5">
+                            <span id="social_environment_value">0.5</span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="career_prospects">Career Prospects (0-1):</label>
+                            <input type="range" class="form-range" id="career_prospects" name="career_prospects" min="0" max="1" step="0.1" value="0.5">
+                            <span id="career_prospects_value">0.5</span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="research_opportunities">Research Opportunities (0-1):</label>
+                            <input type="range" class="form-range" id="research_opportunities" name="research_opportunities" min="0" max="1" step="0.1" value="0.5">
+                            <span id="research_opportunities_value">0.5</span>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i> Get Recommendations
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div id="recommendation-results" style="min-height: 200px;">
+                        <p class="text-muted text-center mt-5">Set your preferences to get recommendations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Update range slider values
+    $('input[type="range"]').on('input', function() {
+        $('#' + this.id + '_value').text(this.value);
+    });
+
+    // ML Training Form
+    $('#ml-training-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            model_type: $('#model_type').val(),
+            n_samples: parseInt($('#n_samples').val()),
+            learning_rate: parseFloat($('#learning_rate').val()),
+            max_iterations: parseInt($('#max_iterations').val())
+        };
+        
+        $('#training-results').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Training model...</div>');
+        
+        $.ajax({
+            url: '{{ url_for("main.api_ml_train") }}',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    let resultsHtml = '<h6>Training Complete!</h6>';
+                    resultsHtml += '<p><strong>Model:</strong> ' + response.model_type + '</p>';
+                    resultsHtml += '<p><strong>Data Shape:</strong> ' + response.data_shape[0] + ' × ' + response.data_shape[1] + '</p>';
+                    resultsHtml += '<p><strong>Training Time:</strong> ' + response.training_time.toFixed(3) + 's</p>';
+                    resultsHtml += '<h6>Test Metrics:</h6>';
+                    
+                    if (response.model_type === 'linear_regression') {
+                        resultsHtml += '<p><strong>R² Score:</strong> ' + response.test_metrics.r2.toFixed(4) + '</p>';
+                        resultsHtml += '<p><strong>RMSE:</strong> ' + response.test_metrics.rmse.toFixed(4) + '</p>';
+                        resultsHtml += '<p><strong>MAE:</strong> ' + response.test_metrics.mae.toFixed(4) + '</p>';
+                    } else {
+                        resultsHtml += '<p><strong>Accuracy:</strong> ' + response.test_metrics.accuracy.toFixed(4) + '</p>';
+                        resultsHtml += '<p><strong>F1 Score:</strong> ' + response.test_metrics.f1_score.toFixed(4) + '</p>';
+                        resultsHtml += '<p><strong>Precision:</strong> ' + response.test_metrics.precision.toFixed(4) + '</p>';
+                    }
+                    
+                    $('#training-results').html(resultsHtml);
+                } else {
+                    $('#training-results').html('<div class="alert alert-danger">Error: ' + response.message + '</div>');
+                }
+            },
+            error: function() {
+                $('#training-results').html('<div class="alert alert-danger">Training failed. Please try again.</div>');
+            }
+        });
+    });
+
+    // Recommendation Form
+    $('#recommendation-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const preferences = {
+            academic_focus: parseFloat($('#academic_focus').val()),
+            location_preference: parseFloat($('#location_preference').val()),
+            budget_fit: parseFloat($('#budget_fit').val()),
+            social_environment: parseFloat($('#social_environment').val()),
+            career_prospects: parseFloat($('#career_prospects').val()),
+            research_opportunities: parseFloat($('#research_opportunities').val())
+        };
+        
+        $('#recommendation-results').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Generating recommendations...</div>');
+        
+        $.ajax({
+            url: '{{ url_for("main.api_university_recommendation_demo") }}',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({preferences: preferences}),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    let resultsHtml = '<h6>Recommended Universities:</h6>';
+                    resultsHtml += '<p><strong>Overall Satisfaction:</strong> ' + (response.satisfaction_probability * 100).toFixed(1) + '%</p>';
+                    resultsHtml += '<p><strong>Model Accuracy:</strong> ' + (response.model_accuracy * 100).toFixed(1) + '%</p>';
+                    resultsHtml += '<hr>';
+                    
+                    response.recommendations.forEach(function(uni, index) {
+                        resultsHtml += '<div class="mb-2">';
+                        resultsHtml += '<strong>' + (index + 1) + '. ' + uni.name + '</strong><br>';
+                        resultsHtml += '<small class="text-muted">Match: ' + (uni.match_score * 100).toFixed(1) + '%</small>';
+                        resultsHtml += '</div>';
+                    });
+                    
+                    $('#recommendation-results').html(resultsHtml);
+                } else {
+                    $('#recommendation-results').html('<div class="alert alert-danger">Error: ' + response.message + '</div>');
+                }
+            },
+            error: function() {
+                $('#recommendation-results').html('<div class="alert alert-danger">Recommendation failed. Please try again.</div>');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

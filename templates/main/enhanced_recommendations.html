@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Your Recommendations - GradeUp{% endblock %}
+
+{% block head %}
+<style>
+.recommendation-card {
+    transition: transform 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.match-score {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(45deg, #007bff, #28a745);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.recommendation-reasons {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.trend-badge {
+    background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-size: 0.75em;
+    margin-left: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-stars text-primary"></i>
+                Your Personalized Recommendations
+            </h1>
+        </div>
+    </div>
+
+    <!-- Program Recommendations -->
+    {% if program_recommendations %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-3">
+                <i class="fas fa-graduation-cap text-success"></i>
+                Recommended Programs
+            </h2>
+            <div class="row">
+                {% for rec in program_recommendations %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card recommendation-card h-100 position-relative">
+                        <div class="match-score">
+                            {{ "%.0f"|format(rec.match_score * 100) }}% Match
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ rec.program_name }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-university"></i>
+                                {{ rec.school_name }}
+                            </p>
+                            {% if rec.degree_type %}
+                            <span class="badge badge-info mb-2">{{ rec.degree_type }}</span>
+                            {% endif %}
+                            {% if rec.duration %}
+                            <span class="badge badge-secondary mb-2">{{ rec.duration }}</span>
+                            {% endif %}
+                            
+                            {% if rec.recommendation_reasons %}
+                            <div class="recommendation-reasons">
+                                <small class="text-muted">
+                                    <strong>Why this matches you:</strong>
+                                    <ul class="mb-0 pl-3">
+                                        {% for reason in rec.recommendation_reasons %}
+                                        <li>{{ reason }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- University Recommendations -->
+    {% if university_recommendations %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-3">
+                <i class="fas fa-building text-info"></i>
+                Recommended Universities
+            </h2>
+            <div class="row">
+                {% for rec in university_recommendations %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card recommendation-card h-100 position-relative">
+                        <div class="match-score">
+                            {{ "%.0f"|format(rec.match_score * 100) }}% Match
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ rec.school_name }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ rec.location }}
+                            </p>
+                            {% if rec.description %}
+                            <p class="card-text">{{ rec.description[:150] }}...</p>
+                            {% endif %}
+                            
+                            {% if rec.match_reasons %}
+                            <div class="recommendation-reasons">
+                                <small>
+                                    <strong>Why this matches you:</strong>
+                                    <ul class="mb-0 pl-3">
+                                        {% for reason in rec.match_reasons %}
+                                        <li>{{ reason }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </small>
+                            </div>
+                            {% endif %}
+                            
+                            {% if rec.website %}
+                            <div class="mt-3">
+                                <a href="{{ rec.website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-external-link-alt"></i> Visit Website
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Personalized Suggestions -->
+    {% if personalized_suggestions %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-3">
+                <i class="fas fa-lightbulb text-warning"></i>
+                Personalized Suggestions
+            </h2>
+            
+            <!-- Trending Programs -->
+            {% if personalized_suggestions.trending_programs %}
+            <div class="mb-4">
+                <h4 class="h5">Trending Programs</h4>
+                <div class="row">
+                    {% for trend in personalized_suggestions.trending_programs %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    {{ trend.program_name }}
+                                    <span class="trend-badge">Trending</span>
+                                </h6>
+                                <p class="text-muted mb-1">{{ trend.school_name }}</p>
+                                <small class="text-warning">{{ trend.reason }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Similar Users -->
+            {% if personalized_suggestions.similar_user_favorites %}
+            <div class="mb-4">
+                <h4 class="h5">Students Like You Also Liked</h4>
+                <div class="row">
+                    {% for sim in personalized_suggestions.similar_user_favorites %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-info">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ sim.school_name }}</h6>
+                                <small class="text-info">{{ sim.reason }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Completion Suggestions -->
+            {% if personalized_suggestions.completion_suggestions %}
+            <div class="mb-4">
+                <h4 class="h5">Next Steps for You</h4>
+                {% for suggestion in personalized_suggestions.completion_suggestions %}
+                <div class="alert alert-light border-left-primary">
+                    <h6><i class="fas fa-{{ 'poll' if suggestion.type == 'survey' else 'star' if suggestion.type == 'favorites' else 'user-edit' }}"></i> {{ suggestion.title }}</h6>
+                    <p class="mb-2">{{ suggestion.description }}</p>
+                    <a href="{{ suggestion.action_url }}" class="btn btn-primary btn-sm">Get Started</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recommendation History -->
+    {% if recommendation_history %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="h3 mb-3">
+                <i class="fas fa-history text-secondary"></i>
+                Your Recommendation History
+            </h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Recommendations</th>
+                            <th>Average Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in recommendation_history %}
+                        <tr>
+                            <td>{{ history.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if history.prediction_type == 'program' else 'info' }}">
+                                    {{ history.prediction_type.title() }}
+                                </span>
+                            </td>
+                            <td>{{ history.predictions|length }} recommendations</td>
+                            <td>
+                                {% if history.confidence_scores %}
+                                {{ "%.1f"|format((history.confidence_scores|sum / history.confidence_scores|length) * 100) }}%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Recommendations Message -->
+    {% if not program_recommendations and not university_recommendations %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <h4><i class="fas fa-info-circle"></i> Get Started with Recommendations</h4>
+                <p>Complete a survey to receive personalized university and program recommendations!</p>
+                <a href="{{ url_for('main.survey') }}" class="btn btn-primary">
+                    <i class="fas fa-poll"></i> Take Survey
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

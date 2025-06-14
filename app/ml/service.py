@@ -4,14 +4,14 @@ ML Model Service
 This module contains the Flask service integration for ML model operations.
 """
 
-from flask import current_app
 import numpy as np
 import os
 import json
+import logging
 from typing import Dict, List, Any, Optional
 
 from .pipeline import MLTrainingPipeline
-from .utils import extract_features_from_survey_response
+from .utils import extract_features_from_survey_response, extract_features_as_array
 
 
 class MLModelService:
@@ -21,6 +21,15 @@ class MLModelService:
         self.model_path = None
         self.model = None
         self.is_trained = False
+        self.logger = logging.getLogger(__name__)
+    
+    def _get_app_logger(self):
+        """Get Flask app logger if available, otherwise use instance logger."""
+        try:
+            from flask import current_app
+            return current_app.logger
+        except:
+            return self.logger
         
     def initialize(self, instance_path: str):
         """Initialize the service with Flask app instance path."""
@@ -32,13 +41,13 @@ class MLModelService:
             if self.model_path and os.path.exists(self.model_path):
                 self.model = MLTrainingPipeline.load_pipeline(self.model_path)
                 self.is_trained = True
-                current_app.logger.info(f"Model loaded successfully from {self.model_path}")
+                self._get_app_logger().info(f"Model loaded successfully from {self.model_path}")
                 return True
             else:
-                current_app.logger.warning(f"Model file not found at {self.model_path}")
+                self._get_app_logger().warning(f"Model file not found at {self.model_path}")
                 return False
         except Exception as e:
-            current_app.logger.error(f"Error loading model: {e}")
+            self._get_app_logger().error(f"Error loading model: {e}")
             return False
     
     def save_model(self) -> bool:
@@ -47,13 +56,13 @@ class MLModelService:
             if self.model is not None and self.model_path:
                 os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
                 self.model.save_pipeline(self.model_path)
-                current_app.logger.info(f"Model saved successfully to {self.model_path}")
+                self._get_app_logger().info(f"Model saved successfully to {self.model_path}")
                 return True
             else:
-                current_app.logger.warning("No model to save or path not set")
+                self._get_app_logger().warning("No model to save or path not set")
                 return False
         except Exception as e:
-            current_app.logger.error(f"Error saving model: {e}")
+            self._get_app_logger().error(f"Error saving model: {e}")
             return False
     
     def train_model(self, survey_responses: List, force_retrain: bool = False) -> Dict[str, Any]:
@@ -114,7 +123,7 @@ class MLModelService:
             }
             
         except Exception as e:
-            current_app.logger.error(f"Error training model: {e}")
+            self._get_app_logger().error(f"Error training model: {e}")
             return {"status": f"Training failed: {str(e)}"}
     
     def predict_programs(self, survey_data: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
@@ -133,8 +142,8 @@ class MLModelService:
                 return []
         
         try:
-            
-            features = extract_features_from_survey_response(survey_data)
+            # Extract features as array for ML model
+            features = extract_features_as_array(survey_data)
             
             
             predictions = self.model.predict(features)
@@ -144,7 +153,7 @@ class MLModelService:
             program_mapping = self._load_program_mapping()
             
             if program_mapping is None:
-                current_app.logger.warning("Program mapping not found")
+                self._get_app_logger().warning("Program mapping not found")
                 return []
             
             
@@ -183,7 +192,7 @@ class MLModelService:
             return recommendations
             
         except Exception as e:
-            current_app.logger.error(f"Error making predictions: {e}")
+            self._get_app_logger().error(f"Error making predictions: {e}")
             return []
     
     def _prepare_training_data(self, survey_responses: List) -> tuple:
@@ -214,21 +223,21 @@ class MLModelService:
                 try:
                     
                     answers = response.get_answers() if hasattr(response, 'get_answers') else {}
-                    features = extract_features_from_survey_response(answers)
+                    features = extract_features_as_array(answers)
                     X.append(features.flatten())
                     
                     
                     y.append(0)  
                     
                 except Exception as e:
-                    current_app.logger.warning(f"Error processing survey response: {e}")
+                    self._get_app_logger().warning(f"Error processing survey response: {e}")
                     continue
         
         return np.array(X), np.array(y), program_mapping
     
     def _create_synthetic_training_data(self, program_mapping: Dict) -> tuple:
         """Create synthetic training data when no real data is available."""
-        current_app.logger.info("Creating synthetic training data")
+        self._get_app_logger().info("Creating synthetic training data")
         
         X = []
         y = []
@@ -312,7 +321,7 @@ class MLModelService:
                     elif key == 'grades_average':
                         survey[key] = max(2.0, min(6.0, value))
                 
-                features = extract_features_from_survey_response(survey)
+                features = extract_features_as_array(survey)
                 X.append(features.flatten())
                 y.append(program_idx)
         
@@ -328,7 +337,7 @@ class MLModelService:
                 with open(mapping_path, 'w') as f:
                     json.dump(program_mapping, f)
         except Exception as e:
-            current_app.logger.error(f"Error saving program mapping: {e}")
+            self._get_app_logger().error(f"Error saving program mapping: {e}")
     
     def _load_program_mapping(self) -> Optional[Dict]:
         """Load program mapping from JSON file."""
@@ -342,5 +351,5 @@ class MLModelService:
                     return {int(k): v for k, v in mapping.items()}
             return None
         except Exception as e:
-            current_app.logger.error(f"Error loading program mapping: {e}")
+            self._get_app_logger().error(f"Error loading program mapping: {e}")
             return None 

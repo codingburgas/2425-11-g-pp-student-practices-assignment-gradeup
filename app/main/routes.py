@@ -1,7 +1,9 @@
-from flask import render_template, redirect, url_for, request, jsonify, flash, current_app
+from flask import render_template, redirect, url_for, request, jsonify, flash, current_app, abort
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
+from sqlalchemy import or_, and_, desc, asc, func
 from app.main import bp
+from app.main.forms import UserSearchForm
 from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User
 from app import db
 # from app.preprocessing import PreprocessingPipeline
@@ -15,6 +17,7 @@ import os
 import logging
 from datetime import datetime
 import numpy as np
+from app.ml.recommendation_engine import recommendation_engine
 
 logger = logging.getLogger(__name__)
 
@@ -34,23 +37,49 @@ def simple_status():
 
 @bp.route('/health')
 def health_check():
-    """Health check endpoint for debugging"""
+    """
+    Health check endpoint for debugging
+    
+    Fixed for SQL Server compatibility:
+    - Combined queries to avoid connection busy issues
+    - Added fallback logic for database checks
+    """
     try:
         # Check if DATABASE_URL is set
         db_url = os.environ.get('DATABASE_URL')
         db_status = "✅ Set" if db_url else "❌ Not set"
         
-        # Test database connection
+        # Test database connection with simple approach
         from sqlalchemy import text
-        result = db.session.execute(text('SELECT 1'))
-        db_connection = "✅ Connected"
         
-        # Count tables
-        tables_result = db.session.execute(text("""
-            SELECT COUNT(*) FROM information_schema.tables 
-            WHERE table_schema = 'public'
-        """))
-        table_count = tables_result.scalar()
+        db_connection = "❌ Failed"
+        table_count = 0
+        
+        try:
+            # Use a single combined query to avoid connection busy issues
+            result = db.session.execute(text("""
+                SELECT 
+                    1 as connection_test,
+                    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                     WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = DB_NAME()) as table_count
+            """))
+            row = result.fetchone()
+            
+            if row and row[0] == 1:
+                db_connection = "✅ Connected"
+                table_count = row[1] if row[1] is not None else 0
+            
+        except Exception as conn_error:
+            # If SQL Server query fails, try a simpler test
+            try:
+                simple_result = db.session.execute(text('SELECT 1'))
+                if simple_result.scalar() == 1:
+                    db_connection = "✅ Connected (basic)"
+                    # Try to count User table as fallback
+                    user_count = User.query.count()
+                    table_count = f"Users: {user_count}"
+            except Exception:
+                db_connection = f"❌ Failed: {str(conn_error)[:100]}"
         
         return jsonify({
             "status": "healthy",
@@ -64,7 +93,7 @@ def health_check():
         return jsonify({
             "status": "error",
             "database_url": db_status if 'db_status' in locals() else "unknown",
-            "error": str(e),
+            "error": str(e)[:200],  # Limit error message length
             "environment": "azure" if os.environ.get('DATABASE_URL') else "local"
         }), 500
 
@@ -102,37 +131,77 @@ def dashboard():
     survey_progress = (completed_surveys / max(total_surveys, 1)) * 100
     overall_progress = (survey_progress + profile_completion) / 2
     
-    # Next steps suggestions
-    next_steps = []
-    if completed_surveys == 0:
-        next_steps.append({
-            'icon': 'fas fa-poll',
-            'title': 'Take Your First Survey',
-            'description': 'Complete our survey to get personalized university recommendations',
-            'link': url_for('main.survey'),
-            'priority': 1
-        })
+    # Get personalized suggestions from recommendation engine
+    personalized_suggestions = []
+    try:
+        suggestions = recommendation_engine.get_personalized_suggestions(
+            user_id=current_user.id,
+            limit=3
+        )
+        # Convert completion suggestions to dashboard format
+        for suggestion in suggestions.get('completion_suggestions', []):
+            personalized_suggestions.append({
+                'icon': 'fas fa-' + ('poll' if suggestion['type'] == 'survey' else 
+                                   'star' if suggestion['type'] == 'favorites' else 'user-edit'),
+                'title': suggestion['title'],
+                'description': suggestion['description'],
+                'link': suggestion['action_url'],
+                'priority': suggestion['priority']
+            })
+    except Exception as e:
+        logger.warning(f"Error getting personalized suggestions: {e}")
     
-    if not current_user.bio:
-        next_steps.append({
-            'icon': 'fas fa-user-edit',
-            'title': 'Complete Your Profile',
-            'description': 'Add a bio and preferences to improve recommendations',
-            'link': url_for('auth.profile'),
-            'priority': 2
-        })
+    # Next steps suggestions (fallback if recommendation engine fails)
+    next_steps = personalized_suggestions if personalized_suggestions else []
     
-    if favorites_count == 0:
-        next_steps.append({
-            'icon': 'fas fa-star',
-            'title': 'Explore Universities',
-            'description': 'Browse universities and save your favorites',
-            'link': url_for('main.universities'),
-            'priority': 3
-        })
+    if not next_steps:
+        if completed_surveys == 0:
+            next_steps.append({
+                'icon': 'fas fa-poll',
+                'title': 'Take Your First Survey',
+                'description': 'Complete our survey to get personalized university recommendations',
+                'link': url_for('main.survey'),
+                'priority': 1
+            })
+        
+        if not current_user.bio:
+            next_steps.append({
+                'icon': 'fas fa-user-edit',
+                'title': 'Complete Your Profile',
+                'description': 'Add a bio and preferences to improve recommendations',
+                'link': url_for('auth.profile'),
+                'priority': 2
+            })
+        
+        if favorites_count == 0:
+            next_steps.append({
+                'icon': 'fas fa-star',
+                'title': 'Explore Universities',
+                'description': 'Browse universities and save your favorites',
+                'link': url_for('main.universities'),
+                'priority': 3
+            })
     
     # Sort by priority
     next_steps.sort(key=lambda x: x['priority'])
+
+    # Get quick recommendations for dashboard
+    quick_recommendations = []
+    try:
+        user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
+        if user_responses:
+            latest_response = user_responses[-1]
+            survey_data = latest_response.get_answers()
+            
+            quick_recs = recommendation_engine.recommend_programs(
+                user_id=current_user.id,
+                survey_data=survey_data,
+                user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                top_k=3
+            )
+            quick_recommendations = quick_recs
+    except Exception as e:
+        logger.warning(f"Error getting quick recommendations: {e}")
     
     dashboard_data = {
         'total_surveys': total_surveys,
@@ -143,7 +212,8 @@ def dashboard():
         'favorites_count': favorites_count,
         'recent_recommendations': recent_recommendations,
         'recent_favorites': recent_favorites,
-        'next_steps': next_steps[:3]  # Show top 3 suggestions
+        'next_steps': next_steps[:3],  # Show top 3 suggestions
+        'quick_recommendations': quick_recommendations
     }
     
     return render_template('main/dashboard.html', **dashboard_data)
@@ -164,6 +234,121 @@ def universities():
                            title='Universities', 
                            universities=universities, 
                            search=search)
+
+@bp.route('/users')
+@login_required
+def users():
+    """User directory page with search and filtering"""
+    page = request.args.get('page', 1, type=int)
+    form = UserSearchForm()
+    
+    # Build base query - only show verified users
+    query = User.query.filter_by(email_verified=True)
+    
+    # Apply search filter
+    search = request.args.get('search', '', type=str)
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            or_(
+                User.username.ilike(search_filter),
+                User.location.ilike(search_filter),
+                User.bio.ilike(search_filter)
+            )
+        )
+    
+    # Apply location filter
+    location_filter = request.args.get('location_filter', '', type=str)
+    if location_filter:
+        query = query.filter(User.location == location_filter)
+    
+    # Apply sorting
+    sort_by = request.args.get('sort_by', 'username', type=str)
+    if sort_by == 'created_at_desc':
+        query = query.order_by(User.created_at.desc())
+    elif sort_by == 'created_at_asc':
+        query = query.order_by(User.created_at.asc())
+    elif sort_by == 'location':
+        query = query.order_by(User.location.asc().nullslast(), User.username.asc())
+    else:  # default to username
+        query = query.order_by(User.username.asc())
+    
+    # Paginate results
+    users_pagination = query.paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    # Get statistics
+    total_users = User.query.filter_by(email_verified=True).count()
+    recent_users = User.query.filter_by(email_verified=True)\
+        .order_by(User.created_at.desc()).limit(5).all()
+    
+    # Pre-populate form with current values
+    form.search.data = search
+    form.location_filter.data = location_filter
+    form.sort_by.data = sort_by
+    
+    return render_template('main/users.html',
+                         title='User Directory',
+                         users=users_pagination,
+                         form=form,
+                         search=search,
+                         location_filter=location_filter,
+                         sort_by=sort_by,
+                         total_users=total_users,
+                         recent_users=recent_users)
+
+@bp.route('/users/<username>')
+@login_required
+def user_profile(username):
+    """View individual user profile"""
+    # Case-insensitive username lookup
+    user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
+    
+    if not user:
+        flash(f'User "{username}" not found.', 'error')
+        return redirect(url_for('main.users'))
+    
+    # Check if user is verified and profile can be viewed
+    if not user.email_verified:
+        flash('This user profile is not available.', 'warning')
+        return redirect(url_for('main.users'))
+    
+    if not user.can_view_profile(current_user):
+        flash('You do not have permission to view this profile.', 'error')
+        return redirect(url_for('main.users'))
+    
+    # Get user's public profile data
+    profile_data = user.get_public_profile()
+    
+    # Get recent survey responses (count only for privacy)
+    recent_survey_count = user.survey_responses.count()
+    
+    # Get favorite schools count
+    favorites_count = user.favorites.count()
+    
+    # Check if viewing own profile
+    is_own_profile = current_user.id == user.id
+    
+    # Get some related users (from same location or similar activity)
+    related_users = []
+    if user.location:
+        related_users = User.query.filter(
+            and_(
+                User.location == user.location,
+                User.id != user.id,
+                User.email_verified == True
+            )
+        ).limit(3).all()
+    
+    return render_template('main/user_profile.html',
+                         title=f'{user.get_display_name()}\' Profile',
+                         user=user,
+                         profile_data=profile_data,
+                         recent_survey_count=recent_survey_count,
+                         favorites_count=favorites_count,
+                         is_own_profile=is_own_profile,
+                         related_users=related_users)
 
 @bp.route('/survey')
 def survey():
@@ -314,25 +499,77 @@ def specialties():
 @bp.route('/recommendations')
 @login_required
 def recommendations():
-    from app.models import SurveyResponse
-    
-    # Calculate retakes information
-    MAX_SUBMISSIONS = 3
-    user_submissions = SurveyResponse.query.filter_by(user_id=current_user.id).count()
-    retakes_left = max(0, MAX_SUBMISSIONS - user_submissions)
-    has_retakes = retakes_left > 0
-    
-    # Explicitly get user's survey responses for the template
-    user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).order_by(SurveyResponse.created_at.desc()).all()
-    
-    logger.info(f"Recommendations page for user {current_user.id}: found {len(user_responses)} responses")
-    
-    return render_template('main/recommendations.html', 
-                         user_submissions=user_submissions,
-                         retakes_left=retakes_left,
-                         has_retakes=has_retakes,
-                         max_submissions=MAX_SUBMISSIONS,
-                         user_responses=user_responses)
+    """Enhanced recommendations page with new recommendation engine."""
+    try:
+        # Get user's survey responses
+        user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
+        
+        recommendations_data = {
+            'program_recommendations': [],
+            'university_recommendations': [],
+            'personalized_suggestions': {},
+            'recommendation_history': []
+        }
+        
+        # Get program recommendations if user has survey data
+        if user_responses:
+            latest_response = user_responses[-1]  # Get most recent response
+            survey_data = latest_response.get_answers()
+            
+            # Get program recommendations
+            program_recs = recommendation_engine.recommend_programs(
+                user_id=current_user.id,
+                survey_data=survey_data,
+                user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                top_k=8
+            )
+            recommendations_data['program_recommendations'] = program_recs
+            
+            # Get university recommendations
+            university_recs = recommendation_engine.match_universities(
+                user_preferences=current_user.get_preferences() if current_user.preferences else {},
+                survey_data=survey_data,
+                top_k=6
+            )
+            recommendations_data['university_recommendations'] = university_recs
+            
+            # Store recommendations in history
+            if program_recs:
+                recommendation_engine.store_recommendation_history(
+                    user_id=current_user.id,
+                    survey_response_id=latest_response.id,
+                    recommendations=program_recs,
+                    recommendation_type='program'
+                )
+        
+        # Get personalized suggestions
+        personalized = recommendation_engine.get_personalized_suggestions(
+            user_id=current_user.id,
+            limit=5
+        )
+        recommendations_data['personalized_suggestions'] = personalized
+        
+        # Get recommendation history
+        history = recommendation_engine.get_recommendation_history(
+            user_id=current_user.id,
+            limit=10
+        )
+        recommendations_data['recommendation_history'] = history
+        
+        logger.info(f"Enhanced recommendations page for user {current_user.id}: "
+                   f"Programs: {len(recommendations_data['program_recommendations'])}, "
+                   f"Universities: {len(recommendations_data['university_recommendations'])}")
+        
+        return render_template('main/recommendations.html', **recommendations_data)
+        
+    except Exception as e:
+        logger.error(f"Error in recommendations page: {e}")
+        flash('Error loading recommendations. Please try again.', 'error')
+        return render_template('main/recommendations.html', 
+                             program_recommendations=[],
+                             university_recommendations=[],
+                             personalized_suggestions={},
+                             recommendation_history=[])
 
 @bp.route('/favorites')
 @login_required
@@ -674,3 +911,164 @@ def api_preprocessing_status(survey_id):
     # except Exception as e:
     #     logger.error(f"Error getting preprocessing status: {e}")
     #     return jsonify({'error': str(e)}), 500 
+
+@bp.route('/ml-training')
+@login_required
+def ml_training():
+    """ML Training interface for testing the training system"""
+    return render_template('main/ml_training.html', title='ML Training System')
+
+@bp.route('/api/ml-train', methods=['POST'])
+@login_required
+def api_ml_train():
+    """API endpoint to run ML training with sample data"""
+    try:
+        from app.ml.training import LinearRegression, LogisticRegression, TrainingPipeline
+        import numpy as np
+        
+        # Get parameters from request
+        data = request.get_json()
+        model_type = data.get('model_type', 'linear_regression')
+        n_samples = data.get('n_samples', 1000)
+        learning_rate = data.get('learning_rate', 0.01)
+        max_iterations = data.get('max_iterations', 100)
+        
+        # Generate sample data
+        np.random.seed(42)
+        n_features = 5
+        X = np.random.randn(n_samples, n_features)
+        
+        if model_type == 'linear_regression':
+            # Regression target
+            y = X[:, 0] + 0.5 * X[:, 1] + np.random.randn(n_samples) * 0.1
+            model_class = LinearRegression
+        else:
+            # Classification target
+            y = (X[:, 0] + X[:, 1] > 0).astype(int)
+            model_class = LogisticRegression
+        
+        # Setup training pipeline
+        pipeline = TrainingPipeline(experiment_name="web_demo", auto_tracking=False)
+        
+        # Prepare data
+        pipeline.prepare_data(
+            X, y, 
+            test_size=0.2, 
+            preprocessing_config={'scaling_method': 'standard'}
+        )
+        
+        # Train model
+        model_config = {
+            'demo_model': {
+                'class': model_class,
+                'params': {
+                    'learning_rate': learning_rate,
+                    'max_iterations': max_iterations
+                }
+            }
+        }
+        
+        results = pipeline.compare_models(model_config)
+        
+        # Get test metrics
+        demo_model_info = pipeline.trained_models['demo_model']
+        test_metrics = demo_model_info['test_metrics']
+        
+        return jsonify({
+            'status': 'success',
+            'model_type': model_type,
+            'test_metrics': test_metrics,
+            'training_time': demo_model_info['training_result'].training_time,
+            'data_shape': [n_samples, n_features],
+            'message': f'Successfully trained {model_type} model!'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@bp.route('/api/university-recommendation-demo', methods=['POST'])
+@login_required
+def api_university_recommendation_demo():
+    """Demo API for university recommendation using ML"""
+    try:
+        from app.ml.training import LogisticRegression, TrainingPipeline
+        import numpy as np
+        
+        # Get student preferences from request
+        data = request.get_json()
+        student_preferences = data.get('preferences', {})
+        
+        # Create mock training data (in real app, this would come from database)
+        np.random.seed(42)
+        n_students = 500
+        n_features = 6  # Academic focus, location pref, budget, social, career, research
+        
+        # Generate training data
+        X_training = np.random.rand(n_students, n_features)
+        
+        # Generate satisfaction based on weighted preferences
+        satisfaction_scores = (
+            X_training[:, 0] * 0.25 +  # Academic focus
+            X_training[:, 1] * 0.20 +  # Location preference
+            X_training[:, 2] * 0.15 +  # Budget fit
+            X_training[:, 3] * 0.15 +  # Social environment
+            X_training[:, 4] * 0.15 +  # Career prospects
+            X_training[:, 5] * 0.10    # Research opportunities
+        )
+        y_satisfaction = (satisfaction_scores > 0.5).astype(int)
+        
+        # Train recommendation model
+        pipeline = TrainingPipeline(experiment_name="uni_rec_demo", auto_tracking=False)
+        pipeline.prepare_data(X_training, y_satisfaction, test_size=0.2)
+        
+        model_config = {
+            'recommendation_model': {
+                'class': LogisticRegression,
+                'params': {'learning_rate': 0.1, 'max_iterations': 100}
+            }
+        }
+        
+        pipeline.compare_models(model_config)
+        
+        # Convert student preferences to feature vector
+        student_vector = np.array([[
+            student_preferences.get('academic_focus', 0.5),
+            student_preferences.get('location_preference', 0.5), 
+            student_preferences.get('budget_fit', 0.5),
+            student_preferences.get('social_environment', 0.5),
+            student_preferences.get('career_prospects', 0.5),
+            student_preferences.get('research_opportunities', 0.5)
+        ]])
+        
+        # Get prediction
+        best_model_name, best_trainer = pipeline.get_best_model('accuracy')
+        satisfaction_probability = best_trainer.predict(student_vector)[0]
+        
+        # Generate mock university recommendations
+        universities = [
+            {"name": "Sofia University", "match_score": satisfaction_probability * 0.95},
+            {"name": "Technical University Sofia", "match_score": satisfaction_probability * 0.88},
+            {"name": "UNWE", "match_score": satisfaction_probability * 0.82},
+            {"name": "University of Plovdiv", "match_score": satisfaction_probability * 0.78},
+            {"name": "Burgas Free University", "match_score": satisfaction_probability * 0.71}
+        ]
+        
+        # Sort by match score
+        universities.sort(key=lambda x: x['match_score'], reverse=True)
+        
+        return jsonify({
+            'status': 'success',
+            'satisfaction_probability': float(satisfaction_probability),
+            'recommendations': universities[:3],  # Top 3
+            'model_accuracy': pipeline.trained_models['recommendation_model']['test_metrics']['accuracy'],
+            'message': 'University recommendations generated successfully!'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500 
