@@ -191,7 +191,11 @@ def dashboard():
         user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
         if user_responses:
             latest_response = user_responses[-1]
-            survey_data = latest_response.get_answers()
+            raw_survey_data = latest_response.get_answers()
+            
+            # Map survey data to format expected by recommendation engine
+            from app.ml.utils import map_survey_data_to_recommendation_format
+            survey_data = map_survey_data_to_recommendation_format(raw_survey_data)
             
             quick_recs = recommendation_engine.recommend_programs(
                 user_id=current_user.id,
@@ -508,13 +512,22 @@ def recommendations():
             'program_recommendations': [],
             'university_recommendations': [],
             'personalized_suggestions': {},
-            'recommendation_history': []
+            'recommendation_history': [],
+            'user_responses': user_responses,
+            'max_submissions': 3
         }
         
         # Get program recommendations if user has survey data
         if user_responses:
             latest_response = user_responses[-1]  # Get most recent response
-            survey_data = latest_response.get_answers()
+            raw_survey_data = latest_response.get_answers()
+            
+            # Map survey data to format expected by recommendation engine
+            from app.ml.utils import map_survey_data_to_recommendation_format
+            survey_data = map_survey_data_to_recommendation_format(raw_survey_data)
+            
+            logger.info(f"Raw survey data: {raw_survey_data}")
+            logger.info(f"Mapped survey data: {survey_data}")
             
             # Get program recommendations
             program_recs = recommendation_engine.recommend_programs(
@@ -569,7 +582,9 @@ def recommendations():
                              program_recommendations=[],
                              university_recommendations=[],
                              personalized_suggestions={},
-                             recommendation_history=[])
+                             recommendation_history=[],
+                             user_responses=[],
+                             max_submissions=3)
 
 @bp.route('/favorites')
 @login_required
