@@ -110,4 +110,138 @@ def calculate_weighted_average(scores: list, weights: list) -> float:
 
 def format_match_percentage(score: float) -> str:
     """Format match score as percentage"""
-    return f"{int(score * 100)}%" 
+    return f"{int(score * 100)}%"
+
+def map_survey_data_to_recommendation_format(survey_data):
+    """
+    Map actual survey responses to the format expected by the recommendation engine.
+    
+    Args:
+        survey_data: Dict with keys '1', '2', etc. from actual survey
+        
+    Returns:
+        Dict with standardized field names for recommendation engine
+    """
+    
+    # Initialize with default values
+    mapped_data = {
+        'math_interest': 5,  # Default neutral
+        'science_interest': 5,
+        'art_interest': 5,
+        'sports_interest': 5,
+        'study_hours_per_day': 4,
+        'preferred_subject': 'General',
+        'career_goal': 'Professional',
+        'extracurricular': True,
+        'leadership_experience': False,
+        'team_preference': True,
+        'languages_spoken': ['Bulgarian', 'English'],
+        'grades_average': 5.0
+    }
+    
+    try:
+        # Q1: What subjects do you enjoy the most?
+        if '1' in survey_data:
+            subject = survey_data['1']
+            mapped_data['preferred_subject'] = subject
+            
+            # Map subject interest to numeric scores
+            if subject in ['Mathematics', 'Physics', 'Computer Science']:
+                mapped_data['math_interest'] = 8
+                mapped_data['science_interest'] = 8
+            elif subject in ['Chemistry', 'Biology']:
+                mapped_data['science_interest'] = 8
+                mapped_data['math_interest'] = 6
+            elif subject in ['Arts', 'Literature']:
+                mapped_data['art_interest'] = 8
+                mapped_data['science_interest'] = 3
+            elif subject == 'Physics':
+                mapped_data['science_interest'] = 9
+                mapped_data['math_interest'] = 8
+        
+        # Q2: What type of career are you interested in?
+        if '2' in survey_data:
+            career = survey_data['2']
+            mapped_data['career_goal'] = career
+            
+            # Adjust interests based on career choice
+            if career in ['Technology', 'Engineering']:
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+            elif career in ['Science', 'Medicine']:
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 8)
+            elif career in ['Arts']:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 8)
+            elif career == 'Education':
+                # Education career - moderate interests across subjects
+                mapped_data['math_interest'] = 6
+                mapped_data['science_interest'] = 6
+                mapped_data['art_interest'] = 6
+        
+        # Q8: Average grades
+        if '8' in survey_data:
+            grades = survey_data['8']
+            if grades == 'Below 4.0':
+                mapped_data['grades_average'] = 3.5
+            elif grades == '4.0-4.5':
+                mapped_data['grades_average'] = 4.25
+            elif grades == '4.5-5.0':
+                mapped_data['grades_average'] = 4.75
+            elif grades == '5.0-5.5':
+                mapped_data['grades_average'] = 5.25
+            elif grades == '5.5-6.0':
+                mapped_data['grades_average'] = 5.75
+        
+        # Q9: Extracurricular activities
+        if '9' in survey_data:
+            activities = survey_data['9'] if isinstance(survey_data['9'], list) else [survey_data['9']]
+            mapped_data['extracurricular'] = len(activities) > 0 and 'None' not in activities
+            
+            # Determine interests from activities
+            if 'Sports' in activities:
+                mapped_data['sports_interest'] = 8
+            if 'Art' in activities or 'Music' in activities:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 7)
+            if 'Programming' in activities:
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 8)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+            if 'Student Government' in activities or 'Debate' in activities:
+                mapped_data['leadership_experience'] = True
+        
+        # Q10: Skills to develop
+        if '10' in survey_data:
+            skills = survey_data['10'] if isinstance(survey_data['10'], list) else [survey_data['10']]
+            if 'Leadership' in skills:
+                mapped_data['leadership_experience'] = True
+            if 'Teamwork' in skills:
+                mapped_data['team_preference'] = True
+            if 'Technical Skills' in skills:
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+        
+        # Q7: Teaching language
+        if '7' in survey_data:
+            language = survey_data['7']
+            if language == 'English':
+                mapped_data['languages_spoken'] = ['Bulgarian', 'English']
+            elif language == 'Bulgarian':
+                mapped_data['languages_spoken'] = ['Bulgarian']
+            else:
+                mapped_data['languages_spoken'] = ['Bulgarian', 'English', 'Other']
+        
+        # Estimate study hours based on grades and activities
+        if mapped_data['grades_average'] >= 5.0 and mapped_data['extracurricular']:
+            mapped_data['study_hours_per_day'] = 6
+        elif mapped_data['grades_average'] >= 5.0:
+            mapped_data['study_hours_per_day'] = 5
+        elif mapped_data['extracurricular']:
+            mapped_data['study_hours_per_day'] = 4
+        else:
+            mapped_data['study_hours_per_day'] = 3
+            
+    except Exception as e:
+        print(f"Warning: Error mapping survey data: {e}")
+        # Return default data if mapping fails
+        pass
+    
+    return mapped_data 
