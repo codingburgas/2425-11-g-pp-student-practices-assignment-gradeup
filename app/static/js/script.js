@@ -740,4 +740,98 @@ function debounce(func, wait, immediate) {
         timeout = setTimeout(later, wait);
         if (callNow) func.apply(context, args);
     };
+}
+
+/**
+ * Add university to favorites
+ * @param {number} schoolId - The ID of the school to add to favorites
+ */
+function addToFavorites(schoolId) {
+    if (!schoolId || schoolId === 0) {
+        showNotification('Unable to add to favorites - school information unavailable', 'warning');
+        return;
+    }
+    
+    // Simple visual feedback
+    const button = event.target.closest('.uni-link.secondary');
+    if (button) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-heart text-danger"></i><span>Added!</span>';
+        button.style.pointerEvents = 'none';
+        
+        // Show success notification
+        showNotification('University added to favorites!', 'success');
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.style.pointerEvents = 'auto';
+        }, 2000);
+    }
+    
+    // Here you could add actual AJAX call to save to favorites
+    // Example:
+    // fetch('/api/favorites', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ school_id: schoolId })
+    // });
+}
+
+/**
+ * Show notification to user
+ * @param {string} message - The message to display
+ * @param {string} type - The type of notification (success, warning, error)
+ */
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Style the notification
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '1rem 1.5rem',
+        borderRadius: '12px',
+        color: 'white',
+        fontSize: '0.875rem',
+        fontWeight: '500',
+        zIndex: '10000',
+        opacity: '0',
+        transform: 'translateX(100%)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        background: type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                   type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                   'linear-gradient(135deg, #3b82f6, #2563eb)',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+        maxWidth: '300px'
+    });
+    
+    // Add to DOM
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 } 
