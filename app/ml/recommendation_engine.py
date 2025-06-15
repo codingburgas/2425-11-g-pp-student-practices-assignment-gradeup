@@ -9,6 +9,11 @@ This module implements a comprehensive recommendation engine with the following 
 
 Author: GradeUp Development Team
 Version: 1.0
+
+UPDATES:
+- Enhanced interest alignment algorithm with exponential scaling and random factors
+- Improved university matching with more nuanced location and program diversity scoring
+- Added comprehensive match reasons with detailed explanations
 """
 
 import numpy as np
@@ -20,6 +25,7 @@ import logging
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import StandardScaler
 from flask import current_app
+import random
 
 from app import db
 from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite, PredictionHistory
@@ -75,27 +81,41 @@ class RecommendationEngine:
             # Get all active schools
             schools = School.query.all()
             if not schools:
+                self.logger.warning("No schools found in database for university matching")
                 return []
                 
             matches = []
             
             for school in schools:
+                # Calculate match score
                 score = self._calculate_university_match_score(
                     school, user_preferences, survey_data
                 )
                 
+                # Get match reasons
+                match_reasons = self._get_match_reasons(school, user_preferences, survey_data)
+                
+                # Convert score to percentage for display
+                match_percentage = int(score * 100)
+                
+                # Add to matches
                 matches.append({
                     'school_id': school.id,
                     'school_name': school.name,
                     'location': school.location,
-                    'description': school.description,
+                    'description': school.description[:150] + '...' if school.description and len(school.description) > 150 else school.description,
                     'website': school.website,
                     'match_score': score,
-                    'match_reasons': self._get_match_reasons(school, user_preferences, survey_data)
+                    'match_percentage': match_percentage,  # Add percentage for easier display
+                    'match_reasons': match_reasons
                 })
                 
             # Sort by match score
             matches.sort(key=lambda x: x['match_score'], reverse=True)
+            
+            # Log the match results for debugging
+            top_score = matches[0]['match_percentage'] if matches else 'N/A'
+            self.logger.info(f"Generated {len(matches)} university matches, top score: {top_score}%")
             
             return matches[:top_k]
             
@@ -109,64 +129,271 @@ class RecommendationEngine:
         """Calculate match score for a university."""
         score = 0.0
         
-        # Location preference matching
-        if user_preferences.get('preferred_location'):
-            if school.location and user_preferences['preferred_location'].lower() in school.location.lower():
+        # Location preference matching - more nuanced
+        if user_preferences and user_preferences.get('preferred_location'):
+            preferred_location = user_preferences['preferred_location'].lower()
+            if school.location and school.location.lower() == preferred_location:
+                # Exact match
+                score += 0.4
+            elif school.location and preferred_location in school.location.lower():
+                # Partial match
                 score += 0.3
+            elif school.location and any(city in school.location.lower() for city in ["sofia", "plovdiv", "varna", "burgas"]):
+                # Major city bonus
+                score += 0.15
+        else:
+            # If no location preference, give a small bonus to schools in major cities
+            if school.location and any(city in school.location.lower() for city in ["sofia", "plovdiv", "varna", "burgas"]):
+                score += 0.1
                 
-        # Program diversity scoring
+        # Program diversity scoring - more granular
         program_count = school.programs.count()
-        if program_count > 10:
+        if program_count > 20:
+            score += 0.25
+        elif program_count > 15:
             score += 0.2
+        elif program_count > 10:
+            score += 0.15
         elif program_count > 5:
             score += 0.1
+        else:
+            score += 0.05  # Even small schools get some points
             
-        # Survey data matching
+        # Survey data matching - improved alignment
         if survey_data:
-            score += self._calculate_survey_alignment_score(school, survey_data)
+            survey_alignment = self._calculate_survey_alignment_score(school, survey_data)
+            score += survey_alignment
             
+        # Add a small random factor (0-5%) for diversity in scores
+        random_factor = random.uniform(0.0, 0.05)
+        score += random_factor
+        
         return min(score, 1.0)  # Cap at 1.0
         
     def _calculate_survey_alignment_score(self, school: School, survey_data: Dict[str, Any]) -> float:
         """Calculate how well school aligns with survey responses."""
         alignment_score = 0.0
         
-        # Interest-based scoring
+        # Get all programs for this school
+        programs = school.programs.all()
+        if not programs:
+            return 0.0
+            
+        # Extract school name and description
+        school_name_lower = school.name.lower()
+        school_description = school.description.lower() if school.description else ""
+        
+        # Interest-based scoring - more comprehensive
         interests = {
-            'math_interest': ['Mathematics', 'Engineering', 'Computer Science'],
-            'science_interest': ['Physics', 'Chemistry', 'Biology', 'Medicine'],
-            'art_interest': ['Art', 'Design', 'Literature', 'Music'],
-            'sports_interest': ['Sports Science', 'Physical Education']
+            'math_interest': {
+                'keywords': ['mathematics', 'engineering', 'computer', 'technical', 'technology', 'polytechnic'],
+                'weight': 0.08
+            },
+            'science_interest': {
+                'keywords': ['science', 'physics', 'chemistry', 'biology', 'medicine', 'research', 'technical'],
+                'weight': 0.08
+            },
+            'art_interest': {
+                'keywords': ['art', 'design', 'creative', 'music', 'literature', 'culture', 'national'],
+                'weight': 0.08
+            },
+            'sports_interest': {
+                'keywords': ['sports', 'physical', 'education', 'athletic', 'training'],
+                'weight': 0.06
+            }
         }
         
-        for interest, related_fields in interests.items():
-            if survey_data.get(interest, 0) >= 7:  # High interest
-                for program in school.programs:
-                    if any(field.lower() in program.name.lower() for field in related_fields):
-                        alignment_score += 0.1
+        # Check interest keywords in school name and description
+        for interest, data in interests.items():
+            interest_level = survey_data.get(interest, 0)
+            if interest_level >= 4:  # Even moderate interest counts
+                keywords = data['keywords']
+                weight = data['weight']
+                
+                # Check school name (stronger match)
+                for keyword in keywords:
+                    if keyword in school_name_lower:
+                        # Scale by interest level
+                        alignment_score += (interest_level / 10.0) * weight * 1.2
                         break
-                        
-        return min(alignment_score, 0.4)  # Cap contribution at 0.4
+                
+                # Check school description (weaker match)
+                if school_description:
+                    for keyword in keywords:
+                        if keyword in school_description:
+                            alignment_score += (interest_level / 10.0) * weight * 0.8
+                            break
+                            
+                # Check programs offered (moderate match)
+                program_match = False
+                for program in programs:
+                    program_name = program.name.lower()
+                    for keyword in keywords:
+                        if keyword in program_name:
+                            program_match = True
+                            break
+                    if program_match:
+                        break
+                
+                if program_match:
+                    alignment_score += (interest_level / 10.0) * weight
+        
+        # Career goal alignment
+        career_goal = survey_data.get('career_goal', '').lower()
+        if career_goal:
+            career_keywords = {
+                'technology': ['technical', 'technology', 'computer', 'engineering', 'polytechnic'],
+                'science': ['science', 'research', 'technical', 'medical'],
+                'medicine': ['medical', 'medicine', 'health', 'pharmacy'],
+                'business': ['economic', 'business', 'management', 'finance'],
+                'law': ['law', 'legal', 'justice'],
+                'education': ['education', 'pedagogical', 'teaching'],
+                'arts': ['art', 'music', 'theater', 'performance', 'design'],
+                'engineering': ['engineering', 'technical', 'polytechnic'],
+                'social': ['social', 'humanities', 'community'],
+                'government': ['public', 'administration', 'government', 'international']
+            }
+            
+            # Find matching keywords for the career goal
+            for career, keywords in career_keywords.items():
+                if career in career_goal:
+                    # Check school name and description
+                    for keyword in keywords:
+                        if keyword in school_name_lower:
+                            alignment_score += 0.15
+                            break
+                        elif school_description and keyword in school_description:
+                            alignment_score += 0.1
+                            break
+                    
+                    # Check if any programs match the career
+                    for program in programs:
+                        program_name = program.name.lower()
+                        for keyword in keywords:
+                            if keyword in program_name:
+                                alignment_score += 0.12
+                                break
+        
+        # Academic profile matching
+        grades_average = survey_data.get('grades_average', 0)
+        if grades_average >= 5.5:
+            # Top students match better with prestigious universities
+            prestigious_keywords = ['sofia university', 'medical university', 'technical university']
+            if any(keyword in school_name_lower for keyword in prestigious_keywords):
+                alignment_score += 0.15
+        
+        # Add a small random factor (0-3%) for diversity in scores
+        random_factor = random.uniform(0.0, 0.03)
+        
+        return min(alignment_score + random_factor, 0.4)  # Cap at 0.4
         
     def _get_match_reasons(self, school: School, user_preferences: Dict[str, Any],
                           survey_data: Optional[Dict[str, Any]] = None) -> List[str]:
         """Get reasons why this school matches the user."""
         reasons = []
         
-        if user_preferences.get('preferred_location'):
-            if school.location and user_preferences['preferred_location'].lower() in school.location.lower():
-                reasons.append(f"Located in preferred area: {school.location}")
+        # Location-based reasons
+        if user_preferences and user_preferences.get('preferred_location'):
+            preferred_location = user_preferences['preferred_location'].lower()
+            if school.location and school.location.lower() == preferred_location:
+                reasons.append(f"Perfect location match: {school.location}")
+            elif school.location and preferred_location in school.location.lower():
+                reasons.append(f"Located in your preferred area: {school.location}")
+        
+        if school.location and any(city in school.location.lower() for city in ["sofia", "plovdiv", "varna", "burgas"]):
+            if not any("location" in reason.lower() for reason in reasons):
+                reasons.append(f"Located in a major city: {school.location}")
                 
+        # Program diversity reasons
         program_count = school.programs.count()
-        if program_count > 10:
-            reasons.append(f"Offers diverse programs ({program_count} programs available)")
+        if program_count > 20:
+            reasons.append(f"Excellent program diversity ({program_count} programs available)")
+        elif program_count > 15:
+            reasons.append(f"Great program diversity ({program_count} programs available)")
+        elif program_count > 10:
+            reasons.append(f"Good program diversity ({program_count} programs available)")
+        elif program_count > 5:
+            reasons.append(f"Multiple programs available ({program_count} options)")
             
+        # Interest alignment reasons
         if survey_data:
-            high_interests = [k for k, v in survey_data.items() if k.endswith('_interest') and v >= 7]
-            if high_interests:
-                reasons.append("Programs align with your interests")
+            # Get high interest areas
+            high_interests = []
+            if survey_data.get('math_interest', 0) >= 7:
+                high_interests.append("Mathematics & Technology")
+            if survey_data.get('science_interest', 0) >= 7:
+                high_interests.append("Science")
+            if survey_data.get('art_interest', 0) >= 7:
+                high_interests.append("Arts & Humanities")
+            if survey_data.get('sports_interest', 0) >= 7:
+                high_interests.append("Sports & Physical Education")
                 
-        return reasons
+            # Check if programs match these interests
+            matched_interests = []
+            for interest in high_interests:
+                interest_keywords = []
+                if interest == "Mathematics & Technology":
+                    interest_keywords = ["mathematics", "engineering", "computer", "technical", "technology"]
+                elif interest == "Science":
+                    interest_keywords = ["science", "physics", "chemistry", "biology", "medicine", "research"]
+                elif interest == "Arts & Humanities":
+                    interest_keywords = ["art", "design", "creative", "music", "literature", "humanities"]
+                elif interest == "Sports & Physical Education":
+                    interest_keywords = ["sports", "physical", "athletic", "fitness"]
+                
+                # Check if any programs match this interest
+                for program in school.programs:
+                    if any(keyword in program.name.lower() for keyword in interest_keywords):
+                        matched_interests.append(interest)
+                        break
+            
+            # Add reasons based on matched interests
+            if matched_interests:
+                if len(matched_interests) > 1:
+                    reasons.append(f"Programs match your interests in {' and '.join(matched_interests)}")
+                else:
+                    reasons.append(f"Programs match your interest in {matched_interests[0]}")
+            
+            # Career goal alignment
+            career_goal = survey_data.get('career_goal', '')
+            if career_goal:
+                # Check if any programs align with career goal
+                career_keywords = []
+                if "Technology" in career_goal:
+                    career_keywords = ["technology", "computer", "software", "it", "digital"]
+                elif "Science" in career_goal:
+                    career_keywords = ["science", "research", "laboratory"]
+                elif "Medicine" in career_goal:
+                    career_keywords = ["medicine", "medical", "health", "pharmacy"]
+                elif "Business" in career_goal:
+                    career_keywords = ["business", "management", "economics", "finance"]
+                elif "Law" in career_goal:
+                    career_keywords = ["law", "legal", "justice"]
+                elif "Education" in career_goal:
+                    career_keywords = ["education", "teaching", "pedagogy"]
+                elif "Arts" in career_goal:
+                    career_keywords = ["art", "design", "creative", "music"]
+                elif "Engineering" in career_goal:
+                    career_keywords = ["engineering", "mechanical", "electrical", "civil"]
+                
+                if career_keywords:
+                    for program in school.programs:
+                        if any(keyword in program.name.lower() for keyword in career_keywords):
+                            reasons.append(f"Offers programs aligned with your {career_goal} career goal")
+                            break
+            
+            # Academic profile match
+            grades_average = survey_data.get('grades_average', 0)
+            if grades_average >= 5.5:
+                prestigious_keywords = ['sofia university', 'medical university', 'technical university']
+                if any(keyword in school.name.lower() for keyword in prestigious_keywords):
+                    reasons.append("Prestigious university suitable for high-achieving students")
+        
+        # Ensure we have at least one reason
+        if not reasons:
+            reasons.append("Offers educational programs that may interest you")
+            
+        return reasons[:3]  # Limit to top 3 reasons
 
     def recommend_programs(self, user_id: int, survey_data: Dict[str, Any],
                           user_preferences: Optional[Dict[str, Any]] = None,
@@ -258,38 +485,60 @@ class RecommendationEngine:
     def _calculate_interest_alignment(self, program: Program, survey_data: Dict[str, Any]) -> float:
         """Calculate how well program aligns with user interests."""
         program_name_lower = program.name.lower()
+        program_description_lower = program.description.lower() if program.description else ""
         alignment_score = 0.0
         
-        # Define interest mappings
+        # Define interest mappings with more varied weights
         interest_mappings = {
             'math_interest': {
-                'keywords': ['math', 'engineering', 'computer', 'physics', 'statistics', 'data'],
-                'weight': 0.3
+                'keywords': ['math', 'engineering', 'computer', 'physics', 'statistics', 'data', 'programming', 'software'],
+                'weight': 0.35
             },
             'science_interest': {
-                'keywords': ['biology', 'chemistry', 'physics', 'medicine', 'research', 'lab'],
-                'weight': 0.3
+                'keywords': ['biology', 'chemistry', 'physics', 'medicine', 'research', 'lab', 'science', 'scientific'],
+                'weight': 0.35
             },
             'art_interest': {
-                'keywords': ['art', 'design', 'creative', 'music', 'literature', 'media'],
-                'weight': 0.3
+                'keywords': ['art', 'design', 'creative', 'music', 'literature', 'media', 'culture', 'history', 'language'],
+                'weight': 0.35
             },
             'sports_interest': {
-                'keywords': ['sport', 'physical', 'fitness', 'health', 'recreation'],
-                'weight': 0.2
+                'keywords': ['sport', 'physical', 'fitness', 'health', 'recreation', 'athletic', 'training'],
+                'weight': 0.25
             }
         }
         
+        # Check both name and description for better matching
         for interest_key, mapping in interest_mappings.items():
             interest_level = survey_data.get(interest_key, 0)
-            if interest_level >= 5:  # Moderate to high interest
+            if interest_level >= 4:  # Even moderate interest counts
                 for keyword in mapping['keywords']:
+                    keyword_match = False
+                    
+                    # Check program name
                     if keyword in program_name_lower:
-                        # Scale by interest level (1-10) and mapping weight
-                        alignment_score += (interest_level / 10.0) * mapping['weight']
-                        break
+                        keyword_match = True
+                        # Stronger match if it's in the name
+                        match_strength = 1.0
+                    
+                    # Check program description if available
+                    elif program_description_lower and keyword in program_description_lower:
+                        keyword_match = True
+                        # Weaker match if only in description
+                        match_strength = 0.7
+                    
+                    if keyword_match:
+                        # Scale by interest level (1-10) and mapping weight and match strength
+                        # More pronounced differences between interest levels
+                        interest_factor = (interest_level / 10.0) ** 1.5  # Exponential scaling
+                        alignment_score += interest_factor * mapping['weight'] * match_strength
+                        # Don't break, allow multiple keyword matches to accumulate
                         
-        return min(alignment_score, 0.4)  # Cap contribution
+        # Add a small random factor to prevent identical scores (0-5%)
+        random_factor = random.uniform(0.0, 0.05)
+        
+        # Cap contribution but ensure diversity in scores
+        return min(alignment_score + random_factor, 0.45)
         
     def _calculate_career_alignment(self, program: Program, survey_data: Dict[str, Any]) -> float:
         """Calculate career goal alignment."""
@@ -298,22 +547,72 @@ class RecommendationEngine:
             return 0.0
             
         program_name_lower = program.name.lower()
+        program_description_lower = program.description.lower() if program.description else ""
+        
+        # More detailed career mappings with varied weights
         career_mappings = {
-            'engineer': ['engineering', 'computer', 'software', 'mechanical', 'electrical'],
-            'doctor': ['medicine', 'health', 'biology', 'chemistry'],
-            'teacher': ['education', 'teaching', 'pedagogy'],
-            'business': ['business', 'management', 'economics', 'finance'],
-            'artist': ['art', 'design', 'creative', 'music'],
-            'scientist': ['science', 'research', 'physics', 'chemistry', 'biology']
+            'engineer': {
+                'keywords': ['engineering', 'computer', 'software', 'mechanical', 'electrical', 'civil', 'automation'],
+                'weight': 0.35
+            },
+            'doctor': {
+                'keywords': ['medicine', 'health', 'biology', 'medical', 'pharmacy', 'nursing', 'dental'],
+                'weight': 0.35
+            },
+            'teacher': {
+                'keywords': ['education', 'teaching', 'pedagogy', 'school', 'training', 'learning'],
+                'weight': 0.30
+            },
+            'business': {
+                'keywords': ['business', 'management', 'economics', 'finance', 'marketing', 'accounting', 'entrepreneurship'],
+                'weight': 0.32
+            },
+            'artist': {
+                'keywords': ['art', 'design', 'creative', 'music', 'film', 'theater', 'media', 'visual'],
+                'weight': 0.33
+            },
+            'scientist': {
+                'keywords': ['science', 'research', 'physics', 'chemistry', 'biology', 'laboratory', 'analysis'],
+                'weight': 0.35
+            },
+            'technology': {
+                'keywords': ['technology', 'computer', 'software', 'it', 'information', 'data', 'digital'],
+                'weight': 0.34
+            },
+            'law': {
+                'keywords': ['law', 'legal', 'justice', 'rights', 'attorney', 'policy'],
+                'weight': 0.31
+            },
+            'social': {
+                'keywords': ['social', 'psychology', 'sociology', 'counseling', 'community', 'welfare'],
+                'weight': 0.29
+            },
+            'government': {
+                'keywords': ['government', 'public', 'administration', 'policy', 'international', 'relations'],
+                'weight': 0.28
+            }
         }
         
-        for career, keywords in career_mappings.items():
+        max_alignment = 0.0
+        
+        # Check for career keyword matches in both program name and description
+        for career, mapping in career_mappings.items():
             if career in career_goal:
-                for keyword in keywords:
+                for keyword in mapping['keywords']:
+                    # Check program name (stronger match)
                     if keyword in program_name_lower:
-                        return 0.3
-                        
-        return 0.0
+                        alignment = mapping['weight']
+                        max_alignment = max(max_alignment, alignment)
+                    
+                    # Check program description (weaker match)
+                    elif program_description_lower and keyword in program_description_lower:
+                        alignment = mapping['weight'] * 0.7
+                        max_alignment = max(max_alignment, alignment)
+        
+        # Add a small random factor (0-3%) for score diversity
+        random_factor = random.uniform(0.0, 0.03)
+        
+        return min(max_alignment + random_factor, 0.35)
         
     def _calculate_academic_alignment(self, program: Program, survey_data: Dict[str, Any]) -> float:
         """Calculate academic performance alignment."""
@@ -321,15 +620,54 @@ class RecommendationEngine:
         study_hours = survey_data.get('study_hours_per_day', 0)
         
         alignment_score = 0.0
+        program_name_lower = program.name.lower()
+        program_description_lower = program.description.lower() if program.description else ""
         
-        # High achievers might prefer challenging programs
-        if grades_average >= 5.0 and study_hours >= 4:
-            challenging_keywords = ['advanced', 'honors', 'research', 'master', 'phd']
-            program_name_lower = program.name.lower()
-            if any(keyword in program_name_lower for keyword in challenging_keywords):
-                alignment_score += 0.2
-                
-        return alignment_score
+        # Define program difficulty tiers
+        challenging_programs = ['medicine', 'engineering', 'physics', 'chemistry', 'computer science', 'mathematics', 'law']
+        moderate_programs = ['business', 'economics', 'biology', 'psychology', 'sociology', 'history']
+        accessible_programs = ['arts', 'design', 'communication', 'media', 'sports', 'tourism']
+        
+        # Check program difficulty tier
+        program_difficulty = 1.0  # Default moderate difficulty
+        for program_type in challenging_programs:
+            if program_type in program_name_lower or (program_description_lower and program_type in program_description_lower):
+                program_difficulty = 1.5  # Higher difficulty
+                break
+        for program_type in accessible_programs:
+            if program_type in program_name_lower or (program_description_lower and program_type in program_description_lower):
+                program_difficulty = 0.7  # Lower difficulty
+                break
+        
+        # Calculate alignment based on grades and study hours
+        if grades_average >= 5.5:
+            # High achievers match well with challenging programs
+            alignment_score += 0.15 * program_difficulty
+        elif grades_average >= 5.0:
+            # Good students match well with moderate-to-challenging programs
+            alignment_score += 0.12 * min(program_difficulty, 1.2)
+        elif grades_average >= 4.5:
+            # Average students match better with moderate programs
+            alignment_score += 0.1 * (2 - program_difficulty)  # Higher score for less challenging programs
+        else:
+            # Below average students match better with accessible programs
+            alignment_score += 0.08 * (2 - program_difficulty)  # Higher score for less challenging programs
+        
+        # Study hours factor
+        if study_hours >= 5:
+            # Dedicated students match better with challenging programs
+            alignment_score += 0.1 * program_difficulty
+        elif study_hours >= 3:
+            # Average study time students match with moderate programs
+            alignment_score += 0.07
+        else:
+            # Low study time students match better with accessible programs
+            alignment_score += 0.05 * (2 - program_difficulty)
+        
+        # Add a small random factor (0-2%) for score diversity
+        random_factor = random.uniform(0.0, 0.02)
+        
+        return min(alignment_score + random_factor, 0.25)
         
     def _calculate_preference_alignment(self, program: Program, user_preferences: Dict[str, Any]) -> float:
         """Calculate alignment with user preferences."""
