@@ -7,6 +7,7 @@ and other helper functions.
 
 import numpy as np
 from typing import Tuple, Dict, Any
+import logging
 
 
 def create_sample_dataset(n_samples: int = 1000, n_features: int = 10, n_classes: int = 3) -> Tuple[np.ndarray, np.ndarray]:
@@ -152,6 +153,7 @@ def map_survey_data_to_recommendation_format(survey_data):
         >>> mapped['career_goal']  # Returns 'Education'
         'Education'
     """
+    logger = logging.getLogger(__name__)
     
     # Initialize with default values
     mapped_data = {
@@ -170,43 +172,108 @@ def map_survey_data_to_recommendation_format(survey_data):
     }
     
     try:
+        logger.debug(f"Processing survey data: {survey_data}")
+        
         # Q1: What subjects do you enjoy the most?
         if '1' in survey_data:
             subject = survey_data['1']
             mapped_data['preferred_subject'] = subject
             
-            # Map subject interest to numeric scores
-            if subject in ['Mathematics', 'Physics', 'Computer Science']:
-                mapped_data['math_interest'] = 8
-                mapped_data['science_interest'] = 8
-            elif subject in ['Chemistry', 'Biology']:
-                mapped_data['science_interest'] = 8
-                mapped_data['math_interest'] = 6
-            elif subject in ['Arts', 'Literature']:
-                mapped_data['art_interest'] = 8
-                mapped_data['science_interest'] = 3
+            # Map subject interest to numeric scores - more distinct values
+            if subject == 'Mathematics':
+                mapped_data['math_interest'] = 9
+                mapped_data['science_interest'] = 7
+                mapped_data['art_interest'] = 3
             elif subject == 'Physics':
                 mapped_data['science_interest'] = 9
                 mapped_data['math_interest'] = 8
+                mapped_data['art_interest'] = 2
+            elif subject == 'Chemistry':
+                mapped_data['science_interest'] = 9
+                mapped_data['math_interest'] = 6
+                mapped_data['art_interest'] = 3
+            elif subject == 'Biology':
+                mapped_data['science_interest'] = 9
+                mapped_data['math_interest'] = 5
+                mapped_data['art_interest'] = 4
+            elif subject == 'Computer Science':
+                mapped_data['math_interest'] = 9
+                mapped_data['science_interest'] = 8
+                mapped_data['art_interest'] = 4
+            elif subject == 'History':
+                mapped_data['science_interest'] = 5
+                mapped_data['math_interest'] = 3
+                mapped_data['art_interest'] = 7
+            elif subject == 'Literature':
+                mapped_data['art_interest'] = 9
+                mapped_data['science_interest'] = 3
+                mapped_data['math_interest'] = 2
+            elif subject == 'Languages':
+                mapped_data['art_interest'] = 8
+                mapped_data['science_interest'] = 4
+                mapped_data['math_interest'] = 3
+            elif subject == 'Arts':
+                mapped_data['art_interest'] = 10
+                mapped_data['science_interest'] = 2
+                mapped_data['math_interest'] = 2
+            elif subject == 'Economics':
+                mapped_data['math_interest'] = 7
+                mapped_data['science_interest'] = 5
+                mapped_data['art_interest'] = 5
+            elif subject == 'Psychology':
+                mapped_data['science_interest'] = 7
+                mapped_data['math_interest'] = 4
+                mapped_data['art_interest'] = 6
+            elif subject == 'Philosophy':
+                mapped_data['art_interest'] = 8
+                mapped_data['science_interest'] = 6
+                mapped_data['math_interest'] = 4
         
         # Q2: What type of career are you interested in?
         if '2' in survey_data:
             career = survey_data['2']
             mapped_data['career_goal'] = career
             
-            # Adjust interests based on career choice
-            if career in ['Technology', 'Engineering']:
-                mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
+            # Adjust interests based on career choice - more distinct adjustments
+            if career == 'Technology':
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 8)
                 mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
-            elif career in ['Science', 'Medicine']:
-                mapped_data['science_interest'] = max(mapped_data['science_interest'], 8)
-            elif career in ['Arts']:
-                mapped_data['art_interest'] = max(mapped_data['art_interest'], 8)
+                mapped_data['art_interest'] = min(mapped_data['art_interest'] + 2, 10)
+            elif career == 'Science':
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 9)
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
+                mapped_data['art_interest'] = min(mapped_data['art_interest'], 5)
+            elif career == 'Medicine':
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 9)
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 6)
+                mapped_data['sports_interest'] = max(mapped_data['sports_interest'], 7)
+            elif career == 'Business':
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
+                mapped_data['science_interest'] = min(mapped_data['science_interest'] + 3, 10)
+                mapped_data['leadership_experience'] = True
+            elif career == 'Law':
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 7)
+                mapped_data['math_interest'] = min(mapped_data['math_interest'], 6)
+                mapped_data['leadership_experience'] = True
             elif career == 'Education':
-                # Education career - moderate interests across subjects
-                mapped_data['math_interest'] = 6
-                mapped_data['science_interest'] = 6
-                mapped_data['art_interest'] = 6
+                mapped_data['math_interest'] = min(max(mapped_data['math_interest'], 6), 8)
+                mapped_data['science_interest'] = min(max(mapped_data['science_interest'], 6), 8)
+                mapped_data['art_interest'] = min(max(mapped_data['art_interest'], 6), 8)
+            elif career == 'Arts':
+                mapped_data['art_interest'] = 10
+                mapped_data['science_interest'] = min(mapped_data['science_interest'], 4)
+                mapped_data['math_interest'] = min(mapped_data['math_interest'], 3)
+            elif career == 'Engineering':
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 9)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 8)
+                mapped_data['art_interest'] = min(mapped_data['art_interest'] + 3, 10)
+            elif career == 'Social Services':
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 7)
+                mapped_data['science_interest'] = min(max(mapped_data['science_interest'], 6), 8)
+            elif career == 'Government':
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 6)
+                mapped_data['science_interest'] = min(max(mapped_data['science_interest'], 5), 7)
+                mapped_data['leadership_experience'] = True
         
         # Q8: Average grades
         if '8' in survey_data:
@@ -227,27 +294,50 @@ def map_survey_data_to_recommendation_format(survey_data):
             activities = survey_data['9'] if isinstance(survey_data['9'], list) else [survey_data['9']]
             mapped_data['extracurricular'] = len(activities) > 0 and 'None' not in activities
             
-            # Determine interests from activities
+            # Determine interests from activities - more distinct adjustments
             if 'Sports' in activities:
-                mapped_data['sports_interest'] = 8
-            if 'Art' in activities or 'Music' in activities:
-                mapped_data['art_interest'] = max(mapped_data['art_interest'], 7)
+                mapped_data['sports_interest'] = 9
+                mapped_data['study_hours_per_day'] = max(3, mapped_data['study_hours_per_day'] - 1)
+            if 'Music' in activities:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 8)
+            if 'Art' in activities:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 9)
+                mapped_data['math_interest'] = min(mapped_data['math_interest'], 6)
             if 'Programming' in activities:
-                mapped_data['math_interest'] = max(mapped_data['math_interest'], 8)
-                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
-            if 'Student Government' in activities or 'Debate' in activities:
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 9)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 8)
+            if 'Volunteering' in activities:
                 mapped_data['leadership_experience'] = True
+                mapped_data['study_hours_per_day'] = max(3, mapped_data['study_hours_per_day'] - 1)
+            if 'Student Government' in activities:
+                mapped_data['leadership_experience'] = True
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 6)
+            if 'Debate' in activities:
+                mapped_data['leadership_experience'] = True
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 7)
         
         # Q10: Skills to develop
         if '10' in survey_data:
             skills = survey_data['10'] if isinstance(survey_data['10'], list) else [survey_data['10']]
             if 'Leadership' in skills:
                 mapped_data['leadership_experience'] = True
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 6)
             if 'Teamwork' in skills:
                 mapped_data['team_preference'] = True
             if 'Technical Skills' in skills:
+                mapped_data['math_interest'] = max(mapped_data['math_interest'], 8)
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+            if 'Problem Solving' in skills:
                 mapped_data['math_interest'] = max(mapped_data['math_interest'], 7)
                 mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+            if 'Critical Thinking' in skills:
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 7)
+            if 'Communication' in skills:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 6)
+            if 'Creative Thinking' in skills:
+                mapped_data['art_interest'] = max(mapped_data['art_interest'], 8)
+            if 'Research Skills' in skills:
+                mapped_data['science_interest'] = max(mapped_data['science_interest'], 8)
         
         # Q7: Teaching language
         if '7' in survey_data:
@@ -260,7 +350,7 @@ def map_survey_data_to_recommendation_format(survey_data):
                 mapped_data['languages_spoken'] = ['Bulgarian', 'English', 'Other']
         
         # Estimate study hours based on grades and activities
-        if mapped_data['grades_average'] >= 5.0 and mapped_data['extracurricular']:
+        if mapped_data['grades_average'] >= 5.5:
             mapped_data['study_hours_per_day'] = 6
         elif mapped_data['grades_average'] >= 5.0:
             mapped_data['study_hours_per_day'] = 5
@@ -268,9 +358,12 @@ def map_survey_data_to_recommendation_format(survey_data):
             mapped_data['study_hours_per_day'] = 4
         else:
             mapped_data['study_hours_per_day'] = 3
+        
+        # Log the mapped data for debugging
+        logger.debug(f"Mapped survey data: {mapped_data}")
             
     except Exception as e:
-        print(f"Warning: Error mapping survey data: {e}")
+        logger.error(f"Error mapping survey data: {e}")
         # Return default data if mapping fails
         pass
     
