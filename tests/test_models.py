@@ -2,7 +2,6 @@ import unittest
 from app import create_app, db
 from app.models import User, School, Program, Survey, SurveyResponse, Recommendation
 from datetime import datetime
-import json
 
 class ModelsTestCase(unittest.TestCase):
     def setUp(self):
@@ -29,7 +28,6 @@ class ModelsTestCase(unittest.TestCase):
         user = User(username='student', email='student@example.com')
         user.set_password('password')
         db.session.add(user)
-        db.session.commit()
         
         # Create a school
         school = School(name='Test University', location='Test City')
@@ -39,87 +37,43 @@ class ModelsTestCase(unittest.TestCase):
         program = Program(
             name='Computer Science',
             description='CS program',
-            school=school,
-            degree_type='Bachelor'  # Adding required field
+            school=school
         )
         db.session.add(program)
         
-        # Create a survey with questions
-        questions = [
-            {"id": 1, "text": "What are your interests?", "type": "text"}
-        ]
-        survey = Survey(
-            title='Career Survey',
-            questions=json.dumps(questions)
-        )
+        # Create a survey for the user
+        survey = Survey(title='Career Survey', user=user)
         db.session.add(survey)
         db.session.commit()
         
-        # Create a survey response linked to user and survey
-        response = SurveyResponse(
-            user_id=user.id,
-            survey_id=survey.id,
-            answers=json.dumps({"1": "Programming"})
-        )
-        db.session.add(response)
-        db.session.commit()
-        
-        # Refresh user object to ensure relationships are loaded
-        db.session.refresh(user)
-        
         # Check relationships
-        self.assertEqual(response.user_id, user.id)
+        self.assertEqual(survey.user_id, user.id)
         self.assertEqual(program.school_id, school.id)
-        self.assertIn(response, user.survey_responses.all())
+        self.assertEqual(len(user.surveys.all()), 1)
 
     def test_recommendation_creation(self):
-        # Create user
+        # Create user and program
         user = User(username='rec_test', email='rec@example.com')
-        db.session.add(user)
-        db.session.commit()
-        
-        # Create school and program
         school = School(name='Rec University', location='Rec City')
-        db.session.add(school)
-        db.session.commit()
-        
         program = Program(
             name='Data Science',
             description='Data program',
-            school=school,
-            degree_type='Master'  # Adding required field
+            school=school
         )
-        db.session.add(program)
-        db.session.commit()
-        
-        # Create survey and response
-        survey = Survey(
-            title='Career Survey',
-            questions=json.dumps([{"id": 1, "text": "Skills?", "type": "text"}])
-        )
-        db.session.add(survey)
-        db.session.commit()
-        
-        response = SurveyResponse(
-            user_id=user.id,
-            survey_id=survey.id,
-            answers=json.dumps({"1": "Python, Data Analysis"})
-        )
-        db.session.add(response)
-        db.session.commit()
         
         # Create recommendation
         recommendation = Recommendation(
-            survey_response_id=response.id,
-            program_id=program.id,
-            score=85.5
+            user=user,
+            program=program,
+            score=85.5,
+            match_reason="Strong analytical skills match"
         )
         
-        db.session.add(recommendation)
+        db.session.add_all([user, school, program, recommendation])
         db.session.commit()
         
         # Check recommendation
-        self.assertEqual(recommendation.survey_response_id, response.id)
+        self.assertEqual(recommendation.user_id, user.id)
         self.assertEqual(recommendation.program_id, program.id)
         self.assertEqual(recommendation.score, 85.5)
 

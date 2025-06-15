@@ -1,6 +1,7 @@
 import unittest
 from app import create_app, db
 from app.models import User
+from flask_login import current_user
 
 class AuthTestCase(unittest.TestCase):
     def setUp(self):
@@ -25,38 +26,32 @@ class AuthTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_login(self):
-        # Test login functionality - just verify the form submission doesn't error
         response = self.client.post('/auth/login', data={
-            'email': 'test@example.com',  # Using email instead of username if that's how the form works
-            'password': 'password123'
+            'username': 'testuser',
+            'password': 'password123',
+            'remember_me': False
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         
     def test_invalid_login(self):
-        # Test invalid login attempt - mocked using the database directly
-        # First verify our user exists
-        user = User.query.filter_by(email='test@example.com').first()
-        self.assertIsNotNone(user)
-        
-        # Verify password validation works
-        self.assertTrue(user.check_password('password123'))
-        self.assertFalse(user.check_password('wrongpassword'))
+        response = self.client.post('/auth/login', data={
+            'username': 'testuser',
+            'password': 'wrongpassword',
+            'remember_me': False
+        }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Invalid username or password', response.data)
         
     def test_logout(self):
         # Login first
-        with self.client as c:
-            # Set a mock session
-            with c.session_transaction() as sess:
-                sess['user_id'] = 1  # Assuming the test user has ID 1
-                sess['_fresh'] = True  # Flask-Login uses this
-
-            # Verify session has user_id
-            with c.session_transaction() as sess:
-                self.assertIn('user_id', sess)
-                
-            # Now attempt to logout
-            response = c.get('/auth/logout', follow_redirects=True)
-            self.assertEqual(response.status_code, 200)
+        self.client.post('/auth/login', data={
+            'username': 'testuser',
+            'password': 'password123',
+            'remember_me': False
+        })
+        # Then logout
+        response = self.client.get('/auth/logout', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main() 

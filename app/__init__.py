@@ -81,6 +81,15 @@ def create_app(config_class=Config):
             app.logger.info("Recommendation engine initialized successfully")
         except Exception as e:
             app.logger.warning(f"Recommendation engine initialization warning: {e}")
+            
+    # Register error handlers
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('500.html'), 500
 
     
     import os

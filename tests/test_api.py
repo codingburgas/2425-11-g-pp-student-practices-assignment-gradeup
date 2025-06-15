@@ -15,11 +15,11 @@ class APITestCase(unittest.TestCase):
         db.create_all()
         
         # Create test user with admin role
-        self.admin = User(username='admin_test', email='admin_test@example.com', is_admin=True)
+        self.admin = User(username='admin', email='admin@example.com', is_admin=True)
         self.admin.set_password('adminpass')
         
         # Create regular user
-        self.user = User(username='user_test', email='user_test@example.com')
+        self.user = User(username='user', email='user@example.com')
         self.user.set_password('userpass')
         
         # Create test data
@@ -34,28 +34,33 @@ class APITestCase(unittest.TestCase):
         self.app_context.pop()
 
     def get_admin_token(self):
-        response = self.client.post('/auth/login', json={
-            'username': 'admin_test',
+        response = self.client.post('/auth/login', data={
+            'username': 'admin',
             'password': 'adminpass'
         })
         return response.cookies.get('session')
 
     def get_user_token(self):
-        response = self.client.post('/auth/login', json={
-            'username': 'user_test',
+        response = self.client.post('/auth/login', data={
+            'username': 'user',
             'password': 'userpass'
         })
         return response.cookies.get('session')
 
     def test_get_schools_endpoint(self):
-        # Mock test for retrieving all schools
-        self.assertEqual(School.query.count(), 1)
-        self.assertEqual(School.query.first().name, 'API Test School')
+        # Test retrieving all schools
+        response = self.client.get('/api/schools')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertGreaterEqual(len(data), 1)
+        self.assertEqual(data[0]['name'], 'API Test School')
     
     def test_get_school_by_id(self):
-        # Mock test for retrieving a specific school
-        school = School.query.first()
-        self.assertEqual(school.name, 'API Test School')
+        # Test retrieving a specific school
+        response = self.client.get(f'/api/schools/{self.school.id}')
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data['name'], 'API Test School')
     
     def test_create_school_endpoint(self):
         # Login as admin
@@ -64,10 +69,12 @@ class APITestCase(unittest.TestCase):
                 sess['user_id'] = self.admin.id
                 sess['is_admin'] = True
             
-            # Create a new school directly in database
-            new_school = School(name='New API School', location='New Location')
-            db.session.add(new_school)
-            db.session.commit()
+            # Test creating a new school
+            response = c.post('/api/schools', json={
+                'name': 'New API School',
+                'location': 'New Location'
+            })
+            self.assertEqual(response.status_code, 201)
             
             # Verify the school was created
             school = School.query.filter_by(name='New API School').first()
@@ -80,15 +87,16 @@ class APITestCase(unittest.TestCase):
                 sess['user_id'] = self.admin.id
                 sess['is_admin'] = True
             
-            # Update a school directly
-            school = School.query.first()
-            school.name = 'Updated School'
-            school.location = 'Updated Location'
-            db.session.commit()
+            # Test updating a school
+            response = c.put(f'/api/schools/{self.school.id}', json={
+                'name': 'Updated School',
+                'location': 'Updated Location'
+            })
+            self.assertEqual(response.status_code, 200)
             
             # Verify the school was updated
-            updated_school = School.query.get(school.id)
-            self.assertEqual(updated_school.name, 'Updated School')
+            school = School.query.get(self.school.id)
+            self.assertEqual(school.name, 'Updated School')
     
     def test_non_admin_cannot_modify_schools(self):
         # Login as regular user
@@ -97,11 +105,14 @@ class APITestCase(unittest.TestCase):
                 sess['user_id'] = self.user.id
                 sess['is_admin'] = False
             
-            # Count schools before attempt
-            school_count = School.query.count()
+            # Try to create a new school
+            response = c.post('/api/schools', json={
+                'name': 'Unauthorized School',
+                'location': 'Unauthorized Location'
+            })
+            self.assertIn(response.status_code, [401, 403])
             
-            # Verify no new schools are created
-            self.assertEqual(school_count, 1)
+            # Verify the school was not created
             school = School.query.filter_by(name='Unauthorized School').first()
             self.assertIsNone(school)
 
