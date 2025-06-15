@@ -1,3 +1,15 @@
+<!--
+    Recommendations Page Template
+    
+    This template displays personalized university and program recommendations
+    based on user survey responses and preferences.
+    
+    UPDATES:
+    - Fixed university match percentage display
+    - Improved visualization of match scores
+    - Enhanced match reasons display
+-->
+
 {% extends "base.html" %}
 
 {% block title %}My Recommendations - GradeUP{% endblock %}
@@ -242,12 +254,12 @@
                                                     </div>
                                                     <div class="uni-score">
                                                         <div class="score-container">
-                                                            <span class="score">{{ (university.match_score * 100)|round|int }}%</span>
+                                                            <span class="score">{{ university.match_percentage }}%</span>
                                                             <div class="score-ring">
                                                                 <svg width="60" height="60">
                                                                     <circle cx="30" cy="30" r="25" stroke="rgba(139, 92, 246, 0.2)" stroke-width="3" fill="none"/>
                                                                     <circle cx="30" cy="30" r="25" stroke="var(--cosmic-blue)" stroke-width="3" fill="none" 
-                                                                            stroke-dasharray="{{ (university.match_score * 157)|round }}, 157" 
+                                                                            stroke-dasharray="{{ (university.match_percentage * 1.57)|round }}, 157" 
                                                                             stroke-linecap="round" transform="rotate(-90 30 30)"/>
                                                                 </svg>
                                                             </div>
