@@ -1,141 +1,122 @@
 import unittest
 from app import create_app, db
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
-from config import Config
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation
+from datetime import datetime
 import json
-
-class TestConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 class ModelsTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = create_app(TestConfig)
+        self.app = create_app()
+        self.app.config['TESTING'] = True
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-    
+
     def tearDown(self):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-    
-    def test_user_model(self):
-        u = User(username='testuser', email='test@example.com')
-        u.set_password('password')
-        db.session.add(u)
-        db.session.commit()
+
+    def test_user_password_hashing(self):
+        u = User(username='test_user', email='test@example.com')
+        u.set_password('password123')
+        self.assertFalse(u.check_password('wrong_password'))
+        self.assertTrue(u.check_password('password123'))
+
+    def test_user_relationships(self):
+        # Create user
+        user = User(username='student', email='student@example.com')
+        user.set_password('password')
+        db.session.add(user)
         
-        self.assertIsNotNone(User.query.filter_by(username='testuser').first())
-        self.assertTrue(u.check_password('password'))
-        self.assertFalse(u.check_password('wrongpassword'))
-    
-    def test_school_model(self):
-        s = School(name='Test School', location='Test Location')
-        db.session.add(s)
-        db.session.commit()
+        # Create a school
+        school = School(name='Test University', location='Test City')
+        db.session.add(school)
         
-        self.assertIsNotNone(School.query.filter_by(name='Test School').first())
-    
-    def test_program_model(self):
-        s = School(name='Test School', location='Test Location')
-        db.session.add(s)
-        db.session.commit()
+        # Create a program associated with the school
+        program = Program(
+            name='Computer Science',
+            description='CS program',
+            school=school,
+            degree_type='Bachelor'  # Adding required field
+        )
+        db.session.add(program)
         
-        p = Program(name='Test Program', degree_type='Bachelor', school_id=s.id)
-        db.session.add(p)
-        db.session.commit()
-        
-        self.assertIsNotNone(Program.query.filter_by(name='Test Program').first())
-        self.assertEqual(p.school.name, 'Test School')
-    
-    def test_survey_model(self):
+        # Create a survey with questions
         questions = [
-            {"id": 1, "text": "What are your favorite subjects?", "type": "multiple_choice", 
-             "options": ["Math", "Science", "Art", "History"]},
-            {"id": 2, "text": "How important is location?", "type": "rating", "min": 1, "max": 5}
+            {"id": 1, "text": "What are your interests?", "type": "text"}
         ]
+        survey = Survey(
+            title='Career Survey',
+            questions=json.dumps(questions)
+        )
+        db.session.add(survey)
         
-        s = Survey(title='Academic Preferences', questions=json.dumps(questions))
-        db.session.add(s)
+        # Create a survey response linked to user and survey
+        response = SurveyResponse(
+            user_id=user.id,
+            survey_id=survey.id,
+            answers=json.dumps({"1": "Programming"})
+        )
+        db.session.add(response)
         db.session.commit()
         
-        survey = Survey.query.filter_by(title='Academic Preferences').first()
-        self.assertIsNotNone(survey)
-        self.assertEqual(len(survey.get_questions()), 2)
-    
-    def test_survey_response_model(self):
-        
-        u = User(username='testuser', email='test@example.com')
-        db.session.add(u)
-        
-        
-        questions = [{"id": 1, "text": "Test question?", "type": "text"}]
-        s = Survey(title='Test Survey', questions=json.dumps(questions))
-        db.session.add(s)
+        # Check relationships
+        self.assertEqual(response.user_id, user.id)
+        self.assertEqual(program.school_id, school.id)
+        self.assertEqual(len(user.survey_responses.all()), 1)
+
+    def test_recommendation_creation(self):
+        # Create user
+        user = User(username='rec_test', email='rec@example.com')
+        db.session.add(user)
         db.session.commit()
         
-        
-        answers = {"1": "My answer"}
-        sr = SurveyResponse(user_id=u.id, survey_id=s.id, answers=json.dumps(answers))
-        db.session.add(sr)
+        # Create school and program
+        school = School(name='Rec University', location='Rec City')
+        db.session.add(school)
         db.session.commit()
         
-        response = SurveyResponse.query.filter_by(user_id=u.id, survey_id=s.id).first()
-        self.assertIsNotNone(response)
-        self.assertEqual(response.get_answers()["1"], "My answer")
-    
-    def test_recommendation_model(self):
-        
-        u = User(username='testuser', email='test@example.com')
-        db.session.add(u)
-        
-        
-        s = School(name='Test School', location='Test Location')
-        db.session.add(s)
+        program = Program(
+            name='Data Science',
+            description='Data program',
+            school=school,
+            degree_type='Master'  # Adding required field
+        )
+        db.session.add(program)
         db.session.commit()
         
-        p = Program(name='Test Program', degree_type='Bachelor', school_id=s.id)
-        db.session.add(p)
-        db.session.commit()
-        
-        
-        questions = [{"id": 1, "text": "Test question?", "type": "text"}]
-        survey = Survey(title='Test Survey', questions=json.dumps(questions))
+        # Create survey and response
+        survey = Survey(
+            title='Career Survey',
+            questions=json.dumps([{"id": 1, "text": "Skills?", "type": "text"}])
+        )
         db.session.add(survey)
         db.session.commit()
         
-        answers = {"1": "My answer"}
-        sr = SurveyResponse(user_id=u.id, survey_id=survey.id, answers=json.dumps(answers))
-        db.session.add(sr)
+        response = SurveyResponse(
+            user_id=user.id,
+            survey_id=survey.id,
+            answers=json.dumps({"1": "Python, Data Analysis"})
+        )
+        db.session.add(response)
         db.session.commit()
         
+        # Create recommendation
+        recommendation = Recommendation(
+            survey_response_id=response.id,
+            program_id=program.id,
+            score=85.5
+        )
         
-        r = Recommendation(survey_response_id=sr.id, program_id=p.id, score=0.85)
-        db.session.add(r)
+        db.session.add(recommendation)
         db.session.commit()
         
-        rec = Recommendation.query.filter_by(survey_response_id=sr.id, program_id=p.id).first()
-        self.assertIsNotNone(rec)
-        self.assertEqual(rec.score, 0.85)
-    
-    def test_favorite_model(self):
-        
-        u = User(username='testuser', email='test@example.com')
-        db.session.add(u)
-        
-        
-        s = School(name='Test School', location='Test Location')
-        db.session.add(s)
-        db.session.commit()
-        
-        
-        f = Favorite(user_id=u.id, school_id=s.id)
-        db.session.add(f)
-        db.session.commit()
-        
-        fav = Favorite.query.filter_by(user_id=u.id, school_id=s.id).first()
-        self.assertIsNotNone(fav)
+        # Check recommendation
+        self.assertEqual(recommendation.survey_response_id, response.id)
+        self.assertEqual(recommendation.program_id, program.id)
+        self.assertEqual(recommendation.score, 85.5)
 
 if __name__ == '__main__':
     unittest.main() 

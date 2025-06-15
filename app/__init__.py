@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -55,6 +55,15 @@ def create_app(config_class=Config):
     # Register Recommendation Engine blueprint
     from app.ml.recommendation_blueprint import recommendation_bp
     app.register_blueprint(recommendation_bp)
+
+    # Register error handlers
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('500.html'), 500
 
     # Initialize prediction system with proper app context
     with app.app_context():
