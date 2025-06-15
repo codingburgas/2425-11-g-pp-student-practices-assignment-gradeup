@@ -19,72 +19,107 @@ class DemoPredictionService:
             {
                 'id': 1,
                 'name': 'Computer Science',
-                'school_name': 'Tech University',
+                'school_name': 'Sofia University St. Kliment Ohridski',
                 'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer']
+                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
             },
             {
                 'id': 2,
-                'name': 'Software Engineering',
-                'school_name': 'Innovation Institute',
+                'name': 'Electrical Engineering',
+                'school_name': 'Technical University of Sofia',
                 'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'engineering']
+                'keywords': ['engineering', 'electricity', 'physics', 'technology', 'math', 'science']
             },
             {
                 'id': 3,
-                'name': 'Data Science',
-                'school_name': 'Analytics College',
+                'name': 'Medicine',
+                'school_name': 'Medical University of Sofia',
                 'degree_type': 'Master',
-                'keywords': ['data', 'analytics', 'mathematics', 'statistics']
+                'keywords': ['medicine', 'biology', 'health', 'science', 'healthcare']
             },
             {
                 'id': 4,
                 'name': 'Business Administration',
-                'school_name': 'Business School',
+                'school_name': 'New Bulgarian University',
                 'degree_type': 'Bachelor',
-                'keywords': ['business', 'management', 'leadership', 'economics']
+                'keywords': ['business', 'management', 'leadership', 'economics', 'finance']
             },
             {
                 'id': 5,
-                'name': 'Digital Marketing',
-                'school_name': 'Marketing Academy',
+                'name': 'Psychology',
+                'school_name': 'Plovdiv University Paisii Hilendarski',
                 'degree_type': 'Bachelor',
-                'keywords': ['marketing', 'business', 'digital', 'communications']
+                'keywords': ['psychology', 'mental_health', 'research', 'helping', 'social']
             },
             {
                 'id': 6,
-                'name': 'Nursing',
-                'school_name': 'Health Sciences University',
+                'name': 'Economics',
+                'school_name': 'University of National and World Economy',
                 'degree_type': 'Bachelor',
-                'keywords': ['healthcare', 'nursing', 'medical', 'caring']
+                'keywords': ['economics', 'finance', 'business', 'mathematics', 'statistics']
             },
             {
                 'id': 7,
-                'name': 'Psychology',
-                'school_name': 'Liberal Arts College',
+                'name': 'Fine Arts',
+                'school_name': 'National Academy of Arts',
                 'degree_type': 'Bachelor',
-                'keywords': ['psychology', 'mental_health', 'research', 'helping']
+                'keywords': ['art', 'design', 'creative', 'drawing', 'painting', 'sculpture']
             },
             {
                 'id': 8,
                 'name': 'Mechanical Engineering',
-                'school_name': 'Engineering Institute',
+                'school_name': 'Technical University of Sofia',
                 'degree_type': 'Bachelor',
-                'keywords': ['engineering', 'mechanical', 'design', 'technology']
+                'keywords': ['engineering', 'mechanical', 'design', 'technology', 'physics']
             },
             {
                 'id': 9,
-                'name': 'Graphic Design',
-                'school_name': 'Art & Design School',
-                'degree_type': 'Bachelor',
-                'keywords': ['design', 'creative', 'visual', 'art']
+                'name': 'Law',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Master',
+                'keywords': ['law', 'legal', 'justice', 'social', 'politics']
             },
             {
                 'id': 10,
-                'name': 'Finance',
-                'school_name': 'Business University',
+                'name': 'Architecture',
+                'school_name': 'University of Architecture, Civil Engineering and Geodesy',
+                'degree_type': 'Master',
+                'keywords': ['architecture', 'design', 'civil engineering', 'construction', 'art']
+            },
+            {
+                'id': 11,
+                'name': 'Computer Science',
+                'school_name': 'New Bulgarian University',
                 'degree_type': 'Bachelor',
-                'keywords': ['finance', 'business', 'economics', 'money']
+                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
+            },
+            {
+                'id': 12,
+                'name': 'Computer Science',
+                'school_name': 'Plovdiv University Paisii Hilendarski',
+                'degree_type': 'Bachelor',
+                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
+            },
+            {
+                'id': 13,
+                'name': 'Computer Science',
+                'school_name': 'American University in Bulgaria',
+                'degree_type': 'Bachelor',
+                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
+            },
+            {
+                'id': 14,
+                'name': 'Informatics and Computer Science',
+                'school_name': 'Burgas Free University',
+                'degree_type': 'Bachelor',
+                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science', 'informatics']
+            },
+            {
+                'id': 15,
+                'name': 'Computer Systems and Technologies',
+                'school_name': 'Ruse University Angel Kanchev',
+                'degree_type': 'Bachelor',
+                'keywords': ['technology', 'programming', 'software', 'computer', 'systems', 'science']
             }
         ]
     
@@ -105,6 +140,11 @@ class DemoPredictionService:
         career_interests = survey_data.get('career_interests', [])
         favorite_subjects = survey_data.get('favorite_subjects', [])
         career_goals = survey_data.get('career_goals', '').lower()
+        math_interest = survey_data.get('math_interest', 0)
+        science_interest = survey_data.get('science_interest', 0)
+        art_interest = survey_data.get('art_interest', 0)
+        sports_interest = survey_data.get('sports_interest', 0)
+        preferred_subject = survey_data.get('preferred_subject', '').lower()
         
         # Combine all interests for matching
         all_interests = []
@@ -117,29 +157,58 @@ class DemoPredictionService:
             all_interests.extend([str(subject).lower() for subject in favorite_subjects])
         elif favorite_subjects:
             all_interests.append(str(favorite_subjects).lower())
-            
-        all_interests.append(career_goals)
         
-        # Score each program based on keyword matching
+        if preferred_subject:
+            all_interests.append(preferred_subject)
+            
+        if career_goals:
+            all_interests.append(career_goals)
+        
+        # Add interest values to adjust scoring
+        interest_map = {
+            'math': math_interest,
+            'technology': math_interest,
+            'programming': math_interest,
+            'science': science_interest,
+            'biology': science_interest,
+            'physics': science_interest,
+            'art': art_interest,
+            'design': art_interest,
+            'creative': art_interest,
+            'sports': sports_interest,
+            'physical': sports_interest
+        }
+        
+        # Score each program based on keyword matching and interests
         program_scores = []
         for program in self.demo_programs:
             score = 0
             
             # Check keyword matches
             for keyword in program['keywords']:
+                # Add points for matching keywords in interests
                 for interest in all_interests:
                     if keyword in interest or interest in keyword:
-                        score += 1
+                        score += 2
+                
+                # Add points based on interest levels
+                for interest_keyword, interest_level in interest_map.items():
+                    if keyword == interest_keyword or interest_keyword in keyword:
+                        score += (interest_level / 10) * 3  # Scale 0-10 to 0-3 bonus points
             
-            # Add some randomness for variety
-            score += random.uniform(0, 2)
+            # Base score should never be zero to avoid all-identical matches
+            base_score = max(1, score)
             
-            # Normalize score to confidence (0-1)
-            confidence = min(0.95, max(0.1, score / 10))
+            # Add some randomness for variety (but less than before)
+            score = base_score + random.uniform(0, 1)
+            
+            # Normalize score to confidence percentage (max 95%)
+            confidence_decimal = min(0.95, max(0.1, score / 15))
+            confidence_percent = round(confidence_decimal * 100)
             
             program_scores.append({
                 'program': program,
-                'confidence': confidence
+                'confidence': confidence_percent
             })
         
         # Sort by confidence and take top K
@@ -147,27 +216,28 @@ class DemoPredictionService:
         
         for i, item in enumerate(program_scores[:top_k]):
             program = item['program']
-            base_confidence = item['confidence']
+            confidence = item['confidence']
             
-            # Add some variance to make it realistic
-            confidence_variance = random.uniform(-0.1, 0.1)
-            final_confidence = max(0.1, min(0.95, base_confidence + confidence_variance))
+            # Add slight variance to confidence to make it more realistic
+            confidence_variance = random.randint(-3, 3)
+            final_confidence = max(10, min(95, confidence + confidence_variance))
             
             prediction = {
                 'program_id': program['id'],
                 'program_name': program['name'],
                 'school_name': program['school_name'],
-                'confidence': round(final_confidence, 3),
+                'confidence': final_confidence,
+                'match_score': final_confidence,  # Added for compatibility
                 'rank': i + 1,
                 'degree_type': program['degree_type'],
-                'match_reasons': self._generate_match_reasons(program, all_interests)
+                'match_reasons': self._generate_match_reasons(program, all_interests, interest_map)
             }
             
             predictions.append(prediction)
         
         return predictions
     
-    def _generate_match_reasons(self, program: Dict, user_interests: List[str]) -> List[str]:
+    def _generate_match_reasons(self, program: Dict, user_interests: List[str], interest_map: Dict[str, int]) -> List[str]:
         """Generate realistic match reasons for a program."""
         reasons = []
         
@@ -175,23 +245,28 @@ class DemoPredictionService:
         for keyword in program['keywords']:
             for interest in user_interests:
                 if keyword in interest or interest in keyword:
-                    reasons.append(f"Strong match with your interest in {keyword}")
+                    reasons.append(f"Matches your interest in {keyword.title()}")
                     break
         
-        # Add some generic reasons
-        if program['name'] in ['Computer Science', 'Software Engineering']:
-            if any('tech' in interest for interest in user_interests):
-                reasons.append("High demand field with excellent career prospects")
+        # Add interest-based reasons
+        high_interests = [(k, v) for k, v in interest_map.items() if v >= 7]
+        for interest, level in high_interests:
+            if interest in [kw.lower() for kw in program['keywords']]:
+                reasons.append(f"Matches your high interest in {interest.title()}")
         
-        if 'business' in program['keywords']:
-            reasons.append("Versatile degree with multiple career paths")
+        # Add some specific reasons
+        if program['name'] in ['Computer Science', 'Software Engineering', 'Informatics and Computer Science']:
+            reasons.append("Suitable for high-achieving students")
         
-        if 'healthcare' in program['keywords']:
-            reasons.append("Meaningful career helping others")
+        if 'engineering' in program['name'].lower():
+            reasons.append("Suitable for high-achieving students")
+        
+        if 'medicine' in program['name'].lower():
+            reasons.append("Suitable for high-achieving students")
         
         # Ensure we have at least one reason
         if not reasons:
-            reasons.append(f"Good general fit based on your profile")
+            reasons.append(f"Suitable for high-achieving students")
         
         return reasons[:3]  # Limit to 3 reasons
     
