@@ -202,4 +202,42 @@ def get_survey_based_recommendations(survey_response_id):
         })
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@recommendation_bp.route('/generate/<int:survey_response_id>', methods=['POST'])
+@login_required
+def generate_recommendations(survey_response_id):
+    """Generate recommendations based on a survey response."""
+    try:
+        # Verify user owns this survey response
+        survey_response = SurveyResponse.query.filter_by(
+            id=survey_response_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not survey_response:
+            return jsonify({'error': 'Survey response not found'}), 404
+            
+        survey_data = survey_response.get_answers()
+        
+        # Get user preferences
+        user_preferences = {}
+        if current_user.preferences:
+            user_preferences = current_user.get_preferences()
+            
+        recommendations = recommendation_engine.recommend_programs(
+            user_id=current_user.id,
+            survey_data=survey_data,
+            user_preferences=user_preferences
+        )
+        
+        return jsonify({
+            'success': True,
+            'recommendations': recommendations,
+            'count': len(recommendations)
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in recommendation generation: {e}")
         return jsonify({'error': str(e)}), 500 
