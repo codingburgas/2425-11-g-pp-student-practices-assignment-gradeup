@@ -56,6 +56,15 @@ def create_app(config_class=Config):
     from app.ml.recommendation_blueprint import recommendation_bp
     app.register_blueprint(recommendation_bp)
 
+    # Register error handlers
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('500.html'), 500
+
     # Initialize prediction system with proper app context
     with app.app_context():
         try:
