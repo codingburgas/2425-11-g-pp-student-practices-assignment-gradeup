@@ -19,8 +19,8 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
-            # Check if email is verified
-            if not user.email_verified:
+            # Check if email is verified, unless verification is disabled
+            if not user.email_verified and not current_app.config['DISABLE_EMAIL_VERIFICATION']:
                 flash('Please verify your email address before logging in. Check your email for the verification link.', 'warning')
                 return render_template('auth/login.html', title='Sign In', form=form, 
                                      show_resend_verification=True, user_email=user.email)
@@ -58,19 +58,27 @@ def register():
         try:
             user = User(username=form.username.data, email=form.email.data)
             user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.commit()
             
-            # Generate token and commit it to database
-            token = user.generate_email_verification_token()
-            db.session.commit()  # Ensure token is saved to database
-            
-            # Send verification email
-            try:
-                send_verification_email(user, sync=True)
-                flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
-            except Exception as e:
-                flash('Registration successful, but there was an error sending the verification email. Please contact support.', 'warning')
+            # If email verification is disabled, mark the email as verified
+            if current_app.config['DISABLE_EMAIL_VERIFICATION']:
+                user.email_verified = True
+                db.session.add(user)
+                db.session.commit()
+                flash('Registration successful! You can now log in.', 'success')
+            else:
+                db.session.add(user)
+                db.session.commit()
+                
+                # Generate token and commit it to database
+                token = user.generate_email_verification_token()
+                db.session.commit()  # Ensure token is saved to database
+                
+                # Send verification email
+                try:
+                    send_verification_email(user, sync=True)
+                    flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
+                except Exception as e:
+                    flash('Registration successful, but there was an error sending the verification email. Please contact support.', 'warning')
         
         except Exception as e:
             flash('Registration failed. Please try again.', 'danger')
@@ -253,6 +261,11 @@ def preferences():
 @bp.route('/verify_email/<token>')
 def verify_email(token):
     """Verify email address using the token"""
+    # If email verification is disabled, redirect to login
+    if current_app.config['DISABLE_EMAIL_VERIFICATION']:
+        flash('Email verification is currently disabled.', 'info')
+        return redirect(url_for('auth.login'))
+        
     if current_user.is_authenticated and current_user.email_verified:
         flash('Your email is already verified!', 'info')
         return redirect(url_for('main.index'))
@@ -282,6 +295,11 @@ def verify_email(token):
 @bp.route('/resend_verification', methods=['GET', 'POST'])
 def resend_verification():
     """Resend email verification"""
+    # If email verification is disabled, redirect to login
+    if current_app.config['DISABLE_EMAIL_VERIFICATION']:
+        flash('Email verification is currently disabled.', 'info')
+        return redirect(url_for('auth.login'))
+        
     if current_user.is_authenticated and current_user.email_verified:
         flash('Your email is already verified!', 'info')
         return redirect(url_for('main.index'))
@@ -316,6 +334,10 @@ def resend_verification():
 @login_required
 def email_verification_status():
     """Show email verification status for logged-in users"""
+    # If email verification is disabled, redirect to main page
+    if current_app.config['DISABLE_EMAIL_VERIFICATION']:
+        return redirect(url_for('main.index'))
+        
     if current_user.email_verified:
         flash('Your email is already verified!', 'success')
         return redirect(url_for('main.index'))
@@ -329,6 +351,10 @@ def email_verification_status():
 @bp.route('/resend_verification_ajax', methods=['POST'])
 def resend_verification_ajax():
     """AJAX endpoint to resend verification email"""
+    # If email verification is disabled, return success
+    if current_app.config['DISABLE_EMAIL_VERIFICATION']:
+        return jsonify({'success': True, 'message': 'Email verification is disabled.'})
+        
     email = request.form.get('email')
     if not email:
         return jsonify({'success': False, 'message': 'Email address is required.'})
