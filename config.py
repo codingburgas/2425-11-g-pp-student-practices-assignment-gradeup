@@ -13,6 +13,9 @@ class Config:
     DB_HOST = os.environ.get('DB_HOST')
     DB_NAME = os.environ.get('DB_NAME')
     
+    # Email verification toggle
+    DISABLE_EMAIL_VERIFICATION = os.environ.get('DISABLE_EMAIL_VERIFICATION', 'false').lower() in ['true', 'on', '1', 'yes']
+    
     # Platform-specific database driver and connection string
     if platform.system() == 'Darwin':  # macOS
         DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
