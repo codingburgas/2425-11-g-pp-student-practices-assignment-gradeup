@@ -30,16 +30,23 @@ class ErrorPagesTestCase(unittest.TestCase):
         self.assertIn(b'Page Not Found', response.data)
 
     def test_500_page(self):
-        # Register a route that triggers a 500 error
+        # Add a route that triggers a 500 error
         @self.app.route('/trigger_error')
         def trigger_error():
             # Deliberately raise an exception
-            1/0  # ZeroDivisionError will cause 500
-            return "This should not be reached"
+            raise Exception('Test 500 error')
             
-        response = self.client.get('/trigger_error')
-        self.assertEqual(response.status_code, 500)
-        self.assertIn(b'Internal Server Error', response.data)
+        # Configure app to show errors during testing (rather than default error pages)
+        self.app.config['TESTING'] = False
+        self.app.config['DEBUG'] = False
+        
+        try:
+            response = self.client.get('/trigger_error')
+            self.assertEqual(response.status_code, 500)
+            self.assertIn(b'Internal Server Error', response.data)
+        finally:
+            # Restore testing config
+            self.app.config['TESTING'] = True
 
 if __name__ == '__main__':
     unittest.main()

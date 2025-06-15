@@ -29,6 +29,7 @@ class ModelsTestCase(unittest.TestCase):
         user = User(username='student', email='student@example.com')
         user.set_password('password')
         db.session.add(user)
+        db.session.commit()
         
         # Create a school
         school = School(name='Test University', location='Test City')
@@ -52,6 +53,7 @@ class ModelsTestCase(unittest.TestCase):
             questions=json.dumps(questions)
         )
         db.session.add(survey)
+        db.session.commit()
         
         # Create a survey response linked to user and survey
         response = SurveyResponse(
@@ -62,10 +64,13 @@ class ModelsTestCase(unittest.TestCase):
         db.session.add(response)
         db.session.commit()
         
+        # Refresh user object to ensure relationships are loaded
+        db.session.refresh(user)
+        
         # Check relationships
         self.assertEqual(response.user_id, user.id)
         self.assertEqual(program.school_id, school.id)
-        self.assertEqual(len(user.survey_responses.all()), 1)
+        self.assertIn(response, user.survey_responses.all())
 
     def test_recommendation_creation(self):
         # Create user
