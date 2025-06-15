@@ -3,6 +3,13 @@
 
 
 A web application that helps students find the perfect educational institution based on their preferences and needs.
+
+## 🔧 Configuration Options
+
+- **Email Verification Toggle** - You can disable email verification by setting `DISABLE_EMAIL_VERIFICATION=true` in your `.env` file
+- **Recommendation Engine** - Enhanced algorithm provides personalized university and program recommendations
+- **Database Configuration** - Supports both SQLite for development and SQL Server for production
+
 ## 📸 Preview
 
 >Take a quick look at **Grade Up** in action:
@@ -63,7 +70,7 @@ A web application that helps students find the perfect educational institution b
    cd school-recommendation-system
    ```
 
-2. **Create a virtual environment:**
+2. **Create a virtual environment (Python 3.12 is recommended!):**
    ```bash
    python -m venv venv
    ```
