@@ -7,25 +7,20 @@ A web application that helps students find the perfect educational institution b
 ---
 # 📑 Table of Contents
 
-- [🎓 GradeUp - School Recommendation System](#-gradeup---school-recommendation-system)
-- [🔧 Configuration Options](#-configuration-options)
-- [📸 Preview](#-preview)
-- [🛠️ Contributors](#-contributors)
-- [🚀 Features](#-features)
-- [🚀 AI Module Integration (Quick Summary)](#-ai-module-integration-quick-summary)
-- [🖼 System Flowchart](#-system-flowchart)
-- [🛠️ Installation](#-installation)
-- [🧩 Entity Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
-- [🧩 Class Diagram](#-class-diagram)
-- [🧩 Use Case Diagram](#-use-case-diagram)
-- [💻 Technology Stack](#-technology-stack)
----
-## 🔧 Configuration Options
 
-- **Email Verification Toggle** - You can disable email verification by setting `DISABLE_EMAIL_VERIFICATION=true` in your `.env` file
-- **Recommendation Engine** - Enhanced algorithm provides personalized university and program recommendations
-- **Database Configuration** - Supports both SQLite for development and SQL Server for production
 
+>- [🎓 GradeUp - School Recommendation System](#-gradeup---school-recommendation-system)
+>- [📸 Preview](#-preview)
+>- [🛠️ Contributors](#-contributors)
+>- [🚀 Features](#-features)
+>- [🔧 Configuration Options](#-configuration-options)
+>- [🚀 AI Module Integration (Quick Summary)](#-ai-module-integration-quick-summary)
+>- [🖼 System Flowchart](#-system-flowchart)
+>- [🛠️ Installation](#-installation)
+>- [🧩 Entity Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
+>- [🧩 Class Diagram](#-class-diagram)
+>- [🧩 Use Case Diagram](#-use-case-diagram)
+>- [💻 Technology Stack](#-technology-stack)
 ---
 
 ## 📸 Preview
@@ -77,6 +72,13 @@ A web application that helps students find the perfect educational institution b
 - 🏫 School and program browsing  
 - ⭐ Favorites system to save and compare schools
 >You can view the full list of user stories [HERE](documentation/UserStories_GradeUp.docx).
+---
+## 🔧 Configuration Options
+
+- **Email Verification Toggle** - You can disable email verification by setting `DISABLE_EMAIL_VERIFICATION=true` in your `.env` file
+- **Recommendation Engine** - Enhanced algorithm provides personalized university and program recommendations
+- **Database Configuration** - Supports both SQLite for development and SQL Server for production
+
 ---
 # 🚀 AI Module Integration (Quick Summary)
 
