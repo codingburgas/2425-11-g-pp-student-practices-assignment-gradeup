@@ -173,7 +173,7 @@
                                                         <p>{{ recommendation.school_name }}</p>
                                                     </div>
                                                     <div class="rec-score">
-                                                        <span class="score">{{ (recommendation.match_score * 100)|round|int }}%</span>
+                                                        <span class="score">{{ (recommendation.match_score * 100)|int }}%</span>
                                                         <small>match</small>
                                                     </div>
                                                 </div>
@@ -185,7 +185,7 @@
                                                         {% if recommendation.language %}
                                                             <span class="tag">{{ recommendation.language }}</span>
                                                         {% endif %}
-                                                        <span class="tag">{{ (recommendation.match_score * 100)|round|int }}% match</span>
+                                                        <span class="tag">{{ (recommendation.match_score * 100)|int }}% match</span>
                                                     </div>
                                                     <p class="rec-description">
                                                         {% if recommendation.recommendation_reasons %}
