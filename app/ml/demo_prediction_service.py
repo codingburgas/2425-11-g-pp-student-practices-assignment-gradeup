@@ -7,14 +7,16 @@ Perfect for testing and demonstration purposes.
 
 import random
 import numpy as np
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from datetime import datetime
+import logging
 
 
 class DemoPredictionService:
     """Demo service that generates realistic mock predictions."""
     
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.demo_programs = [
             {
                 'id': 1,
@@ -122,6 +124,69 @@ class DemoPredictionService:
                 'keywords': ['technology', 'programming', 'software', 'computer', 'systems', 'science']
             }
         ]
+        
+        # Add more diverse programs for better recommendations
+        self.diverse_programs = [
+            {
+                'id': 16,
+                'name': 'Mathematics',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Bachelor',
+                'keywords': ['mathematics', 'algebra', 'geometry', 'statistics', 'science']
+            },
+            {
+                'id': 17,
+                'name': 'Graphic Design',
+                'school_name': 'National Academy of Arts',
+                'degree_type': 'Bachelor',
+                'keywords': ['design', 'art', 'creative', 'visual', 'graphics', 'digital']
+            },
+            {
+                'id': 18,
+                'name': 'Sports Science',
+                'school_name': 'National Sports Academy',
+                'degree_type': 'Bachelor',
+                'keywords': ['sports', 'physical', 'fitness', 'exercise', 'coaching']
+            },
+            {
+                'id': 19,
+                'name': 'Tourism Management',
+                'school_name': 'University of Economics - Varna',
+                'degree_type': 'Bachelor',
+                'keywords': ['tourism', 'management', 'business', 'hospitality']
+            },
+            {
+                'id': 20,
+                'name': 'International Relations',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Bachelor',
+                'keywords': ['politics', 'international', 'diplomacy', 'languages']
+            },
+            {
+                'id': 21,
+                'name': 'Journalism',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Bachelor',
+                'keywords': ['media', 'writing', 'communication', 'reporting']
+            },
+            {
+                'id': 22,
+                'name': 'History',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Bachelor',
+                'keywords': ['history', 'humanities', 'research', 'culture']
+            },
+            {
+                'id': 23,
+                'name': 'Chemistry',
+                'school_name': 'Sofia University St. Kliment Ohridski',
+                'degree_type': 'Bachelor',
+                'keywords': ['chemistry', 'science', 'laboratory', 'research']
+            }
+        ]
+        
+        # Combine regular and diverse programs
+        self.demo_programs.extend(self.diverse_programs)
     
     def predict_programs(self, survey_data: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
         """
@@ -179,6 +244,10 @@ class DemoPredictionService:
             'physical': sports_interest
         }
         
+        # Enhanced scoring: Directly boost programs matching preferred subject
+        preferred_subject_boost = 8  # Strong boost for preferred subject match
+        career_goal_boost = 10      # Very strong boost for career goal match
+        
         # Score each program based on keyword matching and interests
         program_scores = []
         for program in self.demo_programs:
@@ -196,38 +265,145 @@ class DemoPredictionService:
                     if keyword == interest_keyword or interest_keyword in keyword:
                         score += (interest_level / 10) * 3  # Scale 0-10 to 0-3 bonus points
             
+            # Direct match to preferred subject - major boost
+            if preferred_subject and any(preferred_subject.lower() in kw.lower() for kw in program['keywords']):
+                score += preferred_subject_boost
+                
+            # Direct match to career goals - highest boost
+            if career_goals and any(career_goals.lower() in kw.lower() for kw in program['keywords']):
+                score += career_goal_boost
+            
+            # Special match for "Computer Science" - only boost if the user has high math interest
+            if program['name'] == 'Computer Science' and math_interest < 6:
+                score -= 3  # Penalty for users with low math interest
+            
             # Base score should never be zero to avoid all-identical matches
             base_score = max(1, score)
             
-            # Add some randomness for variety (but less than before)
-            score = base_score + random.uniform(0, 1)
+            # Add unique variance based on program ID and name to avoid identical scores
+            # Hash the program name to get a consistent but unique modifier
+            name_hash = hash(program['name']) % 100
+            id_modifier = program['id'] % 10
             
-            # Normalize score to confidence percentage (max 95%)
-            confidence_decimal = min(0.95, max(0.1, score / 15))
-            confidence_percent = round(confidence_decimal * 100)
+            # Scale by program degree type (Bachelor/Master)
+            degree_bonus = 1.0 if program['degree_type'] == 'Bachelor' else 1.2
             
-            program_scores.append({
-                'program': program,
-                'confidence': confidence_percent
-            })
-        
-        # Sort by confidence and take top K
-        program_scores.sort(key=lambda x: x['confidence'], reverse=True)
-        
-        for i, item in enumerate(program_scores[:top_k]):
-            program = item['program']
-            confidence = item['confidence']
+            # Create a unique variance factor for each program (between 0-2.5)
+            unique_variance = ((name_hash / 40) + (id_modifier / 4)) * degree_bonus
             
-            # Add slight variance to confidence to make it more realistic
-            confidence_variance = random.randint(-3, 3)
-            final_confidence = max(10, min(95, confidence + confidence_variance))
+            score = base_score + unique_variance
+            
+            # Improved normalization for better score distribution
+            # Ensure scores have better variance and meaningful differentiation
+            if score >= 10:
+                confidence_decimal = min(0.95, 0.75 + (score - 10) * 0.02)
+            elif score >= 5:
+                confidence_decimal = min(0.75, 0.5 + (score - 5) * 0.05) 
+            else:
+                confidence_decimal = min(0.5, max(0.3, score * 0.06))
+            
+            # Ensure each program gets a significantly different score
+            # Add a larger unique offset based on program ID and name
+            program_id_factor = (program['id'] % 20) * 0.01  # 0-0.19 variation
+            name_factor = (hash(program['name']) % 25) * 0.01  # 0-0.24 variation
+            
+            # Apply the unique factors to the confidence score
+            confidence_decimal = min(0.95, confidence_decimal + program_id_factor + name_factor)
+            
+            # Convert to percentage (0-100)
+            final_confidence = int(confidence_decimal * 100)
+            
+            # Ensure we don't have all recommendations with the same score
+            # Add position-based variance for more diversity
+            position_variance = (i % 5) * 3  # 0, 3, 6, 9, 12 variance
+            final_confidence = max(20, min(95, final_confidence - position_variance))
+            
+            # Add much stronger position-based variance to ensure different scores
+            # First item gets highest score, others get progressively lower scores
+            position_factor = i * 5  # 0, 5, 10, 15, 20, etc.
+            if i > 0:  # Keep the top recommendation at its original score
+                final_confidence = max(25, min(90, final_confidence - position_factor))
+            
+            # Reset the random seed after use
+            random.seed()
             
             prediction = {
                 'program_id': program['id'],
                 'program_name': program['name'],
                 'school_name': program['school_name'],
                 'confidence': final_confidence,
-                'match_score': final_confidence,  # Added for compatibility
+                'match_score': final_confidence / 100.0,  # Convert to decimal
+                'rank': i + 1,
+                'degree_type': program['degree_type'],
+                'match_reasons': self._generate_match_reasons(program, all_interests, interest_map)
+            }
+            
+            predictions.append(prediction)
+        
+        # Check if we have any matches
+        if not program_scores:
+            # Ensure we always have some recommendations by adding default programs
+            self.logger.warning("No matching programs found, adding default recommendations")
+            default_programs = [
+                {
+                    'program': self.demo_programs[0],  # Computer Science
+                    'confidence': 65
+                },
+                {
+                    'program': self.demo_programs[1],  # Software Engineering
+                    'confidence': 60
+                },
+                {
+                    'program': self.demo_programs[2],  # Informatics
+                    'confidence': 55
+                }
+            ]
+            program_scores.extend(default_programs)
+        
+        # Sort by confidence and take top K
+        program_scores.sort(key=lambda x: x['confidence'], reverse=True)
+        
+        # Ensure diversity in top recommendations
+        # If top 3 recommendations are all computer science related, swap in a different field
+        computer_science_count = 0
+        for item in program_scores[:3]:
+            program_name = item['program']['name'].lower()
+            if 'computer' in program_name or 'software' in program_name or 'informatics' in program_name:
+                computer_science_count += 1
+                
+        # If all top recommendations are computer science, promote diversity
+        if computer_science_count >= 2 and len(program_scores) > 3:
+            self.logger.info("Too many computer science programs in top recommendations, promoting diversity")
+            # Find a non-computer science program to promote
+            for i, item in enumerate(program_scores[3:], start=3):
+                program_name = item['program']['name'].lower()
+                if not ('computer' in program_name or 'software' in program_name or 'informatics' in program_name):
+                    # Swap this program with the second position
+                    program_scores[1], program_scores[i] = program_scores[i], program_scores[1]
+                    break
+        
+        # Create predictions with fixed decreasing scores for better variance
+        predictions = []
+        for i, item in enumerate(program_scores[:top_k]):
+            program = item['program']
+            
+            # Fixed decreasing scores: 65%, 55%, 45%, 35%, etc.
+            fixed_score = 65 - (i * 10)
+            
+            # Add small random variation to avoid exact same scores
+            # But keep the first recommendation at exactly 65%
+            if i > 0:
+                # Small random variation +/- 2%
+                random.seed(hash(program['name']) + i)
+                variation = random.randint(-2, 2)
+                fixed_score = max(20, min(95, fixed_score + variation))
+            
+            prediction = {
+                'program_id': program['id'],
+                'program_name': program['name'],
+                'school_name': program['school_name'],
+                'confidence': fixed_score,
+                'match_score': fixed_score / 100.0,  # Convert to decimal
                 'rank': i + 1,
                 'degree_type': program['degree_type'],
                 'match_reasons': self._generate_match_reasons(program, all_interests, interest_map)
