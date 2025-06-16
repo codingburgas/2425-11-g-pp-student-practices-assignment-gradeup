@@ -4,11 +4,29 @@
 
 A web application that helps students find the perfect educational institution based on their preferences and needs.
 
+---
+# 📑 Table of Contents
+
+- [🎓 GradeUp - School Recommendation System](#-gradeup---school-recommendation-system)
+- [🔧 Configuration Options](#-configuration-options)
+- [📸 Preview](#-preview)
+- [🛠️ Contributors](#-contributors)
+- [🚀 Features](#-features)
+- [🚀 AI Module Integration (Quick Summary)](#-ai-module-integration-quick-summary)
+- [🖼 System Flowchart](#-system-flowchart)
+- [🛠️ Installation](#-installation)
+- [🧩 Entity Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
+- [🧩 Class Diagram](#-class-diagram)
+- [🧩 Use Case Diagram](#-use-case-diagram)
+- [💻 Technology Stack](#-technology-stack)
+---
 ## 🔧 Configuration Options
 
 - **Email Verification Toggle** - You can disable email verification by setting `DISABLE_EMAIL_VERIFICATION=true` in your `.env` file
 - **Recommendation Engine** - Enhanced algorithm provides personalized university and program recommendations
 - **Database Configuration** - Supports both SQLite for development and SQL Server for production
+
+---
 
 ## 📸 Preview
 
