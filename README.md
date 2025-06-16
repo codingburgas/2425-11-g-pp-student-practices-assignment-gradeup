@@ -38,7 +38,6 @@ A web application that helps students find the perfect educational institution b
 </table>
 
 ---
-
 ## 🛠️ Contributors
 
 ### Backend 👨‍💻
@@ -60,6 +59,31 @@ A web application that helps students find the perfect educational institution b
 - 🏫 School and program browsing  
 - ⭐ Favorites system to save and compare schools
 >You can view the full list of user stories [HERE](documentation/UserStories_GradeUp.docx).
+---
+# 🚀 AI Module Integration (Quick Summary)
+
+- Two main modules:
+  - `AdvancedPredictionSystem`: Predictions with confidence scoring.
+  - `RecommendationEngine`: Program & university recommendations.
+
+- Integrated directly into Flask backend.
+- Uses SQLAlchemy models: `User`, `Program`, `School`, `SurveyResponse`, etc.
+
+- API routes call modules:
+  - `/api/predict` → `predict_with_confidence()`
+  - `/api/recommend` → `recommend_programs()`
+
+- Frontend sends survey data → Backend processes → Returns predictions → Displayed to user.
+
+- Results stored in DB: `PredictionHistory`, `Recommendation`.
+
+---
+
+## 🖼 System Flowchart
+<div align="center"">
+<img src="https://github.com/user-attachments/assets/4e4ccd05-cf39-4808-8df5-a61c6e5af391" alt="System Flowchart" width="500"/>
+</div>
+
 ---
 
 ## 🛠️ Installation
