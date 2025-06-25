@@ -33,10 +33,6 @@
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                     </a>
-                    <a href="{{ url_for('data_collection.survey_list') }}" class="cosmic-btn cosmic-btn-outline">
-                        <i class="fas fa-eye"></i>
-                        View Public
-                    </a>
                     <a href="{{ url_for('admin.new_survey') }}" class="cosmic-btn cosmic-btn-primary">
                         <i class="fas fa-plus"></i>
                         Create Survey
@@ -47,7 +43,7 @@
     </div>
 
     <!-- Surveys Content -->
-    <div class="admin-content">
+    <div class="admin-dashboard-content">
         <div class="container-fluid">
             {% if surveys.items %}
             <div class="surveys-grid">
@@ -344,7 +340,7 @@
 }
 
 /* ===== SURVEYS GRID ===== */
-.admin-content {
+.admin-dashboard-content {
     padding: 2rem 0 4rem;
     position: relative;
     z-index: 2;
@@ -812,6 +808,10 @@
     
     .admin-title {
         font-size: 2rem;
+    }
+    
+    .admin-dashboard-content {
+        padding: 1.5rem 0 3rem;
     }
     
     .surveys-grid {

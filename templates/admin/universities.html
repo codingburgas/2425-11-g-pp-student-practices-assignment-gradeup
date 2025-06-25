@@ -3,22 +3,35 @@
 {% block title %}Universities Management - GradeUP{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
+<div class="cosmic-admin-container">
+    <!-- Universities Management Hero Section -->
+    <div class="admin-hero">
         <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1 class="dashboard-title">
-                        <i class="fas fa-university me-2"></i>
-                        Universities Management
-                    </h1>
-                    <p class="dashboard-subtitle">Manage university data and partnerships</p>
+            <div class="admin-header">
+                <div class="admin-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="admin-glow"></div>
                 </div>
-                <div class="col-auto">
-                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-cosmic-outline">
-                        <i class="fas fa-arrow-left me-2"></i>
+                <div class="admin-info">
+                    <h1 class="admin-title">Universities Management</h1>
+                    <p class="admin-subtitle">Manage university data and partnerships</p>
+                    <div class="admin-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-university"></i>
+                            {{ universities.total }} Universities
+                        </span>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.dashboard') }}" class="cosmic-btn cosmic-btn-ghost">
+                        <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.new_university') }}" class="cosmic-btn cosmic-btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add University
                     </a>
                 </div>
             </div>
@@ -26,7 +39,7 @@
     </div>
 
     <!-- Dashboard Content -->
-    <div class="dashboard-content">
+    <div class="admin-dashboard-content">
         <div class="container-fluid">
             <!-- Quick Stats -->
             <div class="row mb-4">
@@ -77,19 +90,14 @@
             </div>
 
             <!-- Universities List -->
-            <div class="dashboard-card">
+            <div class="admin-dashboard-card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3>
                             <i class="fas fa-list me-2"></i>
                             University Directory
                         </h3>
-                        <div class="action-buttons">
-                            <a href="{{ url_for('admin.new_university') }}" class="btn btn-cosmic">
-                                <i class="fas fa-plus me-2"></i>
-                                Add University
-                            </a>
-                        </div>
+
                     </div>
                 </div>
                 <div class="card-content">
@@ -189,9 +197,174 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 </div>
 
 <style>
+/* ===== COSMIC ADMIN STYLES ===== */
+.cosmic-admin-container {
+    min-height: 100vh;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== ADMIN HERO ===== */
+.admin-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 2.5rem 0;
+    position: relative;
+    z-index: 10;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-title {
+    color: var(--star-white);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.admin-subtitle {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* ===== ADMIN CONTENT ===== */
+.admin-dashboard-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.admin-dashboard-card {
+    background: rgba(30, 30, 70, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    margin-bottom: 1.5rem;
+}
+
+.admin-dashboard-card:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2);
+}
+
+.admin-dashboard-card .card-header {
+    margin-bottom: 1.5rem;
+}
+
+.admin-dashboard-card .card-header h3 {
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-title {
+        font-size: 2rem;
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .admin-dashboard-content {
+        padding: 1.5rem 0 3rem;
+    }
+    
+    .admin-dashboard-card {
+        padding: 1.5rem;
+    }
+    
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
 /* ===== UNIVERSITY CARDS ===== */
 .universities-grid {
     display: grid;

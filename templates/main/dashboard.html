@@ -3,24 +3,25 @@
 {% block title %}Survey Dashboard - GradeUP{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
+<div class="cosmic-dashboard-container">
+    <!-- Survey Dashboard Hero Section -->
+    <div class="survey-hero">
         <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h1 class="dashboard-title">
-                        <i class="fas fa-poll me-2"></i>
-                        Survey Dashboard
-                    </h1>
-                    <p class="dashboard-subtitle">Welcome! Let's help you find the perfect university through our survey.</p>
+            <div class="survey-header">
+                <div class="survey-icon">
+                    <div class="professional-emoji size-xl">
+                        <i class="fas fa-poll"></i>
+                    </div>
+                    <div class="survey-glow"></div>
                 </div>
-                <div class="col-auto">
-                    <div class="dashboard-stats">
-                        <div class="stat-badge">
+                <div class="survey-info">
+                    <h1 class="survey-title">Survey Dashboard</h1>
+                    <p class="survey-subtitle">Welcome! Let's help you find the perfect university through our survey.</p>
+                    <div class="survey-stats">
+                        <span class="stat-badge">
                             <i class="fas fa-clipboard-check"></i>
-                            <span>Ready to Start</span>
-                        </div>
+                            Ready to Start
+                        </span>
                     </div>
                 </div>
             </div>
@@ -32,7 +33,7 @@
         <div class="container-fluid">
             <!-- Main Content -->
             <div class="row justify-content-center">
-                <div class="col-lg-8 col-xl-6">
+                <div class="col-lg-10 col-xl-8">
                     <!-- Primary Survey Action -->
                     <div class="row mb-5">
                         <div class="col-12">
@@ -68,8 +69,8 @@
                     </div>
 
                     <!-- Survey Status Cards -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-3">
                             <div class="stat-card">
                                 <div class="stat-icon">
                                     <i class="fas fa-list-alt"></i>
@@ -80,7 +81,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <div class="stat-card">
                                 <div class="stat-icon">
                                     <i class="fas fa-graduation-cap"></i>
@@ -88,6 +89,17 @@
                                 <div class="stat-info">
                                     <h4>Personalized</h4>
                                     <p>Recommendations</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Universities</h4>
+                                    <p>To Explore</p>
                                 </div>
                             </div>
                         </div>
@@ -131,31 +143,87 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 </div>
 
 <style>
 /* Enhanced Dashboard Styles */
-.dashboard-container {
+.cosmic-dashboard-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1e1e46 0%, #2d1b69 50%, #1e1e46 100%);
-    padding: 2rem 0;
+    background: var(--hero-gradient);
+    position: relative;
+    overflow: hidden;
 }
 
-.dashboard-header {
-    margin-bottom: 3rem;
+/* ===== SURVEY HERO ===== */
+.survey-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 2.5rem 0;
+    position: relative;
+    z-index: 10;
 }
 
-.dashboard-title {
+.survey-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.survey-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.survey-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: rotateGlow 20s linear infinite;
+    z-index: 1;
+}
+
+.survey-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.survey-title {
     color: var(--star-white);
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.dashboard-subtitle {
+.survey-subtitle {
     color: rgba(248, 250, 252, 0.8);
     font-size: 1.1rem;
-    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.survey-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .stat-badge {
@@ -170,15 +238,22 @@
     font-weight: 600;
 }
 
+.dashboard-content {
+    padding: 2rem 0 4rem;
+    position: relative;
+    z-index: 2;
+}
+
 .dashboard-card {
     background: rgba(30, 30, 70, 0.4);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(139, 92, 246, 0.2);
     border-radius: 1.5rem;
-    padding: 2.5rem;
+    padding: 2rem;
     position: relative;
     overflow: hidden;
     transition: all 0.4s ease;
+    margin-bottom: 1.5rem;
 }
 
 .dashboard-card:hover {
@@ -188,7 +263,7 @@
 
 .primary-action-card {
     text-align: center;
-    padding: 3rem;
+    padding: 2.5rem;
 }
 
 .primary-action-card .card-icon {
@@ -353,14 +428,30 @@
     opacity: 1;
 }
 
+/* ===== ANIMATIONS ===== */
+@keyframes rotateGlow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-    .dashboard-title {
+    .survey-title {
         font-size: 2rem;
     }
     
+    .survey-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .dashboard-content {
+        padding: 1.5rem 0 3rem;
+    }
+    
     .primary-action-card {
-        padding: 2rem;
+        padding: 1.5rem;
     }
     
     .primary-action-card h2 {
@@ -374,6 +465,10 @@
     
     .steps-container {
         gap: 1.5rem;
+    }
+    
+    .dashboard-card {
+        padding: 1.5rem;
     }
 }
 </style>

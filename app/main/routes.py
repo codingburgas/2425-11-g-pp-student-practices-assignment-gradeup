@@ -808,7 +808,7 @@ def favorites():
 @login_required
 def start_survey():
     
-    return redirect(url_for('data_collection.survey_list'))
+    return redirect(url_for('main.survey'))
 
 @bp.route('/survey/take/<int:survey_id>')
 @login_required

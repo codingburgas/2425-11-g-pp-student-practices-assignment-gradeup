@@ -33,10 +33,7 @@ def export_history():
     """Export history page."""
     return render_template('data_collection/history.html')
 
-@bp.route('/surveys/list')
-def survey_list():
-    """Survey list page."""
-    return render_template('data_collection/surveys.html')
+
 
 @bp.route('/surveys', methods=['GET'])
 def get_surveys():
