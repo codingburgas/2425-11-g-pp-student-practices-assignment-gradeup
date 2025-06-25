@@ -3756,3 +3756,36 @@ body.sidebar-open {
         font-size: 0.875rem;
     }
 }
+
+/* Method Badge Styles */
+.method-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-left: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.method-badge i {
+    font-size: 0.7rem;
+}
+
+.statistical-badge {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.15) 100%);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.neural-badge {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(14, 165, 233, 0.15) 100%);
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.1);
+}
