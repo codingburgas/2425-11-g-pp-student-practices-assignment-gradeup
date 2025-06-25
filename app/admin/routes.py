@@ -423,4 +423,12 @@ def survey_responses():
         page=page, per_page=20, error_out=False)
     
     surveys = Survey.query.all()
-    return render_template('admin/survey_responses.html', title='Survey Responses', responses=responses, surveys=surveys, selected_survey=survey_id) 
+    return render_template('admin/survey_responses.html', title='Survey Responses', responses=responses, surveys=surveys, selected_survey=survey_id)
+
+@bp.route('/survey-responses/<int:response_id>')
+@admin_required
+def survey_response_detail(response_id):
+    response = SurveyResponse.query.get_or_404(response_id)
+    return render_template('admin/survey_response_detail.html', 
+                         title=f'Survey Response Details', 
+                         response=response) 
