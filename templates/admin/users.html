@@ -3,221 +3,221 @@
 {% block title %}User Management - GradeUP{% endblock %}
 
 {% block content %}
-<!-- Moving Particles Background -->
-<div class="particles-background" id="particlesBackground"></div>
-
-<div class="cosmic-page">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="page-header animate-fade-in">
-                    <div class="header-icon">
+<div class="cosmic-admin-container">
+    <!-- Admin Users Hero Section -->
+    <div class="admin-hero">
+        <div class="container-fluid">
+            <div class="admin-header">
+                <div class="admin-icon">
+                    <div class="professional-emoji size-xl">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h1 class="page-title">
-                        User Management
-                        <span class="cosmic-badge">Admin Panel</span>
-                    </h1>
-                    <p class="page-subtitle">Manage users, roles, and permissions</p>
+                    <div class="admin-glow"></div>
+                </div>
+                <div class="admin-info">
+                    <h1 class="admin-title">User Management</h1>
+                    <p class="admin-subtitle">Manage users, roles, and permissions across the platform.</p>
+                    <div class="admin-stats">
+                        <span class="stat-badge">
+                            <i class="fas fa-users"></i>
+                            {{ users.total }} Total Users
+                        </span>
+                        <span class="stat-badge">
+                            <i class="fas fa-crown"></i>
+                            {% set admin_count = users.items|selectattr("is_admin")|list|length %}{{ admin_count }} Admins
+                        </span>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <a href="{{ url_for('admin.dashboard') }}" class="cosmic-btn cosmic-btn-ghost">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.surveys') }}" class="cosmic-btn cosmic-btn-outline">
+                        <i class="fas fa-poll"></i>
+                        Surveys
+                    </a>
+                    <a href="{{ url_for('main.users') }}" class="cosmic-btn cosmic-btn-primary">
+                        <i class="fas fa-eye"></i>
+                        View Community
+                    </a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Search and Controls -->
-        <div class="row mb-4 animate-slide-up" data-delay="200">
-            <div class="col-12">
-                <div class="cosmic-card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6><i class="fas fa-search me-2"></i>Search & Filters</h6>
-                            <div class="admin-nav-links">
-                                <a href="{{ url_for('admin.dashboard') }}" class="btn-cosmic-outline btn-sm me-2">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                                <a href="{{ url_for('admin.surveys') }}" class="btn-cosmic-outline btn-sm">
-                                    <i class="fas fa-poll me-1"></i>Surveys
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row align-items-end">
-                            <div class="col-md-6">
-                                <form method="GET" class="d-flex">
-                                    <input type="text" name="search" class="cosmic-input me-2" placeholder="Search users by name or email..." value="{{ search }}">
-                                    <button type="submit" class="btn-cosmic">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                    {% if search %}
-                                    <a href="{{ url_for('admin.users') }}" class="btn-cosmic-outline ms-2">
-                                        <i class="fas fa-times"></i>
-                                    </a>
-                                    {% endif %}
-                                </form>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <div class="total-count">
-                                    <span class="cosmic-badge cosmic-badge-info">
-                                        <i class="fas fa-users me-1"></i>{{ users.total }} Total Users
-                                    </span>
+    <!-- Users Content -->
+    <div class="admin-content">
+        <div class="container-fluid">
+            <!-- Search and Filters -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="search-filter-card">
+                        <div class="search-form">
+                            <form method="GET" class="d-flex align-items-center">
+                                <div class="search-input-group">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" name="search" class="search-input" 
+                                           placeholder="Search users by name or email..." 
+                                           value="{{ search }}">
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Grid -->
-        <div class="row animate-slide-up" data-delay="400">
-            <div class="col-12">
-                <div class="cosmic-card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-table me-2"></i>User Directory</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if users.items %}
-                        <div class="cosmic-table-responsive">
-                            <table class="cosmic-table">
-                                <thead>
-                                    <tr>
-                                        <th><i class="fas fa-user me-2"></i>User Details</th>
-                                        <th><i class="fas fa-shield-alt me-2"></i>Role</th>
-                                        <th><i class="fas fa-chart-bar me-2"></i>Activity</th>
-                                        <th><i class="fas fa-calendar me-2"></i>Joined</th>
-                                        <th><i class="fas fa-cog me-2"></i>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users.items %}
-                                    <tr class="cosmic-table-row">
-                                        <td>
-                                            <div class="user-profile-cell">
-                                                <div class="cosmic-avatar">
-                                                    {{ user.username[0].upper() }}
-                                                </div>
-                                                <div class="user-details">
-                                                    <strong class="user-name">{{ user.username }}</strong>
-                                                    <div class="user-email">{{ user.email }}</div>
-                                                    {% if user.location %}
-                                                    <div class="user-location">
-                                                        <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
-                                                    </div>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="cosmic-badge {{ 'cosmic-badge-warning' if user.is_admin else 'cosmic-badge-primary' }}">
-                                                <i class="fas fa-{{ 'crown' if user.is_admin else 'user' }} me-1"></i>
-                                                {{ 'Admin' if user.is_admin else 'User' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="cosmic-badge cosmic-badge-info">
-                                                <i class="fas fa-poll me-1"></i>{{ user.survey_responses.count() }} responses
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="date-display">{{ user.created_at.strftime('%Y-%m-%d') }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
-                                                   class="btn-cosmic-outline btn-sm" title="View Details">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
-                                                   class="btn-cosmic btn-sm" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
-                                                   class="btn-cosmic-{{ 'warning' if user.is_admin else 'success' }} btn-sm" 
-                                                   title="{{ 'Remove Admin' if user.is_admin else 'Make Admin' }}"
-                                                   {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
-                                                    <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
-                                                </a>
-                                                <a href="{{ url_for('auth.reset_password_request') }}" 
-                                                   class="btn-cosmic-info btn-sm" title="Reset Password">
-                                                    <i class="fas fa-key"></i>
-                                                </a>
-                                                {% if user != current_user %}
-                                                <button type="button" class="btn-cosmic-danger btn-sm" 
-                                                        data-user-name="{{ user.username }}"
-                                                        data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}"
-                                                        onclick="confirmDelete(this.dataset.userName, this.dataset.deleteUrl)"
-                                                        title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Pagination -->
-                        {% if users.pages > 1 %}
-                        <div class="cosmic-pagination">
-                            <nav aria-label="Users pagination">
-                                <ul class="pagination-list">
-                                    {% if users.has_prev %}
-                                    <li class="pagination-item">
-                                        <a class="pagination-link" href="{{ url_for('admin.users', page=users.prev_num, search=search) }}">
-                                            <i class="fas fa-chevron-left me-1"></i>Previous
-                                        </a>
-                                    </li>
-                                    {% endif %}
-                                    
-                                    {% for page_num in users.iter_pages() %}
-                                        {% if page_num %}
-                                            {% if page_num != users.page %}
-                                            <li class="pagination-item">
-                                                <a class="pagination-link" href="{{ url_for('admin.users', page=page_num, search=search) }}">{{ page_num }}</a>
-                                            </li>
-                                            {% else %}
-                                            <li class="pagination-item active">
-                                                <span class="pagination-link">{{ page_num }}</span>
-                                            </li>
-                                            {% endif %}
-                                        {% else %}
-                                        <li class="pagination-item disabled">
-                                            <span class="pagination-link">...</span>
-                                        </li>
-                                        {% endif %}
-                                    {% endfor %}
-                                    
-                                    {% if users.has_next %}
-                                    <li class="pagination-item">
-                                        <a class="pagination-link" href="{{ url_for('admin.users', page=users.next_num, search=search) }}">
-                                            Next<i class="fas fa-chevron-right ms-1"></i>
-                                        </a>
-                                    </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                        </div>
-                        {% endif %}
-                        {% else %}
-                        <div class="text-center py-5">
-                            <div class="empty-state">
-                                <div class="empty-icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <h5>No users found</h5>
+                                <button type="submit" class="cosmic-btn cosmic-btn-primary search-btn">
+                                    <i class="fas fa-search"></i>
+                                    Search
+                                </button>
                                 {% if search %}
-                                <p>No users match your search criteria.</p>
-                                <a href="{{ url_for('admin.users') }}" class="btn-cosmic">Clear Search</a>
+                                <a href="{{ url_for('admin.users') }}" class="cosmic-btn cosmic-btn-ghost clear-btn">
+                                    <i class="fas fa-times"></i>
+                                    Clear
+                                </a>
                                 {% endif %}
-                            </div>
+                            </form>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
+
+            {% if users.items %}
+            <div class="users-grid">
+                {% for user in users.items %}
+                <div class="user-card">
+                    <div class="user-header">
+                        <div class="user-avatar">
+                            <div class="professional-emoji">
+                                {{ user.username[0].upper() }}
+                            </div>
+                        </div>
+                        <div class="user-info">
+                            <h3 class="user-name">{{ user.username }}</h3>
+                            <div class="user-email">{{ user.email }}</div>
+                            {% if user.location %}
+                            <div class="user-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ user.location }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="user-role">
+                            <span class="status-badge {{ 'admin' if user.is_admin else 'user' }}">
+                                <i class="fas fa-{{ 'crown' if user.is_admin else 'user' }}"></i>
+                                {{ 'Admin' if user.is_admin else 'User' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-details">
+                        <div class="detail-item">
+                            <i class="fas fa-poll"></i>
+                            <span>{{ user.survey_responses.count() }} Survey Responses</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Joined {{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A' }}</span>
+                        </div>
+                        {% if user.bio %}
+                        <div class="detail-item bio">
+                            <i class="fas fa-quote-left"></i>
+                            <span>{{ user.bio[:100] }}{% if user.bio|length > 100 %}...{% endif %}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="user-actions">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="user-btn primary">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </a>
+                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="user-btn secondary">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </a>
+                        <a href="{{ url_for('admin.toggle_admin', user_id=user.id) }}" 
+                           class="user-btn {{ 'warning' if user.is_admin else 'success' }}"
+                           {% if user == current_user %}onclick="return false;" style="opacity: 0.5;"{% endif %}>
+                            <i class="fas fa-{{ 'user-minus' if user.is_admin else 'user-shield' }}"></i>
+                            {{ 'Remove Admin' if user.is_admin else 'Make Admin' }}
+                        </a>
+                        {% if user != current_user %}
+                        <button class="user-btn danger delete-user-btn"
+                                data-user-name="{{ user.username }}"
+                                data-delete-url="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if users.pages > 1 %}
+            <div class="pagination-container">
+                <nav class="cosmic-pagination">
+                    {% if users.has_prev %}
+                    <a href="{{ url_for('admin.users', page=users.prev_num, search=search) }}" class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    <div class="page-numbers">
+                        {% for page_num in users.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != users.page %}
+                                <a href="{{ url_for('admin.users', page=page_num, search=search) }}" class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                <span class="page-link active">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="page-link disabled">…</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if users.has_next %}
+                    <a href="{{ url_for('admin.users', page=users.next_num, search=search) }}" class="page-link">
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <div class="professional-emoji size-lg">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <h3>No Users Found</h3>
+                {% if search %}
+                <p>No users match your search criteria "<strong>{{ search }}</strong>". Try adjusting your search terms.</p>
+                <a href="{{ url_for('admin.users') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-times"></i>
+                    Clear Search
+                </a>
+                {% else %}
+                <p>No users have been registered yet. Users will appear here once they sign up for the platform.</p>
+                <a href="{{ url_for('auth.register') }}" class="cosmic-btn cosmic-btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Invite Users
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="cosmic-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 </div>
 
@@ -226,17 +226,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirm Delete
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the user "<span id="userName"></span>"?</p>
-                <p class="text-danger"><strong>Warning:</strong> This will also delete all user data including survey responses and cannot be undone.</p>
+                <p>Are you sure you want to delete the user "<strong><span id="userName"></span></strong>"?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Warning:</strong> This will permanently delete all user data including survey responses and cannot be undone.
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
                 <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete User</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete User
+                    </button>
                 </form>
             </div>
         </div>
@@ -251,8 +261,16 @@ function confirmDelete(userName, deleteUrl) {
     deleteModal.show();
 }
 
-// Add notification for successful operations
+// Attach delete handlers
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle delete button clicks
+    document.querySelectorAll('.delete-user-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            confirmDelete(this.dataset.userName, this.dataset.deleteUrl);
+        });
+    });
+    
+    // Show notifications for successful operations
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('deleted') === 'true') {
@@ -270,130 +288,614 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* ===== COSMIC PAGE STYLES ===== */
-.cosmic-page {
+/* ===== ADMIN HERO SECTION ===== */
+.cosmic-admin-container {
     min-height: 100vh;
-    padding: 2rem 0;
     position: relative;
-    z-index: 2;
+    overflow: hidden;
 }
 
-.page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background: rgba(15, 15, 35, 0.95);
+.admin-hero {
+    padding: 2rem 0 3rem;
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(45, 27, 105, 0.95) 50%, rgba(30, 58, 138, 0.95) 100%);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    border-radius: 1.5rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    position: relative;
 }
 
-.header-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--cosmic-gradient);
-    border-radius: 50%;
+.admin-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    font-size: 2rem;
-    color: white;
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    gap: 2rem;
+    flex-wrap: wrap;
 }
 
-.page-title {
+.admin-icon {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.admin-icon .professional-emoji {
+    /* Completely disable all animations for the main admin icon */
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+.admin-icon .professional-emoji:hover,
+.admin-icon .professional-emoji:focus,
+.admin-icon .professional-emoji:active {
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+.admin-glow {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: var(--cosmic-gradient);
+    border-radius: 50%;
+    opacity: 0.3;
+    filter: blur(20px);
+    z-index: -1;
+}
+
+.admin-info {
+    flex: 1;
+    min-width: 250px;
+}
+
+.admin-title {
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--star-white);
     margin-bottom: 0.5rem;
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.page-subtitle {
-    color: rgba(248, 250, 252, 0.7);
+.admin-subtitle {
+    color: rgba(248, 250, 252, 0.8);
     font-size: 1.1rem;
-    margin: 0;
+    margin-bottom: 1rem;
 }
 
-/* ===== USER PROFILE CELLS ===== */
-.user-profile-cell {
+.admin-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--star-white);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ===== SEARCH FILTER CARD ===== */
+.search-filter-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.search-form {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.cosmic-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
+.search-input-group {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(139, 92, 246, 0.7);
+    z-index: 2;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    background: rgba(30, 30, 60, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.75rem;
+    color: var(--star-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--cosmic-purple);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    background: rgba(30, 30, 60, 0.9);
+}
+
+.search-input::placeholder {
+    color: rgba(248, 250, 252, 0.5);
+}
+
+.cosmic-btn {
     background: var(--cosmic-gradient);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-.user-details {
+.cosmic-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.cosmic-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.cosmic-btn-outline {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: var(--star-white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.cosmic-btn-outline:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--cosmic-purple);
+    transform: translateY(-2px);
+    color: var(--star-white);
+    text-decoration: none;
+}
+
+.cosmic-btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: rgba(139, 92, 246, 0.9);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.cosmic-btn-ghost:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--cosmic-purple);
+    color: var(--cosmic-purple);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.search-btn {
+    background: var(--cosmic-gradient) !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3) !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.4) !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.clear-btn {
+    background: transparent !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: rgba(139, 92, 246, 0.9) !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+}
+
+.clear-btn:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-color: var(--cosmic-purple) !important;
+    color: var(--cosmic-purple) !important;
+    transform: translateY(-2px) !important;
+    text-decoration: none !important;
+}
+
+/* ===== USERS GRID ===== */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.user-card {
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--cosmic-gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.user-card:hover::before {
+    opacity: 0.05;
+}
+
+.user-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-avatar .professional-emoji {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    background: var(--cosmic-gradient) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1.4rem !important;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3) !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    /* Completely disable all animations and transitions */
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+.user-avatar .professional-emoji:hover {
+    transform: none !important;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3) !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* User avatar container styling */
+.user-avatar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* Override any global professional-emoji animations */
+.user-card .professional-emoji,
+.user-card .professional-emoji:hover,
+.user-card .professional-emoji:focus,
+.user-card .professional-emoji:active {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    background: var(--cosmic-gradient) !important;
+    border-radius: 50% !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1.4rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.user-info {
     flex: 1;
 }
 
 .user-name {
     color: var(--star-white);
-    font-size: 1rem;
-    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
     margin-bottom: 0.25rem;
 }
 
 .user-email {
-    color: rgba(248, 250, 252, 0.6);
-    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
 
 .user-location {
-    color: rgba(248, 250, 252, 0.5);
-    font-size: 0.8rem;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
-/* ===== ACTION BUTTONS ===== */
-.action-buttons {
+.user-role {
+    flex-shrink: 0;
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.admin {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #FCD34D;
+}
+
+.status-badge.user {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #A78BFA;
+}
+
+.user-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.detail-item i {
+    color: var(--cosmic-purple);
+    width: 16px;
+    text-align: center;
+}
+
+.detail-item.bio {
+    align-items: flex-start;
+    margin-top: 0.75rem;
+}
+
+.detail-item.bio span {
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.user-actions {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.action-buttons .btn-sm {
-    padding: 0.4rem 0.8rem;
+.user-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
     font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
 }
 
-/* ===== COSMIC PAGINATION ===== */
-.cosmic-pagination {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(139, 92, 246, 0.2);
+.user-btn.primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
-.pagination-list {
+.user-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.user-btn.secondary {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: var(--star-white);
+}
+
+.user-btn.secondary:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+    color: var(--star-white);
+}
+
+.user-btn.success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.user-btn.success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.user-btn.warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.user-btn.warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    color: white;
+}
+
+.user-btn.danger {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.user-btn.danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    color: white;
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    margin-top: 3rem;
     display: flex;
     justify-content: center;
+}
+
+.cosmic-pagination {
+    display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.page-numbers {
+    display: flex;
     gap: 0.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
 }
 
-.pagination-item {
-    margin: 0;
-}
-
-.pagination-link {
-    display: block;
+.page-link {
     padding: 0.75rem 1rem;
     background: rgba(139, 92, 246, 0.1);
     border: 1px solid rgba(139, 92, 246, 0.3);
@@ -402,24 +904,26 @@ document.addEventListener('DOMContentLoaded', function() {
     text-decoration: none;
     transition: all 0.3s ease;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.pagination-link:hover {
+.page-link:hover {
     background: rgba(139, 92, 246, 0.2);
     border-color: var(--cosmic-purple);
     transform: translateY(-2px);
     color: var(--star-white);
-    text-decoration: none;
 }
 
-.pagination-item.active .pagination-link {
+.page-link.active {
     background: var(--cosmic-gradient);
     border-color: transparent;
     color: white;
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
 }
 
-.pagination-item.disabled .pagination-link {
+.page-link.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -427,178 +931,181 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ===== EMPTY STATE ===== */
 .empty-state {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 4rem 2rem;
 }
 
 .empty-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    font-size: 2rem;
-    color: var(--cosmic-purple);
-    border: 2px solid rgba(139, 92, 246, 0.3);
+    margin-bottom: 2rem;
 }
 
-.empty-state h5 {
+.empty-state h3 {
     color: var(--star-white);
     margin-bottom: 1rem;
+    font-size: 1.5rem;
 }
 
 .empty-state p {
-    color: rgba(248, 250, 252, 0.6);
-    margin-bottom: 1.5rem;
+    color: rgba(248, 250, 252, 0.7);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
 }
 
-/* ===== DATE DISPLAY ===== */
-.date-display {
-    color: rgba(248, 250, 252, 0.8);
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 0.9rem;
+/* ===== FLOATING PARTICLES ===== */
+.cosmic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
 }
 
-/* ===== TOTAL COUNT ===== */
-.total-count {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
+.cosmic-particles .particle {
+    position: absolute;
+    background: var(--cosmic-purple);
+    border-radius: 50%;
+    opacity: 0.6;
 }
 
-/* ===== ADMIN NAV LINKS ===== */
-.admin-nav-links {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+.cosmic-particles .particle:nth-child(1) {
+    width: 4px;
+    height: 4px;
+    top: 20%;
+    left: 10%;
+    animation: particleFloat 15s linear infinite;
+}
+
+.cosmic-particles .particle:nth-child(2) {
+    width: 6px;
+    height: 6px;
+    background: var(--cosmic-blue);
+    top: 60%;
+    right: 15%;
+    animation: particleFloat 20s linear infinite reverse;
+}
+
+.cosmic-particles .particle:nth-child(3) {
+    width: 3px;
+    height: 3px;
+    top: 40%;
+    left: 80%;
+    animation: particleFloat 12s linear infinite;
+    animation-delay: -5s;
+}
+
+.cosmic-particles .particle:nth-child(4) {
+    width: 5px;
+    height: 5px;
+    background: var(--cosmic-cyan);
+    top: 80%;
+    left: 30%;
+    animation: particleFloat 18s linear infinite;
+    animation-delay: -8s;
+}
+
+.cosmic-particles .particle:nth-child(5) {
+    width: 7px;
+    height: 7px;
+    top: 10%;
+    right: 40%;
+    animation: particleFloat 22s linear infinite reverse;
+    animation-delay: -12s;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-    .user-profile-cell {
+    .admin-header {
         flex-direction: column;
         text-align: center;
-        gap: 0.5rem;
+        gap: 1.5rem;
     }
     
-    .action-buttons {
+    .admin-title {
+        font-size: 2rem;
+    }
+    
+    .admin-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        min-width: auto;
+    }
+    
+    .users-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .user-header {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .user-actions {
         justify-content: center;
     }
     
-    .admin-nav-links {
+    .cosmic-pagination {
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 1rem;
     }
     
-    .admin-nav-links .btn-sm {
-        font-size: 0.8rem;
-        padding: 0.3rem 0.6rem;
-    }
-    
-    .pagination-list {
+    .page-numbers {
+        justify-content: center;
         flex-wrap: wrap;
-        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-hero {
+        padding: 1rem 0 2rem;
     }
     
-    .pagination-link {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
+    .search-filter-card {
+        padding: 1rem;
     }
-}
-
-.btn-cosmic-warning:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-.btn-cosmic-info {
-    background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
-}
-
-.btn-cosmic-info:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(6, 182, 212, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-.btn-cosmic-danger {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
-    cursor: pointer;
-}
-
-.btn-cosmic-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-/* ===== COSMIC BADGE STYLES ===== */
-.cosmic-badge {
-    background: rgba(139, 92, 246, 0.2);
-    border: 1px solid rgba(139, 92, 246, 0.4);
-    color: var(--star-white);
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-left: 1rem;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-    border: none;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-}
-
-.cosmic-badge-primary {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
-    border: 1px solid rgba(139, 92, 246, 0.4);
-    color: #A78BFA;
-}
-
-.cosmic-badge-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    color: #FCD34D;
-}
-
-.cosmic-badge-info {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(8, 145, 178, 0.2) 100%);
-    border: 1px solid rgba(6, 182, 212, 0.4);
-    color: #67E8F9;
-}
-
-.cosmic-badge-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #6EE7B7;
+    
+    .user-card {
+        padding: 1rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+    }
+    
+    .user-btn {
+        justify-content: center;
+        width: 100%;
+    }
 }
 </style>
 {% endblock %} 
