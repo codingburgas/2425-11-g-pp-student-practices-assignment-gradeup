@@ -119,7 +119,9 @@
                             </h3>
                         </div>
                         <div class="activity-content">
-                            {% for response in user.survey_responses.order_by('created_at desc').limit(5) %}
+                            {% set recent_responses = user.survey_responses.all() %}
+                            {% set sorted_responses = recent_responses|sort(attribute='created_at', reverse=true) %}
+                            {% for response in sorted_responses[:5] %}
                             <div class="activity-item">
                                 <div class="activity-icon">
                                     <i class="fas fa-clipboard-check"></i>
