@@ -4,7 +4,7 @@ from flask_wtf.csrf import generate_csrf
 from sqlalchemy import or_, and_, desc, asc, func
 from app.main import bp
 from app.main.forms import UserSearchForm
-from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User
+from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User, PredictionHistory
 from app import db
 # from app.preprocessing import PreprocessingPipeline
 # from app.preprocessing.utils import (
@@ -18,6 +18,13 @@ import logging
 from datetime import datetime
 import numpy as np
 from app.ml.recommendation_engine import recommendation_engine
+from app.ml.prediction_system import AdvancedPredictionSystem
+from app.ml.demo_prediction_service import demo_prediction_service
+from app.ml.service import MLModelService
+from app.ml.training.training_pipeline import TrainingPipeline
+from app.ml.training.linear_models import LinearRegression, LogisticRegression
+from app.ml.training.base import TrainingConfig
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -503,7 +510,7 @@ def specialties():
 @bp.route('/recommendations')
 @login_required
 def recommendations():
-    """Enhanced recommendations page with new recommendation engine."""
+    """Enhanced recommendations page with dual AI methods."""
     try:
         # Get user's survey responses
         user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
@@ -514,7 +521,10 @@ def recommendations():
             'personalized_suggestions': {},
             'recommendation_history': [],
             'user_responses': user_responses,
-            'max_submissions': 3
+            'max_submissions': 3,
+            'main_predictions': [],
+            'backup_predictions': [],
+            'consensus_recommendations': []
         }
         
         # Get program recommendations if user has survey data
@@ -597,6 +607,52 @@ def recommendations():
                 logger.error(f"Error generating university recommendations for user {current_user.id}: {university_error}")
                 # Use fallback recommendations
                 recommendations_data['university_recommendations'] = _generate_fallback_university_recommendations(survey_data)
+            
+            # Get dual AI predictions
+            try:
+                # Get predictions from main method (neural network)
+                main_predictions = _get_main_method_predictions(survey_data, current_user.id)
+                recommendations_data['main_predictions'] = main_predictions
+                
+                # Get predictions from backup method (statistical)
+                backup_predictions = _get_backup_method_predictions(survey_data)
+                recommendations_data['backup_predictions'] = backup_predictions
+                
+                # Find consensus recommendations
+                consensus_recommendations = _find_consensus_recommendations(main_predictions, backup_predictions)
+                recommendations_data['consensus_recommendations'] = consensus_recommendations
+                
+                # Use the better Statistical Method (backup) for the main program recommendations display
+                # since it shows much better diversity and less bias than the neural network
+                if backup_predictions:
+                    logger.info("Using Statistical Method predictions for main program recommendations due to better diversity")
+                    # Convert backup predictions to program recommendations format
+                    statistical_program_recs = []
+                    for pred in backup_predictions:
+                        statistical_program_recs.append({
+                            'program_id': pred.get('program_id', 0),
+                            'program_name': pred.get('program_name', 'Unknown Program'),
+                            'school_name': pred.get('school_name', 'Unknown School'),
+                            'degree_type': pred.get('degree_type', 'Bachelor'),
+                            'duration': pred.get('duration', '4 years'),
+                            'tuition_fee': pred.get('tuition_fee', 1500),
+                            'description': pred.get('description', 'Program description not available.'),
+                            'match_score': pred.get('confidence', 0.5),
+                            'recommendation_reasons': [pred.get('reason', 'Recommended by Statistical Analysis')]
+                        })
+                    
+                    # Replace the program recommendations with statistical method results
+                    recommendations_data['program_recommendations'] = statistical_program_recs
+                    logger.info(f"Replaced program recommendations with {len(statistical_program_recs)} statistical predictions")
+                
+                logger.info(f"Generated dual AI predictions - Main: {len(main_predictions)}, Backup: {len(backup_predictions)}, Consensus: {len(consensus_recommendations)}")
+                
+            except Exception as dual_ai_error:
+                logger.error(f"Error generating dual AI predictions: {dual_ai_error}")
+                # Continue without dual AI if it fails
+                recommendations_data['main_predictions'] = []
+                recommendations_data['backup_predictions'] = []
+                recommendations_data['consensus_recommendations'] = []
         
         # Get personalized suggestions
         personalized = recommendation_engine.get_personalized_suggestions(
@@ -1300,3 +1356,265 @@ def api_university_recommendation_demo():
             'status': 'error',
             'message': str(e)
         }), 500 
+
+
+
+def _convert_response_to_survey_data(response):
+    """Convert SurveyResponse to survey data format"""
+    # Default survey data structure
+    survey_data = {
+        'math_interest': 5,
+        'science_interest': 5,
+        'art_interest': 5,
+        'sports_interest': 5,
+        'preferred_study_method': 'mixed',
+        'career_goal': 'technology',
+        'budget_range': 'moderate',
+        'location_preference': 'any',
+        'university_size': 'medium',
+        'academic_focus': 0.5,
+        'social_life_importance': 0.5,
+        'research_interest': 0.5
+    }
+    
+    # Try to extract data from response
+    if hasattr(response, 'response_data') and response.response_data:
+        try:
+            if isinstance(response.response_data, str):
+                response_data = json.loads(response.response_data)
+            else:
+                response_data = response.response_data
+            
+            survey_data.update(response_data)
+        except:
+            pass
+    
+    return survey_data
+
+def _get_main_method_predictions(survey_data, user_id):
+    """Get predictions from main AI method (neural network)"""
+    try:
+        # Initialize prediction system
+        prediction_system = AdvancedPredictionSystem()
+        prediction_system.initialize(current_app.instance_path)
+        
+        # Get predictions
+        result = prediction_system.predict_with_confidence(
+            survey_data, user_id, store_history=False, top_k=5
+        )
+        
+        if result and result.get('predictions'):
+            return result['predictions']
+        
+        # Fallback to demo service
+        demo_predictions = demo_prediction_service.predict_programs(survey_data, 5)
+        
+        # Format demo predictions
+        formatted_predictions = []
+        for pred in demo_predictions:
+            confidence = pred.get('confidence', 0.5)
+            # Ensure confidence is in proper range (0-1)
+            if isinstance(confidence, (int, float)):
+                confidence = max(0.0, min(1.0, confidence))
+            else:
+                confidence = 0.5  # Default fallback
+            
+            formatted_predictions.append({
+                'program_name': pred.get('program_name', pred.get('name', 'Unknown')),
+                'school_name': pred.get('school_name', 'Unknown'),
+                'confidence': pred.get('match_score', confidence),  # Use match_score which is decimal
+                'match_score': pred.get('match_score', confidence),
+                'recommendation_reasons': pred.get('match_reasons', [])
+            })
+        
+        return formatted_predictions
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in main method predictions: {e}")
+        return []
+
+def _get_backup_method_predictions(survey_data):
+    """Get predictions from backup statistical method"""
+    try:
+        # Statistical analysis based on survey data
+        program_scores = _calculate_statistical_scores(survey_data)
+        
+        # Sort by score and return top 5
+        sorted_programs = sorted(program_scores, key=lambda x: x['confidence'], reverse=True)
+        return sorted_programs[:5]
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in backup method predictions: {e}")
+        return []
+
+def _calculate_statistical_scores(survey_data):
+    """Calculate statistical scores for programs based on survey data"""
+    programs = [
+        {
+            'program_name': 'Computer Science',
+            'school_name': 'Sofia University St. Kliment Ohridski',
+            'base_score': 0.25,  # Reduced from 0.3
+            'factors': ['math', 'science', 'technology']
+        },
+        {
+            'program_name': 'Business Administration',
+            'school_name': 'University of National and World Economy', 
+            'base_score': 0.40,  # Increased from 0.35
+            'factors': ['management', 'economics', 'leadership', 'communication']
+        },
+        {
+            'program_name': 'Medicine',
+            'school_name': 'Medical University of Sofia',
+            'base_score': 0.35,  # Increased from 0.25
+            'factors': ['science', 'biology', 'helping', 'healthcare']
+        },
+        {
+            'program_name': 'Engineering',
+            'school_name': 'Technical University of Sofia',
+            'base_score': 0.30,
+            'factors': ['math', 'science', 'technology', 'design']
+        },
+        {
+            'program_name': 'Psychology',
+            'school_name': 'Sofia University St. Kliment Ohridski',
+            'base_score': 0.35,  # Increased from 0.25
+            'factors': ['social', 'helping', 'research', 'communication']
+        },
+        {
+            'program_name': 'Fine Arts',
+            'school_name': 'National Academy of Arts',
+            'base_score': 0.30,  # Increased from 0.2
+            'factors': ['art', 'creativity', 'design', 'visual']
+        },
+        {
+            'program_name': 'Economics',
+            'school_name': 'University of National and World Economy',
+            'base_score': 0.35,
+            'factors': ['math', 'economics', 'analysis', 'finance']
+        },
+        {
+            'program_name': 'Law',
+            'school_name': 'Sofia University St. Kliment Ohridski',
+            'base_score': 0.30,
+            'factors': ['social', 'communication', 'analysis', 'justice']
+        }
+    ]
+    
+    scored_programs = []
+    
+    for program in programs:
+        score = program['base_score']
+        reasons = []
+        
+        # Extract survey interests with better defaults
+        math_interest = survey_data.get('math_interest', 5)
+        science_interest = survey_data.get('science_interest', 5)
+        art_interest = survey_data.get('art_interest', 5)
+        sports_interest = survey_data.get('sports_interest', 5)
+        career_goal = survey_data.get('career_goal', '').lower()
+        
+        # Apply statistical weights with better balance
+        # Math-based programs
+        if 'math' in program['factors']:
+            if math_interest >= 7:
+                score += 0.25 * (math_interest / 10)
+                reasons.append("Strong mathematical aptitude")
+            elif math_interest <= 4:
+                score -= 0.1  # Penalty for low math interest
+        
+        # Science-based programs  
+        if 'science' in program['factors'] or 'biology' in program['factors']:
+            if science_interest >= 7:
+                score += 0.25 * (science_interest / 10)
+                reasons.append("High science interest")
+            elif science_interest <= 4:
+                score -= 0.1
+        
+        # Art and creativity programs
+        if any(factor in ['art', 'creativity', 'design', 'visual'] for factor in program['factors']):
+            if art_interest >= 7:
+                score += 0.30 * (art_interest / 10)  # Slightly higher weight for arts
+                reasons.append("Creative talents")
+            elif art_interest <= 4:
+                score -= 0.1
+        
+        # Communication and social programs
+        if any(factor in ['social', 'communication', 'helping'] for factor in program['factors']):
+            # Use combination of interests for social programs
+            social_score = (science_interest + art_interest) / 2
+            if social_score >= 6:
+                score += 0.20 * (social_score / 10)
+                reasons.append("Strong social and communication skills")
+        
+        # Technology programs (reduce bias)
+        if 'technology' in program['factors']:
+            if math_interest >= 6:  # Only boost if decent math interest
+                score += 0.15 * (math_interest / 10)  # Reduced from 0.2
+                reasons.append("Technology aptitude")
+            else:
+                score -= 0.05  # Small penalty if low math
+        
+        # Career goal alignment with more specific matching
+        if career_goal:
+            goal_match_score = 0
+            if career_goal == 'technology' and any(factor in ['technology', 'computer', 'engineering'] for factor in program['factors']):
+                goal_match_score = 0.15
+            elif career_goal == 'business' and any(factor in ['management', 'economics', 'leadership'] for factor in program['factors']):
+                goal_match_score = 0.20
+            elif career_goal == 'healthcare' and any(factor in ['medicine', 'biology', 'helping', 'healthcare'] for factor in program['factors']):
+                goal_match_score = 0.20
+            elif career_goal == 'arts' and any(factor in ['art', 'creativity', 'design'] for factor in program['factors']):
+                goal_match_score = 0.20
+            elif any(factor in career_goal or career_goal in factor for factor in program['factors']):
+                goal_match_score = 0.10
+            
+            if goal_match_score > 0:
+                score += goal_match_score
+                reasons.append("Career goal alignment")
+        
+        # Add variance
+        score += np.random.uniform(-0.05, 0.05)
+        score = max(0.1, min(0.95, score))
+        
+        if not reasons:
+            reasons.append("Statistical correlation analysis")
+        
+        scored_programs.append({
+            'program_name': program['program_name'],
+            'school_name': program['school_name'],
+            'confidence': score,  # Already in 0-1 range
+            'match_score': score,
+            'match_reasons': reasons
+        })
+    
+    return scored_programs
+
+def _find_consensus_recommendations(main_predictions, backup_predictions):
+    """Find programs that both methods recommend"""
+    if not main_predictions or not backup_predictions:
+        return []
+    
+    consensus = []
+    
+    # Create lookup for main predictions
+    main_lookup = {pred['program_name'].lower(): pred for pred in main_predictions}
+    
+    # Find matches in backup predictions
+    for backup_pred in backup_predictions:
+        program_name_lower = backup_pred['program_name'].lower()
+        if program_name_lower in main_lookup:
+            main_pred = main_lookup[program_name_lower]
+            
+            avg_confidence = (main_pred['confidence'] + backup_pred['confidence']) / 2
+            
+            consensus.append({
+                'program_name': main_pred['program_name'],
+                'school_name': main_pred['school_name'],
+                'avg_confidence': avg_confidence,
+                'main_confidence': main_pred['confidence'],
+                'backup_confidence': backup_pred['confidence']
+            })
+    
+    # Sort by average confidence
+    consensus.sort(key=lambda x: x['avg_confidence'], reverse=True)
+    return consensus[:3] 
