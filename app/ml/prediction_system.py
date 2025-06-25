@@ -106,10 +106,10 @@ class AdvancedPredictionSystem:
                         if career_goal and career_goal in program_name:
                             interest_score += 15
                             
-                        # Normalize to percentage with better distribution
-                        confidence = min(95, max(30, int(interest_score * 3)))
-                        pred['confidence'] = confidence
-                        pred['match_score'] = confidence / 100.0
+                        # Normalize to decimal (0-1) with better distribution
+                        confidence_decimal = min(0.95, max(0.30, interest_score * 0.03))
+                        pred['confidence'] = confidence_decimal
+                        pred['match_score'] = confidence_decimal
                         
                     base_predictions = demo_predictions
                 except Exception as e:
