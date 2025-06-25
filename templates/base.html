@@ -55,6 +55,7 @@
                         <span>My Recommendations</span>
                     </a>
                 </li>
+
             </ul>
         </div>
 
@@ -176,6 +177,7 @@
                     <a href="{{ url_for('main.recommendations') }}" class="nav-link">
                         <i class="fas fa-star me-1" aria-hidden="true"></i>Results
                     </a>
+
                     {% else %}
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a>
                     {% endif %}
