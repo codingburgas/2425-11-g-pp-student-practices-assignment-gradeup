@@ -84,130 +84,7 @@
 
 
 
-                            <!-- Recommended Universities -->
-                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="250">
-                                <div class="card-header">
-                                    <h3>
-                                        <i class="fas fa-university me-2"></i>
-                                        Top Recommended Universities
-                                    </h3>
-                                    <p>Universities that match your preferences and academic interests</p>
-                                    {% if university_recommendations and university_recommendations|length > 0 %}
-                                        <div class="recommendations-summary">
-                                            <span class="summary-badge">
-                                                <i class="fas fa-graduation-cap"></i>
-                                                {{ university_recommendations|length }} Perfect Matches Found
-                                            </span>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="card-content">
-                                    <div class="universities-grid">
-                                        {% if university_recommendations and university_recommendations|length > 0 %}
-                                            {% for university in university_recommendations %}
-                                            <div class="university-item" data-aos="fade-up" data-aos-delay="{{ 300 + (loop.index0 * 100) }}">
-                                                <div class="uni-header">
-                                                    <div class="uni-rank">
-                                                        {{ loop.index }}
-                                                        <div class="rank-glow"></div>
-                                                    </div>
-                                                    <div class="uni-info">
-                                                        <h4>{{ university.school_name }}</h4>
-                                                        <p>
-                                                            <i class="fas fa-map-marker-alt"></i>
-                                                            {{ university.location or 'Location not specified' }}
-                                                        </p>
-                                                    </div>
-                                                    <div class="uni-score">
-                                                        <div class="score-container">
-                                                            <span class="score">{{ university.match_percentage }}%</span>
-                                                            <div class="score-ring">
-                                                                <svg width="60" height="60">
-                                                                    <circle cx="30" cy="30" r="25" stroke="rgba(139, 92, 246, 0.2)" stroke-width="3" fill="none"/>
-                                                                    <circle cx="30" cy="30" r="25" stroke="var(--cosmic-blue)" stroke-width="3" fill="none" 
-                                                                            stroke-dasharray="{{ (university.match_percentage * 1.57)|round }}, 157" 
-                                                                            stroke-linecap="round" transform="rotate(-90 30 30)"/>
-                                                                </svg>
-                                                            </div>
-                                                        </div>
-                                                        <small>match</small>
-                                                    </div>
-                                                </div>
-                                                <div class="uni-details">
-                                                    {% if university.match_reasons %}
-                                                        <div class="uni-tags">
-                                                            {% for reason in university.match_reasons[:3] %}
-                                                                <span class="tag">
-                                                                    <i class="fas fa-check-circle"></i>
-                                                                    {{ reason|truncate(30) }}
-                                                                </span>
-                                                            {% endfor %}
-                                                        </div>
-                                                    {% endif %}
-                                                    
-                                                    {% if university.description %}
-                                                        <div class="uni-description-container">
-                                                            <p class="uni-description">{{ university.description|truncate(140) }}</p>
-                                                        </div>
-                                                    {% endif %}
-                                                    
-                                                    <div class="uni-actions">
-                                                        {% if university.website %}
-                                                            <a href="{{ university.website }}" target="_blank" class="uni-link primary">
-                                                                <i class="fas fa-external-link-alt"></i>
-                                                                <span>Visit Website</span>
-                                                            </a>
-                                                        {% endif %}
-                                                        <button class="uni-link secondary" onclick="addToFavorites({{ university.school_id or 0 }})">
-                                                            <i class="fas fa-heart"></i>
-                                                            <span>Add to Favorites</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Decorative elements -->
-                                                <div class="uni-particles">
-                                                    <div class="particle particle-1"></div>
-                                                    <div class="particle particle-2"></div>
-                                                    <div class="particle particle-3"></div>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        {% else %}
-                                            <div class="no-universities">
-                                                <div class="empty-state">
-                                                    <div class="empty-icon">
-                                                        <i class="fas fa-university"></i>
-                                                        <div class="icon-sparkles">
-                                                            <i class="fas fa-sparkles"></i>
-                                                        </div>
-                                                    </div>
-                                                    <h4>No University Recommendations Found</h4>
-                                                    <p>We couldn't find university recommendations based on your current survey data.</p>
-                                                    <div class="suggestions-list">
-                                                        <div class="suggestion-item">
-                                                            <i class="fas fa-user-edit"></i>
-                                                            <span>Complete your profile with location preferences</span>
-                                                        </div>
-                                                        <div class="suggestion-item">
-                                                            <i class="fas fa-redo-alt"></i>
-                                                            <span>Retake the survey with more specific answers</span>
-                                                        </div>
-                                                        <div class="suggestion-item">
-                                                            <i class="fas fa-database"></i>
-                                                            <span>Check back as we add more universities</span>
-                                                        </div>
-                                                    </div>
-                                                    <a href="{{ url_for('main.survey') }}" class="empty-state-btn">
-                                                        <i class="fas fa-rocket"></i>
-                                                        <span>Retake Survey</span>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <!-- Enhanced AI-Powered Recommendations -->
                             <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="100">
@@ -263,6 +140,14 @@
                                                     <div class="rec-main-info">
                                                         <h4>{{ consensus.program_name }}</h4>
                                                         <p class="university-name">{{ consensus.school_name }}</p>
+                                                        <div class="program-details">
+                                                            {% if consensus.degree_type %}
+                                                                <span class="detail-tag">{{ consensus.degree_type }}</span>
+                                                            {% endif %}
+                                                            {% if consensus.duration %}
+                                                                <span class="detail-tag">{{ consensus.duration }}</span>
+                                                            {% endif %}
+                                                        </div>
                                                     </div>
                                                     <div class="rec-scores-comparison">
                                                         <div class="score-pair">
@@ -281,6 +166,20 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="rec-actions">
+                                                    <button class="action-btn primary" onclick="viewProgramDetails('{{ consensus.program_id }}', '{{ consensus.program_name }}')">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span>Program Details</span>
+                                                    </button>
+                                                    <button class="action-btn secondary" onclick="visitUniversity('{{ consensus.school_name }}')">
+                                                        <i class="fas fa-university"></i>
+                                                        <span>Visit University</span>
+                                                    </button>
+                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ consensus.program_id }}', 'program')">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span>Add to Favorites</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             {% endfor %}
                                         </div>
@@ -292,15 +191,22 @@
                                             <div class="section-header neural">
                                                 <i class="fas fa-brain"></i>
                                                 <h4>Neural Network Recommendations</h4>
-                                                <span class="method-badge neural">Deep Learning</span>
                                             </div>
                                             {% for pred in main_predictions[:3] %}
-                                            <div class="enhanced-recommendation-item neural-item">
+                                                                                         <div class="enhanced-recommendation-item neural-item">
                                                 <div class="rec-rank-enhanced neural">{{ loop.index }}</div>
                                                 <div class="rec-content">
                                                     <div class="rec-main-info">
                                                         <h4>{{ pred.program_name }}</h4>
                                                         <p class="university-name">{{ pred.school_name }}</p>
+                                                        <div class="program-details">
+                                                            {% if pred.degree_type %}
+                                                                <span class="detail-tag">{{ pred.degree_type }}</span>
+                                                            {% endif %}
+                                                            {% if pred.duration %}
+                                                                <span class="detail-tag">{{ pred.duration }}</span>
+                                                            {% endif %}
+                                                        </div>
                                                     </div>
                                                     <div class="single-method-score">
                                                         <div class="confidence-display neural">
@@ -310,6 +216,19 @@
                                                             <span class="confidence-percentage">{{ (pred.confidence * 100)|round }}%</span>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="rec-actions">
+                                                    <button class="action-btn primary" onclick="viewProgramDetails('{{ pred.program_id }}', '{{ pred.program_name }}')">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span>Details</span>
+                                                    </button>
+                                                    <button class="action-btn secondary" onclick="visitUniversity('{{ pred.school_name }}')">
+                                                        <i class="fas fa-university"></i>
+                                                        <span>University</span>
+                                                    </button>
+                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ pred.program_id }}', 'program')">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                             {% endfor %}
@@ -322,16 +241,23 @@
                                             <div class="section-header statistical">
                                                 <i class="fas fa-chart-bar"></i>
                                                 <h4>Statistical Method Recommendations</h4>
-                                                <span class="method-badge statistical">Traditional Analysis</span>
                                             </div>
                                             {% set statistical_recs = backup_predictions or program_recommendations %}
                                             {% for rec in statistical_recs[:3] %}
-                                            <div class="enhanced-recommendation-item statistical-item">
+                                                                                         <div class="enhanced-recommendation-item statistical-item">
                                                 <div class="rec-rank-enhanced statistical">{{ loop.index }}</div>
                                                 <div class="rec-content">
                                                     <div class="rec-main-info">
                                                         <h4>{{ rec.program_name }}</h4>
                                                         <p class="university-name">{{ rec.school_name }}</p>
+                                                        <div class="program-details">
+                                                            {% if rec.degree_type %}
+                                                                <span class="detail-tag">{{ rec.degree_type }}</span>
+                                                            {% endif %}
+                                                            {% if rec.duration %}
+                                                                <span class="detail-tag">{{ rec.duration }}</span>
+                                                            {% endif %}
+                                                        </div>
                                                     </div>
                                                     <div class="single-method-score">
                                                         <div class="confidence-display statistical">
@@ -341,6 +267,19 @@
                                                             <span class="confidence-percentage">{{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}%</span>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="rec-actions">
+                                                    <button class="action-btn primary" onclick="viewProgramDetails('{{ rec.program_id }}', '{{ rec.program_name }}')">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span>Details</span>
+                                                    </button>
+                                                    <button class="action-btn secondary" onclick="visitUniversity('{{ rec.school_name }}')">
+                                                        <i class="fas fa-university"></i>
+                                                        <span>University</span>
+                                                    </button>
+                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ rec.program_id }}', 'program')">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                             {% endfor %}
@@ -2114,6 +2053,123 @@
         margin-left: 0;
     }
 }
+
+/* Interactive Elements Styles */
+.program-details {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.detail-tag {
+    background: rgba(139, 92, 246, 0.15);
+    color: rgba(139, 92, 246, 0.9);
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.rec-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 92, 246, 0.15);
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    min-width: fit-content;
+}
+
+.action-btn i {
+    font-size: 0.9rem;
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.secondary {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.action-btn.favorite {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.action-btn.favorite:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.favorite.active {
+    background: #ef4444;
+    color: white;
+}
+
+.enhanced-recommendation-item {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Mobile responsiveness for action buttons */
+@media (max-width: 768px) {
+    .rec-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-btn {
+        justify-content: center;
+        padding: 0.75rem 1rem;
+    }
+    
+    .program-details {
+        justify-content: flex-start;
+    }
+    
+    .detail-tag {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+    }
+}
 </style>
 
 <script>
@@ -2153,6 +2209,248 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, 1000); // Wait 1 second for FontAwesome to load
+});
+
+// Interactive Functions for Program Recommendations
+function viewProgramDetails(programId, programName) {
+    // Create and show modal with program details
+    const modal = document.createElement('div');
+    modal.className = 'program-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-graduation-cap"></i> ${programName}</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading program details...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Add modal styles if not already present
+    if (!document.getElementById('modal-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'modal-styles';
+        styles.textContent = `
+            .program-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+            }
+            .modal-content {
+                position: relative;
+                background: linear-gradient(135deg, rgba(30, 30, 70, 0.95), rgba(15, 15, 35, 0.95));
+                border-radius: 1rem;
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            }
+            .modal-header h3 {
+                color: white;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .modal-close {
+                background: none;
+                border: none;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 1.2rem;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+            .modal-close:hover {
+                background: rgba(239, 68, 68, 0.2);
+                color: #ef4444;
+            }
+            .modal-body {
+                padding: 1.5rem;
+                color: white;
+            }
+            .loading-spinner {
+                text-align: center;
+                padding: 2rem;
+            }
+            .loading-spinner i {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+                color: #8b5cf6;
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    // Simulate loading program details (replace with actual API call)
+    setTimeout(() => {
+        const modalBody = modal.querySelector('.modal-body');
+        modalBody.innerHTML = `
+            <div class="program-info">
+                <div class="info-section">
+                    <h4><i class="fas fa-info-circle"></i> Program Information</h4>
+                    <p><strong>Program ID:</strong> ${programId}</p>
+                    <p><strong>Name:</strong> ${programName}</p>
+                    <p><strong>Type:</strong> Bachelor's Degree</p>
+                    <p><strong>Duration:</strong> 4 years</p>
+                    <p><strong>Language:</strong> English/Bulgarian</p>
+                </div>
+                <div class="info-section">
+                    <h4><i class="fas fa-book"></i> Description</h4>
+                    <p>This program provides comprehensive education in the field, combining theoretical knowledge with practical skills to prepare students for successful careers.</p>
+                </div>
+                <div class="info-section">
+                    <h4><i class="fas fa-euro-sign"></i> Tuition & Fees</h4>
+                    <p><strong>Annual Tuition:</strong> €1,500 - €3,000</p>
+                    <p><strong>Application Fee:</strong> €50</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="action-btn primary" onclick="window.open('#', '_blank')">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>Apply Now</span>
+                    </button>
+                    <button class="action-btn secondary" onclick="addToFavorites('${programId}', 'program')">
+                        <i class="fas fa-heart"></i>
+                        <span>Add to Favorites</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }, 1000);
+}
+
+function visitUniversity(universityName) {
+    // Create a simple modal or redirect to university page
+    const confirmed = confirm(`Visit ${universityName}'s official website?`);
+    if (confirmed) {
+        // In a real app, you'd have actual university URLs
+        const searchQuery = encodeURIComponent(universityName + " official website");
+        window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+    }
+}
+
+function addToFavorites(itemId, type) {
+    // Add to favorites functionality
+    const btn = event.target.closest('.action-btn.favorite');
+    
+    if (btn.classList.contains('active')) {
+        // Remove from favorites
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-heart"></i>';
+        showNotification(`Removed from favorites`, 'info');
+    } else {
+        // Add to favorites
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-heart"></i>';
+        showNotification(`Added to favorites!`, 'success');
+        
+        // In a real app, you'd make an API call to save this
+        // fetch('/api/favorites', { method: 'POST', body: JSON.stringify({itemId, type}) })
+    }
+}
+
+function closeModal() {
+    const modal = document.querySelector('.program-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add notification styles if not present
+    if (!document.getElementById('notification-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'notification-styles';
+        styles.textContent = `
+            .notification {
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                z-index: 1001;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                color: white;
+                animation: slideIn 0.3s ease;
+            }
+            .notification.success {
+                background: linear-gradient(135deg, #10b981, #059669);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+            }
+            .notification.info {
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                border: 1px solid rgba(59, 130, 246, 0.3);
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
 });
 </script>
 {% endblock %} 
