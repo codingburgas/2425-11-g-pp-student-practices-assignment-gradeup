@@ -80,147 +80,9 @@
                                 </div>
                             </div>
 
-                            <!-- AI Analysis Results -->
-                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="100">
-                                <div class="card-header">
-                                    <h3>
-                                        <i class="fas fa-brain me-2"></i>
-                                        AI Analysis Results
-                                    </h3>
-                                </div>
-                                <div class="card-content">
-                                    <div class="analysis-results">
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <div class="analysis-metric">
-                                                    <div class="metric-icon">
-                                                        <i class="fas fa-graduation-cap"></i>
-                                                    </div>
-                                                    <div class="metric-content">
-                                                        <h4>Match Score</h4>
-                                                        <div class="score-display">
-                                                            {% if program_recommendations and program_recommendations|length > 0 %}
-                                                                <span class="score-number">{{ (program_recommendations[0].match_score * 100)|round|int }}%</span>
-                                                                <div class="score-bar">
-                                                                    <div class="score-fill" style="width: {{ (program_recommendations[0].match_score * 100)|round|int }}%;"></div>
-                                                                </div>
-                                                            {% else %}
-                                                                <span class="score-number">N/A</span>
-                                                                <div class="score-bar">
-                                                                    <div class="score-fill" style="width: 0%;"></div>
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="analysis-metric">
-                                                    <div class="metric-icon">
-                                                        <i class="fas fa-university"></i>
-                                                    </div>
-                                                    <div class="metric-content">
-                                                        <h4>Programs Found</h4>
-                                                        <div class="metric-value">
-                                                            <span class="number">{{ program_recommendations|length }}</span>
-                                                            <span class="label">Matching Programs</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="analysis-metric">
-                                                    <div class="metric-icon">
-                                                        <i class="fas fa-target"></i>
-                                                    </div>
-                                                    <div class="metric-content">
-                                                        <h4>Best Match</h4>
-                                                        <div class="metric-value">
-                                                            {% if program_recommendations and program_recommendations|length > 0 %}
-                                                                <span class="best-match">{{ program_recommendations[0].program_name }}</span>
-                                                                <span class="confidence">{{ (program_recommendations[0].match_score * 100)|round|int }}% confidence</span>
-                                                            {% else %}
-                                                                <span class="best-match">No matches yet</span>
-                                                                <span class="confidence">Take survey first</span>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Recommended Programs -->
-                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="200">
-                                <div class="card-header">
-                                    <h3>
-                                        <i class="fas fa-award me-2"></i>
-                                        Top Recommended Programs
-                                        <span class="method-badge statistical-badge">
-                                            <i class="fas fa-chart-bar"></i>
-                                            Statistical Method
-                                        </span>
-                                    </h3>
-                                    <p>Based on advanced statistical analysis of your interests, skills, and career goals</p>
-                                </div>
-                                <div class="card-content">
-                                    <div class="recommendations-grid">
-                                        {% if program_recommendations and program_recommendations|length > 0 %}
-                                            {% for recommendation in program_recommendations %}
-                                            <div class="recommendation-item">
-                                                <div class="rec-header">
-                                                    <div class="rec-rank">{{ loop.index }}</div>
-                                                    <div class="rec-info">
-                                                        <h4>{{ recommendation.program_name }}</h4>
-                                                        <p>{{ recommendation.school_name }}</p>
-                                                    </div>
-                                                    <div class="rec-score">
-                                                        <span class="score">{{ (recommendation.match_score * 100)|int }}%</span>
-                                                        <small>match</small>
-                                                    </div>
-                                                </div>
-                                                <div class="rec-details">
-                                                    <div class="rec-tags">
-                                                        {% if recommendation.program_duration %}
-                                                            <span class="tag">{{ recommendation.program_duration }}</span>
-                                                        {% endif %}
-                                                        {% if recommendation.language %}
-                                                            <span class="tag">{{ recommendation.language }}</span>
-                                                        {% endif %}
-                                                        <span class="tag">{{ (recommendation.match_score * 100)|int }}% match</span>
-                                                    </div>
-                                                    <p class="rec-description">
-                                                        {% if recommendation.recommendation_reasons %}
-                                                            {{ recommendation.recommendation_reasons|join('. ') }}.
-                                                        {% else %}
-                                                            Recommended based on your survey responses and interests.
-                                                        {% endif %}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        {% else %}
-                                            <div class="no-recommendations">
-                                                <div class="empty-state">
-                                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                                                    <h4>No Program Recommendations Found</h4>
-                                                    <p>We couldn't find specific program recommendations based on your current survey data. This might be because:</p>
-                                                    <ul class="text-left">
-                                                        <li>Your survey responses need more specific preferences</li>
-                                                        <li>The database needs more program data</li>
-                                                        <li>You may want to retake the survey with different answers</li>
-                                                    </ul>
-                                                    <a href="{{ url_for('main.survey') }}" class="btn btn-primary mt-3">
-                                                        <i class="fas fa-redo"></i> Retake Survey
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+
+
 
                             <!-- Recommended Universities -->
                             <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="250">
@@ -347,142 +209,166 @@
                                 </div>
                             </div>
 
-                            <!-- Dual AI Analysis Section -->
-                            {% if main_predictions or backup_predictions %}
-                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="350">
+                            <!-- Enhanced AI-Powered Recommendations -->
+                            <div class="cosmic-card mb-4" data-aos="fade-up" data-aos-delay="100">
                                 <div class="card-header">
                                     <h3>
-                                        <i class="fas fa-brain me-2"></i>
-                                        Dual AI Analysis
+                                        <i class="fas fa-rocket me-2"></i>
+                                        AI-Powered Program Recommendations
                                     </h3>
-                                    <p>Advanced Neural Network + Statistical Backup Method</p>
+                                    <p>Advanced machine learning analysis combining Neural Network and Statistical methods</p>
                                 </div>
                                 <div class="card-content">
-                                    <div class="dual-ai-container">
-                                        <div class="row">
-                                            <!-- Neural Network Method -->
-                                            <div class="col-lg-6 mb-4">
-                                                <div class="ai-method-section neural-network">
-                                                    <div class="method-header">
-                                                        <i class="fas fa-brain"></i>
-                                                        <h4>Neural Network Method</h4>
-                                                    </div>
-                                                    <div class="predictions-list">
-                                                        {% if main_predictions %}
-                                                            {% for pred in main_predictions %}
-                                                            <div class="prediction-item">
-                                                                <div class="pred-info">
-                                                                    <h5>{{ pred.program_name }}</h5>
-                                                                    <p>{{ pred.school_name }}</p>
-                                                                </div>
-                                                                <div class="pred-confidence">
-                                                                    <div class="confidence-bar">
-                                                                        <div class="confidence-fill neural" style="width: {{ (pred.confidence * 100)|round }}%;"></div>
-                                                                    </div>
-                                                                    <span class="confidence-text">{{ (pred.confidence * 100)|round }}%</span>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                        {% else %}
-                                                            <div class="no-predictions">
-                                                                <i class="fas fa-exclamation-triangle"></i>
-                                                                <p>Neural network unavailable</p>
-                                                            </div>
-                                                        {% endif %}
-                                                    </div>
-                                                    <div class="method-stats">
-                                                        <span class="stat-item">
-                                                            <i class="fas fa-chart-line"></i>
-                                                            {{ main_predictions|length }} Predictions
-                                                        </span>
-                                                        {% if main_predictions %}
-                                                        <span class="stat-item">
-                                                            <i class="fas fa-percentage"></i>
-                                                            {{ ((main_predictions | map(attribute='confidence') | sum) / main_predictions|length * 100) | round }}% Average Confidence
-                                                        </span>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
+                                    <!-- Method Comparison Header -->
+                                    <div class="method-comparison-header">
+                                        <div class="method-indicator neural">
+                                            <div class="method-icon">
+                                                <i class="fas fa-brain"></i>
                                             </div>
-
-                                            <!-- Statistical Method -->
-                                            <div class="col-lg-6 mb-4">
-                                                <div class="ai-method-section statistical">
-                                                    <div class="method-header">
-                                                        <i class="fas fa-chart-bar"></i>
-                                                        <h4>Statistical Method</h4>
-                                                    </div>
-                                                    <div class="predictions-list">
-                                                        {% if backup_predictions %}
-                                                            {% for pred in backup_predictions %}
-                                                            <div class="prediction-item">
-                                                                <div class="pred-info">
-                                                                    <h5>{{ pred.program_name }}</h5>
-                                                                    <p>{{ pred.school_name }}</p>
-                                                                </div>
-                                                                <div class="pred-confidence">
-                                                                    <div class="confidence-bar">
-                                                                        <div class="confidence-fill statistical" style="width: {{ (pred.confidence * 100)|round }}%;"></div>
-                                                                    </div>
-                                                                    <span class="confidence-text">{{ (pred.confidence * 100)|round }}%</span>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                        {% else %}
-                                                            <div class="no-predictions">
-                                                                <i class="fas fa-exclamation-triangle"></i>
-                                                                <p>Statistical analysis unavailable</p>
-                                                            </div>
-                                                        {% endif %}
-                                                    </div>
-                                                    <div class="method-stats">
-                                                        <span class="stat-item">
-                                                            <i class="fas fa-chart-bar"></i>
-                                                            {{ backup_predictions|length }} Predictions
-                                                        </span>
-                                                        {% if backup_predictions %}
-                                                        <span class="stat-item">
-                                                            <i class="fas fa-percentage"></i>
-                                                            {{ ((backup_predictions | map(attribute='confidence') | sum) / backup_predictions|length * 100) | round }}% Average Confidence
-                                                        </span>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
+                                            <div class="method-info">
+                                                <h5>Neural Network</h5>
+                                                <span>Deep Learning Analysis</span>
                                             </div>
                                         </div>
-
-                                        <!-- Consensus Recommendations -->
-                                        {% if consensus_recommendations %}
-                                        <div class="consensus-section mt-4">
-                                            <div class="consensus-header">
-                                                <i class="fas fa-handshake"></i>
-                                                <h4>Consensus Recommendations - Both methods agree</h4>
+                                        <div class="vs-indicator">
+                                            <span>VS</span>
+                                        </div>
+                                        <div class="method-indicator statistical">
+                                            <div class="method-icon">
+                                                <i class="fas fa-chart-bar"></i>
                                             </div>
-                                            <div class="consensus-list">
-                                                {% for consensus in consensus_recommendations %}
-                                                <div class="consensus-item">
-                                                    <div class="consensus-info">
-                                                        <h5>{{ consensus.program_name }}</h5>
-                                                        <p>{{ consensus.school_name }}</p>
+                                            <div class="method-info">
+                                                <h5>Statistical Method</h5>
+                                                <span>Traditional Analysis</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Enhanced Recommendations Grid -->
+                                    <div class="enhanced-recommendations-grid">
+                                        {% if main_predictions or backup_predictions or program_recommendations %}
+                                        
+                                        <!-- Consensus Recommendations First -->
+                                        {% if consensus_recommendations %}
+                                        <div class="consensus-recommendations">
+                                            <div class="section-header consensus">
+                                                <i class="fas fa-handshake"></i>
+                                                <h4>Top Consensus Picks</h4>
+                                                <span class="consensus-badge">Both methods agree</span>
+                                            </div>
+                                            {% for consensus in consensus_recommendations[:3] %}
+                                            <div class="enhanced-recommendation-item consensus-item">
+                                                <div class="rec-rank-enhanced consensus">{{ loop.index }}</div>
+                                                <div class="rec-content">
+                                                    <div class="rec-main-info">
+                                                        <h4>{{ consensus.program_name }}</h4>
+                                                        <p class="university-name">{{ consensus.school_name }}</p>
                                                     </div>
-                                                    <div class="consensus-scores">
-                                                        <div class="score-comparison">
-                                                            <span class="score neural">Neural: {{ (consensus.main_confidence * 100)|round }}%</span>
-                                                            <span class="score statistical">Statistical: {{ (consensus.backup_confidence * 100)|round }}%</span>
+                                                    <div class="rec-scores-comparison">
+                                                        <div class="score-pair">
+                                                            <div class="method-score neural">
+                                                                <span class="score-label">Neural</span>
+                                                                <span class="score-value">{{ (consensus.main_confidence * 100)|round }}%</span>
+                                                            </div>
+                                                            <div class="method-score statistical">
+                                                                <span class="score-label">Statistical</span>
+                                                                <span class="score-value">{{ (consensus.backup_confidence * 100)|round }}%</span>
+                                                            </div>
                                                         </div>
-                                                        <div class="avg-score">
-                                                            Average: {{ (consensus.avg_confidence * 100)|round }}%
+                                                        <div class="consensus-score">
+                                                            <span class="consensus-label">Consensus</span>
+                                                            <span class="consensus-value">{{ (consensus.avg_confidence * 100)|round }}%</span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {% endfor %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Neural Network Specific Recommendations -->
+                                        {% if main_predictions %}
+                                        <div class="method-specific-recommendations neural-section">
+                                            <div class="section-header neural">
+                                                <i class="fas fa-brain"></i>
+                                                <h4>Neural Network Recommendations</h4>
+                                                <span class="method-badge neural">Deep Learning</span>
+                                            </div>
+                                            {% for pred in main_predictions[:3] %}
+                                            <div class="enhanced-recommendation-item neural-item">
+                                                <div class="rec-rank-enhanced neural">{{ loop.index }}</div>
+                                                <div class="rec-content">
+                                                    <div class="rec-main-info">
+                                                        <h4>{{ pred.program_name }}</h4>
+                                                        <p class="university-name">{{ pred.school_name }}</p>
+                                                    </div>
+                                                    <div class="single-method-score">
+                                                        <div class="confidence-display neural">
+                                                            <div class="confidence-bar-enhanced">
+                                                                <div class="confidence-fill-enhanced neural" style="width: {{ (pred.confidence * 100)|round }}%;"></div>
+                                                            </div>
+                                                            <span class="confidence-percentage">{{ (pred.confidence * 100)|round }}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Statistical Method Specific Recommendations -->
+                                        {% if backup_predictions or program_recommendations %}
+                                        <div class="method-specific-recommendations statistical-section">
+                                            <div class="section-header statistical">
+                                                <i class="fas fa-chart-bar"></i>
+                                                <h4>Statistical Method Recommendations</h4>
+                                                <span class="method-badge statistical">Traditional Analysis</span>
+                                            </div>
+                                            {% set statistical_recs = backup_predictions or program_recommendations %}
+                                            {% for rec in statistical_recs[:3] %}
+                                            <div class="enhanced-recommendation-item statistical-item">
+                                                <div class="rec-rank-enhanced statistical">{{ loop.index }}</div>
+                                                <div class="rec-content">
+                                                    <div class="rec-main-info">
+                                                        <h4>{{ rec.program_name }}</h4>
+                                                        <p class="university-name">{{ rec.school_name }}</p>
+                                                    </div>
+                                                    <div class="single-method-score">
+                                                        <div class="confidence-display statistical">
+                                                            <div class="confidence-bar-enhanced">
+                                                                <div class="confidence-fill-enhanced statistical" style="width: {{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}%;"></div>
+                                                            </div>
+                                                            <span class="confidence-percentage">{{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% else %}
+                                        <div class="no-predictions-enhanced">
+                                            <div class="empty-state-enhanced">
+                                                <i class="fas fa-brain fa-3x mb-3"></i>
+                                                <h4>AI Analysis In Progress</h4>
+                                                <p>Our AI systems are analyzing your survey responses to generate personalized recommendations.</p>
+                                                <div class="analysis-status">
+                                                    <div class="status-item">
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                        <span>Survey data received</span>
+                                                    </div>
+                                                    <div class="status-item">
+                                                        <i class="fas fa-spinner fa-spin text-warning"></i>
+                                                        <span>AI analysis in progress</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
-                            {% endif %}
 
                             <!-- Action Buttons -->
                             <div class="recommendations-actions text-center" data-aos="fade-up" data-aos-delay="300">
@@ -1791,6 +1677,441 @@
     
     .method-stats {
         flex-wrap: wrap;
+    }
+}
+
+/* Enhanced AI Recommendations Styles */
+.method-comparison-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.method-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid;
+    transition: all 0.3s ease;
+}
+
+.method-indicator.neural {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.method-indicator.statistical {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.method-icon {
+    font-size: 1.5rem;
+}
+
+.method-indicator.neural .method-icon {
+    color: #3b82f6;
+}
+
+.method-indicator.statistical .method-icon {
+    color: #10b981;
+}
+
+.method-info h5 {
+    margin: 0;
+    color: var(--star-white);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.method-info span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.vs-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.enhanced-recommendations-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid;
+}
+
+.section-header.consensus {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.section-header.neural {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.section-header.statistical {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.section-header i {
+    font-size: 1.5rem;
+}
+
+.section-header.consensus i {
+    color: #fbbf24;
+}
+
+.section-header.neural i {
+    color: #3b82f6;
+}
+
+.section-header.statistical i {
+    color: #10b981;
+}
+
+.section-header h4 {
+    margin: 0;
+    color: var(--star-white);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.method-badge, .consensus-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.method-badge.neural, .consensus-badge {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.method-badge.statistical {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.consensus-badge {
+    background: rgba(255, 215, 0, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.enhanced-recommendation-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 2px solid;
+    background: rgba(30, 30, 70, 0.3);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.enhanced-recommendation-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.enhanced-recommendation-item.consensus-item {
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.enhanced-recommendation-item.consensus-item:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.1);
+}
+
+.enhanced-recommendation-item.neural-item {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.enhanced-recommendation-item.neural-item:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+}
+
+.enhanced-recommendation-item.statistical-item {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.enhanced-recommendation-item.statistical-item:hover {
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+}
+
+.rec-rank-enhanced {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.rec-rank-enhanced.consensus {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.rec-rank-enhanced.neural {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.rec-rank-enhanced.statistical {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.rec-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rec-main-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--star-white);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.university-name {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.rec-scores-comparison {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    min-width: 140px;
+}
+
+.score-pair {
+    display: flex;
+    gap: 1rem;
+}
+
+.method-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.score-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.25rem;
+}
+
+.method-score.neural .score-value {
+    color: #60a5fa;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.method-score.statistical .score-value {
+    color: #34d399;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.consensus-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 215, 0, 0.2);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.consensus-label {
+    font-size: 0.75rem;
+    color: rgba(255, 215, 0, 0.8);
+    margin-bottom: 0.25rem;
+}
+
+.consensus-value {
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.single-method-score {
+    min-width: 120px;
+}
+
+.confidence-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.confidence-bar-enhanced {
+    width: 80px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.confidence-fill-enhanced {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.confidence-fill-enhanced.neural {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.confidence-fill-enhanced.statistical {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.confidence-percentage {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.confidence-display.neural .confidence-percentage {
+    color: #60a5fa;
+}
+
+.confidence-display.statistical .confidence-percentage {
+    color: #34d399;
+}
+
+.no-predictions-enhanced {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+}
+
+.empty-state-enhanced {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state-enhanced i {
+    color: rgba(139, 92, 246, 0.6);
+    margin-bottom: 1rem;
+}
+
+.empty-state-enhanced h4 {
+    color: var(--star-white);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.empty-state-enhanced p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+}
+
+.analysis-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+    .method-comparison-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .rec-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .rec-scores-comparison {
+        align-items: flex-start;
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .score-pair {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .enhanced-recommendation-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .method-indicator {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .method-badge, .consensus-badge {
+        margin-left: 0;
     }
 }
 </style>
