@@ -20,11 +20,11 @@
                     <div class="admin-stats">
                         <span class="stat-badge">
                             <i class="fas fa-list"></i>
-                            {{ programs.total }} Total Programs
+                            {{ stats.total_programs }} Total Programs
                         </span>
                         <span class="stat-badge">
                             <i class="fas fa-university"></i>
-                            {{ universities|length }} Universities
+                            {{ stats.universities_count }} Universities
                         </span>
                     </div>
                 </div>
@@ -42,44 +42,109 @@
         </div>
     </div>
 
-    <!-- Search and Filter Section -->
-    <div class="admin-filters">
+    <!-- Quick Stats -->
+    <div class="admin-dashboard-content">
         <div class="container-fluid">
-            <div class="filters-container">
-                <form method="GET" class="filters-form">
-                    <div class="filter-group">
-                        <div class="filter-input-wrapper">
-                            <i class="fas fa-search filter-icon"></i>
-                            <input type="text" 
-                                   name="search" 
-                                   value="{{ search }}"
-                                   placeholder="Search programs by name or degree type..."
-                                   class="cosmic-filter-input">
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-graduation-cap"></i>
                         </div>
-                        <div class="filter-select-wrapper">
-                            <i class="fas fa-university filter-icon"></i>
-                            <select name="university_id" class="cosmic-filter-select">
-                                <option value="">All Universities</option>
-                                {% for university in universities %}
-                                <option value="{{ university.id }}" 
-                                        {% if university.id == selected_university %}selected{% endif %}>
-                                    {{ university.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
+                        <div class="stat-info">
+                            <h4>{{ stats.total_programs }}</h4>
+                            <p>Total Programs</p>
                         </div>
-                        <button type="submit" class="cosmic-btn cosmic-btn-primary">
-                            <i class="fas fa-search"></i>
-                            Search
-                        </button>
-                        {% if search or selected_university %}
-                        <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-ghost">
-                            <i class="fas fa-times"></i>
-                            Clear
-                        </a>
-                        {% endif %}
                     </div>
-                </form>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>{{ stats.universities_count }}</h4>
+                            <p>Universities</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>{{ stats.degree_types_count }}</h4>
+                            <p>Degree Types</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h4>{{ stats.avg_tuition }}</h4>
+                            <p>Avg. Tuition</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="admin-dashboard-content">
+        <div class="container-fluid">
+            <div class="admin-dashboard-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>
+                            <i class="fas fa-list me-2"></i>
+                            Program Directory
+                        </h3>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- Search and Filters -->
+                    <div class="filters-container mb-4">
+                        <form method="GET" class="filters-form">
+                            <div class="filter-group">
+                                <div class="filter-input-wrapper">
+                                    <i class="fas fa-search filter-icon"></i>
+                                    <input type="text" 
+                                           name="search" 
+                                           value="{{ search }}"
+                                           placeholder="Search programs by name or degree type..."
+                                           class="cosmic-filter-input">
+                                </div>
+                                <div class="filter-select-wrapper">
+                                    <i class="fas fa-university filter-icon"></i>
+                                    <select name="university_id" class="cosmic-filter-select">
+                                        <option value="">All Universities</option>
+                                        {% for university in universities %}
+                                        <option value="{{ university.id }}" 
+                                                {% if university.id == selected_university %}selected{% endif %}>
+                                            {{ university.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="cosmic-btn cosmic-btn-primary">
+                                    <i class="fas fa-search"></i>
+                                    Search
+                                </button>
+                                {% if search or selected_university %}
+                                <a href="{{ url_for('admin.programs') }}" class="cosmic-btn cosmic-btn-ghost">
+                                    <i class="fas fa-times"></i>
+                                    Clear
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -88,63 +153,63 @@
     <div class="admin-content">
         <div class="container-fluid">
             {% if programs.items %}
-            <div class="programs-grid">
+            <div class="universities-grid">
                 {% for program in programs.items %}
-                <div class="program-card">
-                    <div class="program-header">
-                        <div class="program-avatar">
-                            <div class="professional-emoji">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                        </div>
-                        <div class="program-info">
-                            <h3 class="program-name">{{ program.name }}</h3>
-                            <div class="program-university">
+                <div class="university-item">
+                    <div class="uni-header">
+                        <div class="uni-rank">{{ loop.index }}</div>
+                        <div class="uni-info">
+                            <h4>{{ program.name }}</h4>
+                            <p>
                                 <i class="fas fa-university"></i>
-                                <span>{{ program.school.name }}</span>
-                            </div>
-                            <div class="program-degree">
-                                <i class="fas fa-certificate"></i>
-                                <span>{{ program.degree_type }}</span>
-                            </div>
+                                {{ program.school.name }}
+                            </p>
+                        </div>
+                        <div class="uni-score">
+                            <span class="score">{{ program.degree_type }}</span>
+                            <small>Degree</small>
                         </div>
                     </div>
                     
                     {% if program.description %}
-                    <div class="program-description">
-                        <p>{{ program.description[:120] }}{% if program.description|length > 120 %}...{% endif %}</p>
+                    <div class="uni-description">
+                        {{ program.description[:150] }}{% if program.description|length > 150 %}...{% endif %}
                     </div>
                     {% endif %}
                     
-                    <div class="program-details">
+                    <div class="uni-tags">
+                        <span class="tag">
+                            <i class="fas fa-graduation-cap"></i>
+                            {{ program.degree_type }}
+                        </span>
                         {% if program.duration %}
-                        <div class="detail-item">
+                        <span class="tag">
                             <i class="fas fa-clock"></i>
-                            <span>{{ program.duration }}</span>
-                        </div>
+                            {{ program.duration }}
+                        </span>
                         {% endif %}
                         {% if program.tuition_fee %}
-                        <div class="detail-item">
+                        <span class="tag">
                             <i class="fas fa-dollar-sign"></i>
-                            <span>${{ "{:,.0f}".format(program.tuition_fee) }}</span>
-                        </div>
+                            ${{ "{:,.0f}".format(program.tuition_fee) }}
+                        </span>
                         {% endif %}
-                        <div class="detail-item">
+                        <span class="tag">
                             <i class="fas fa-calendar"></i>
-                            <span>Created {{ program.created_at.strftime('%b %d, %Y') if program.created_at else 'N/A' }}</span>
-                        </div>
+                            {{ program.created_at.strftime('%b %Y') if program.created_at else 'N/A' }}
+                        </span>
                     </div>
                     
-                    <div class="program-actions">
-                        <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" class="program-btn primary">
+                    <div class="uni-actions">
+                        <a href="{{ url_for('admin.edit_program', program_id=program.id) }}" class="uni-link primary">
                             <i class="fas fa-edit"></i>
-                            Edit Program
+                            <span>Edit Program</span>
                         </a>
-                        <button class="program-btn danger delete-btn" 
+                        <button class="uni-link secondary delete-btn" 
                                 data-program-name="{{ program.name }}" 
                                 data-delete-url="{{ url_for('admin.delete_program', program_id=program.id) }}">
                             <i class="fas fa-trash"></i>
-                            Delete
+                            <span>Delete</span>
                         </button>
                     </div>
                 </div>
@@ -153,35 +218,31 @@
 
             <!-- Pagination -->
             {% if programs.pages > 1 %}
-            <div class="pagination-container">
+            <div class="pagination-wrapper">
                 <nav class="cosmic-pagination">
                     {% if programs.has_prev %}
                     <a href="{{ url_for('admin.programs', page=programs.prev_num, search=search, university_id=selected_university) }}" 
                        class="page-link">
                         <i class="fas fa-chevron-left"></i>
-                        Previous
                     </a>
                     {% endif %}
                     
-                    <div class="page-numbers">
-                        {% for page_num in programs.iter_pages() %}
-                            {% if page_num %}
-                                {% if page_num != programs.page %}
-                                <a href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}" 
-                                   class="page-link">{{ page_num }}</a>
-                                {% else %}
-                                <span class="page-link active">{{ page_num }}</span>
-                                {% endif %}
+                    {% for page_num in programs.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != programs.page %}
+                            <a href="{{ url_for('admin.programs', page=page_num, search=search, university_id=selected_university) }}" 
+                               class="page-link">{{ page_num }}</a>
                             {% else %}
-                            <span class="page-link disabled">…</span>
+                            <span class="page-link active">{{ page_num }}</span>
                             {% endif %}
-                        {% endfor %}
-                    </div>
+                        {% else %}
+                        <span class="page-link">...</span>
+                        {% endif %}
+                    {% endfor %}
                     
                     {% if programs.has_next %}
                     <a href="{{ url_for('admin.programs', page=programs.next_num, search=search, university_id=selected_university) }}" 
                        class="page-link">
-                        Next
                         <i class="fas fa-chevron-right"></i>
                     </a>
                     {% endif %}
@@ -375,6 +436,8 @@
     gap: 1rem;
     align-items: center;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
 }
 
 .filter-input-wrapper,
@@ -382,6 +445,7 @@
     position: relative;
     flex: 1;
     min-width: 250px;
+    z-index: 10;
 }
 
 .filter-icon {
@@ -390,7 +454,8 @@
     top: 50%;
     transform: translateY(-50%);
     color: var(--cosmic-purple);
-    z-index: 1;
+    z-index: 11;
+    pointer-events: none;
 }
 
 .cosmic-filter-input,
@@ -404,6 +469,9 @@
     font-size: 1rem;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 .cosmic-filter-input:focus,
@@ -412,6 +480,7 @@
     border-color: var(--cosmic-purple);
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
     background: rgba(30, 30, 70, 0.7);
+    z-index: 11;
 }
 
 .cosmic-filter-input::placeholder {
@@ -419,8 +488,9 @@
 }
 
 .cosmic-filter-select option {
-    background: var(--dark-space);
+    background: var(--deep-space);
     color: var(--star-white);
+    padding: 0.5rem;
 }
 
 /* ===== PROGRAMS GRID ===== */
@@ -430,14 +500,14 @@
     z-index: 2;
 }
 
-.programs-grid {
+.universities-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
 }
 
-.program-card {
+.university-item {
     background: rgba(15, 15, 35, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(139, 92, 246, 0.3);
@@ -447,85 +517,91 @@
     animation: cardSlideIn 0.8s ease-out;
 }
 
-.program-card:hover {
+.university-item:hover {
     border-color: var(--cosmic-purple);
     transform: translateY(-5px);
     box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
 }
 
-.program-header {
+.uni-header {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.program-avatar {
+.uni-rank {
     flex-shrink: 0;
 }
 
-.program-info {
+.uni-info {
     flex: 1;
 }
 
-.program-name {
+.uni-info h4 {
     color: var(--star-white);
     font-size: 1.3rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
 
-.program-university,
-.program-degree {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.uni-info p {
     color: rgba(248, 250, 252, 0.7);
     font-size: 0.9rem;
-    margin-bottom: 0.25rem;
 }
 
-.program-university i,
-.program-degree i {
+.uni-score {
+    flex-shrink: 0;
+}
+
+.uni-score .score {
     color: var(--cosmic-purple);
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
-.program-description {
+.uni-score small {
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 0.9rem;
+}
+
+.uni-description {
     margin-bottom: 1.5rem;
 }
 
-.program-description p {
+.uni-description p {
     color: rgba(248, 250, 252, 0.8);
     line-height: 1.6;
     margin: 0;
 }
 
-.program-details {
+.uni-tags {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
-    color: rgba(248, 250, 252, 0.7);
-    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
 }
 
-.detail-item i {
+.tag {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.tag i {
     color: var(--cosmic-purple);
 }
 
-.program-actions {
+.uni-actions {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
 }
 
-.program-btn {
+.uni-link {
     flex: 1;
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
@@ -543,25 +619,25 @@
     cursor: pointer;
 }
 
-.program-btn.primary {
+.uni-link.primary {
     background: var(--cosmic-gradient);
     color: white;
 }
 
-.program-btn.primary:hover {
+.uni-link.primary:hover {
     color: white;
     text-decoration: none;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
 }
 
-.program-btn.danger {
+.uni-link.secondary {
     background: rgba(220, 38, 127, 0.2);
     border: 1px solid rgba(220, 38, 127, 0.3);
     color: #ff6b9d;
 }
 
-.program-btn.danger:hover {
+.uni-link.secondary:hover {
     background: rgba(220, 38, 127, 0.3);
     border-color: #ff6b9d;
     transform: translateY(-2px);
@@ -569,7 +645,7 @@
 }
 
 /* ===== PAGINATION ===== */
-.pagination-container {
+.pagination-wrapper {
     display: flex;
     justify-content: center;
     margin-top: 3rem;
@@ -584,11 +660,6 @@
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 1rem;
     padding: 1rem;
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
 }
 
 .page-link {
@@ -832,7 +903,7 @@
         min-width: auto;
     }
     
-    .programs-grid {
+    .universities-grid {
         grid-template-columns: 1fr;
     }
     
@@ -891,7 +962,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initProgramAnimations() {
-    const cards = document.querySelectorAll('.program-card');
+    const cards = document.querySelectorAll('.university-item');
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry, index) => {
