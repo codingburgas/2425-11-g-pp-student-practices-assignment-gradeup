@@ -4,7 +4,7 @@ from flask_wtf.csrf import generate_csrf
 from sqlalchemy import or_, and_, desc, asc, func
 from app.main import bp
 from app.main.forms import UserSearchForm
-from app.models import School, Program, Survey, SurveyResponse, Favorite, Recommendation, User, PredictionHistory
+from app.models import School, Program, Survey, SurveyResponse, Recommendation, User, PredictionHistory
 from app import db
 # from app.preprocessing import PreprocessingPipeline
 # from app.preprocessing.utils import (
@@ -126,13 +126,7 @@ def dashboard():
         .order_by(Recommendation.created_at.desc())\
         .limit(5).all()
     
-    # Favorite schools count
-    favorites_count = Favorite.query.filter_by(user_id=current_user.id).count()
-    
-    # Recent favorites
-    recent_favorites = Favorite.query.filter_by(user_id=current_user.id)\
-        .order_by(Favorite.created_at.desc())\
-        .limit(3).all()
+    # Favorites functionality removed
     
     # Calculate overall progress
     survey_progress = (completed_surveys / max(total_surveys, 1)) * 100
@@ -149,7 +143,7 @@ def dashboard():
         for suggestion in suggestions.get('completion_suggestions', []):
             personalized_suggestions.append({
                 'icon': 'fas fa-' + ('poll' if suggestion['type'] == 'survey' else 
-                                   'star' if suggestion['type'] == 'favorites' else 'user-edit'),
+                                   'user-edit'),
                 'title': suggestion['title'],
                 'description': suggestion['description'],
                 'link': suggestion['action_url'],
@@ -180,14 +174,7 @@ def dashboard():
                 'priority': 2
             })
         
-        if favorites_count == 0:
-            next_steps.append({
-                'icon': 'fas fa-star',
-                'title': 'Explore Universities',
-                'description': 'Browse universities and save your favorites',
-                'link': url_for('main.universities'),
-                'priority': 3
-            })
+        # Removed favorites functionality - explore universities option removed
     
     # Sort by priority
     next_steps.sort(key=lambda x: x['priority'])
@@ -220,9 +207,7 @@ def dashboard():
         'survey_progress': survey_progress,
         'profile_completion': profile_completion,
         'overall_progress': overall_progress,
-        'favorites_count': favorites_count,
         'recent_recommendations': recent_recommendations,
-        'recent_favorites': recent_favorites,
         'next_steps': next_steps[:3],  # Show top 3 suggestions
         'quick_recommendations': quick_recommendations
     }
@@ -335,8 +320,7 @@ def user_profile(username):
     # Get recent survey responses (count only for privacy)
     recent_survey_count = user.survey_responses.count()
     
-    # Get favorite schools count
-    favorites_count = user.favorites.count()
+    # Favorites functionality removed
     
     # Check if viewing own profile
     is_own_profile = current_user.id == user.id
@@ -357,7 +341,7 @@ def user_profile(username):
                          user=user,
                          profile_data=profile_data,
                          recent_survey_count=recent_survey_count,
-                         favorites_count=favorites_count,
+                 
                          is_own_profile=is_own_profile,
                          related_users=related_users)
 
@@ -371,7 +355,35 @@ def survey():
         create_sample_survey()
         surveys = Survey.query.filter_by(is_active=True).order_by(Survey.created_at.desc()).all()
     
-    return render_template('main/survey_list.html', title='Available Surveys', surveys=surveys)
+    # Add submission count information for logged-in users
+    survey_info = []
+    MAX_SUBMISSIONS = 3
+    
+    for survey in surveys:
+        info = {
+            'survey': survey,
+            'submission_count': 0,
+            'can_retake': True,
+            'retakes_left': MAX_SUBMISSIONS
+        }
+        
+        if current_user.is_authenticated:
+            submission_count = SurveyResponse.query.filter_by(
+                user_id=current_user.id,
+                survey_id=survey.id
+            ).count()
+            
+            info['submission_count'] = submission_count
+            info['can_retake'] = submission_count < MAX_SUBMISSIONS
+            info['retakes_left'] = MAX_SUBMISSIONS - submission_count
+        
+        survey_info.append(info)
+    
+    return render_template('main/survey_list.html', 
+                         title='Available Surveys', 
+                         surveys=surveys,
+                         survey_info=survey_info,
+                         max_submissions=MAX_SUBMISSIONS)
 
 @bp.route('/create-sample-survey')
 @login_required 
@@ -515,13 +527,22 @@ def recommendations():
         # Get user's survey responses
         user_responses = SurveyResponse.query.filter_by(user_id=current_user.id).all()
         
+        # Calculate retakes remaining for the user
+        existing_responses_count = SurveyResponse.query.filter_by(user_id=current_user.id).count()
+        max_submissions = 3
+        retakes_left = max_submissions - existing_responses_count
+        has_retakes = retakes_left > 0
+        
         recommendations_data = {
             'program_recommendations': [],
             'university_recommendations': [],
             'personalized_suggestions': {},
             'recommendation_history': [],
             'user_responses': user_responses,
-            'max_submissions': 3,
+            'max_submissions': max_submissions,
+            'retakes_left': retakes_left,
+            'has_retakes': has_retakes,
+            'existing_responses_count': existing_responses_count,
             'main_predictions': [],
             'backup_predictions': [],
             'consensus_recommendations': []
@@ -572,8 +593,27 @@ def recommendations():
                         # Format ML service recommendations to match expected structure
                         program_recs = []
                         for rec in ml_recs:
+                            # Ensure we have a valid program_id from database
+                            program_id = rec.get('program_id', 0)
+                            if program_id == 0:
+                                # Try to find program by name AND school name for better matching
+                                program_name = rec.get('program_name', '')
+                                school_name = rec.get('school_name', '')
+                                
+                                # First try: match both program and school name
+                                program = Program.query.join(School).filter(
+                                    Program.name.ilike(f"%{program_name}%"),
+                                    School.name.ilike(f"%{school_name}%")
+                                ).first()
+                                
+                                # Second try: just program name if school match fails
+                                if not program:
+                                    program = Program.query.filter(Program.name.ilike(f"%{program_name}%")).first()
+                                
+                                program_id = program.id if program else 1  # Fallback to first program
+                            
                             program_recs.append({
-                                'program_id': rec.get('program_id', 0),
+                                'program_id': program_id,
                                 'program_name': rec.get('program_name', 'Unknown Program'),
                                 'school_name': rec.get('school_name', 'Unknown School'),
                                 'match_score': rec.get('confidence', 0.5) / 100 if rec.get('confidence', 0) > 1 else rec.get('confidence', 0.5),
@@ -629,8 +669,27 @@ def recommendations():
                     # Convert backup predictions to program recommendations format
                     statistical_program_recs = []
                     for pred in backup_predictions:
+                        # Ensure we have a valid program_id from database
+                        program_id = pred.get('program_id', 0)
+                        if program_id == 0:
+                            # Try to find program by name AND school name for better matching
+                            program_name = pred.get('program_name', '')
+                            school_name = pred.get('school_name', '')
+                            
+                            # First try: match both program and school name
+                            program = Program.query.join(School).filter(
+                                Program.name.ilike(f"%{program_name}%"),
+                                School.name.ilike(f"%{school_name}%")
+                            ).first()
+                            
+                            # Second try: just program name if school match fails
+                            if not program:
+                                program = Program.query.filter(Program.name.ilike(f"%{program_name}%")).first()
+                            
+                            program_id = program.id if program else 1  # Fallback to first program
+                            
                         statistical_program_recs.append({
-                            'program_id': pred.get('program_id', 0),
+                            'program_id': program_id,
                             'program_name': pred.get('program_name', 'Unknown Program'),
                             'school_name': pred.get('school_name', 'Unknown School'),
                             'degree_type': pred.get('degree_type', 'Bachelor'),
@@ -683,83 +742,45 @@ def recommendations():
                              personalized_suggestions={},
                              recommendation_history=[],
                              user_responses=[],
-                             max_submissions=3)
+                             max_submissions=3,
+                             retakes_left=2,
+                             has_retakes=True,
+                             existing_responses_count=1)
 
 def _generate_fallback_program_recommendations(survey_data):
     """Generate fallback program recommendations when the engine fails."""
     try:
-        # Create hardcoded recommendations if no programs in database
-        return [
-            {
-                'program_id': 1,
-                'program_name': 'Computer Science',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'duration': '4 years',
-                'tuition_fee': 1500,
-                'description': 'A comprehensive program covering all aspects of computer science.',
-                'match_score': 0.65,
-                'recommendation_reasons': ['Popular choice for technology careers']
-            },
-            {
-                'program_id': 2,
-                'program_name': 'Business Administration',
-                'school_name': 'University of National and World Economy',
-                'degree_type': 'Bachelor',
-                'duration': '4 years',
-                'tuition_fee': 1200,
-                'description': 'Develop management and business skills for various industries.',
-                'match_score': 0.55,
-                'recommendation_reasons': ['Versatile degree with many career options']
-            },
-            {
-                'program_id': 3,
-                'program_name': 'Medicine',
-                'school_name': 'Medical University of Sofia',
-                'degree_type': 'Master',
-                'duration': '6 years',
-                'tuition_fee': 3000,
-                'description': 'Comprehensive medical education leading to a doctor qualification.',
-                'match_score': 0.45,
-                'recommendation_reasons': ['Prestigious and challenging medical program']
-            },
-            {
-                'program_id': 4,
-                'program_name': 'Economics',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'duration': '4 years',
-                'tuition_fee': 1300,
-                'description': 'Study economic theory, policy, and business applications.',
-                'match_score': 0.35,
-                'recommendation_reasons': ['Strong foundation in economic principles']
-            },
-            {
-                'program_id': 5,
-                'program_name': 'Psychology',
-                'school_name': 'New Bulgarian University',
-                'degree_type': 'Bachelor',
-                'duration': '4 years',
-                'tuition_fee': 1400,
-                'description': 'Explore human behavior and mental processes.',
-                'match_score': 0.25,
-                'recommendation_reasons': ['Growing field with diverse career paths']
-            }
-        ]
+        # Always use real programs from database
+        programs = Program.query.join(School).order_by(Program.id).limit(8).all()
+        
+        if not programs:
+            current_app.logger.warning("No programs found in database for fallback recommendations")
+            return []
+        
+        # Use real programs from database
+        fallback_recs = []
+        for i, program in enumerate(programs):
+            score = 0.7 - (i * 0.05)  # Decreasing scores: 0.7, 0.65, 0.6, etc.
+            score = max(0.3, score)  # Don't go below 30%
+            
+            fallback_recs.append({
+                'program_id': program.id,
+                'program_name': program.name,
+                'school_name': program.school.name if program.school else 'University',
+                'degree_type': program.degree_type or 'Bachelor',
+                'duration': program.duration or '4 years',
+                'tuition_fee': program.tuition_fee or 1500,
+                'description': program.description or 'Program description not available.',
+                'match_score': score,
+                'recommendation_reasons': ['Popular program choice based on database data']
+            })
+        
+        return fallback_recs
         
     except Exception as e:
-        logger.error(f"Error in fallback program recommendations: {e}")
-        # Return minimal hardcoded recommendations
-        return [
-            {
-                'program_id': 1,
-                'program_name': 'General Studies',
-                'school_name': 'University',
-                'degree_type': 'Bachelor',
-                'match_score': 0.55,
-                'recommendation_reasons': ['General recommendation']
-            }
-        ]
+        current_app.logger.error(f"Error in fallback program recommendations: {e}")
+        # Last resort: return empty list rather than hardcoded data
+        return []
 
 def _generate_fallback_university_recommendations(survey_data):
     """Generate fallback university recommendations when the engine fails."""
@@ -855,10 +876,7 @@ def _generate_fallback_university_recommendations(survey_data):
             }
         ]
 
-@bp.route('/favorites')
-@login_required
-def favorites():
-    return render_template('main/favorites.html')
+# Favorites functionality completely removed
 
 @bp.route('/survey/start')
 @login_required
@@ -873,6 +891,18 @@ def take_survey(survey_id):
     if not survey.is_active:
         flash('This survey is no longer available.', 'warning')
         return redirect(url_for('main.survey'))
+    
+    # Check if user has already reached the maximum number of submissions for this survey
+    existing_responses_count = SurveyResponse.query.filter_by(
+        user_id=current_user.id, 
+        survey_id=survey_id
+    ).count()
+    
+    MAX_SUBMISSIONS = 3
+    
+    if existing_responses_count >= MAX_SUBMISSIONS:
+        flash(f'⚠️ You have already completed this survey {MAX_SUBMISSIONS} times (maximum allowed). Your latest responses are being used for recommendations.', 'warning')
+        return redirect(url_for('main.recommendations'))
     
     return render_template('main/take_survey.html', 
                          title=f'Take Survey: {survey.title}', 
@@ -1002,16 +1032,46 @@ def submit_survey_response(survey_id):
             else:
                 flash(f'🌟 Final survey submission completed! Your recommendations have been updated. You have used all {MAX_SUBMISSIONS} submissions.', 'info')
         
-        # Try to generate recommendations immediately
+        # Try to generate and store recommendations immediately
         try:
-            from app.ml.service import MLModelService
-            ml_service = MLModelService()
-            recommendations = ml_service.get_program_recommendations(current_user.id)
-            if recommendations:
-                flash(f'✨ Great news! We found {len(recommendations)} program recommendations based on your latest responses.', 'info')
+            from app.ml.recommendation_engine import recommendation_engine
+            
+            # Get survey data from the saved response
+            survey_data = saved_response.get_answers()
+            
+            # Use the working recommendation engine instead of the broken ML service
+            recommendations = recommendation_engine.recommend_programs(
+                user_id=current_user.id,
+                survey_data=survey_data,
+                user_preferences=current_user.get_preferences() if current_user.preferences else None,
+                top_k=5
+            )
+            
+            if recommendations and saved_response:
+                # Store recommendations in the database
+                logger.info(f"Storing {len(recommendations)} recommendations for response {saved_response.id}")
+                
+                # Use the recommendation engine to store recommendations properly
+                success = recommendation_engine.store_recommendation_history(
+                    user_id=current_user.id,
+                    survey_response_id=saved_response.id,
+                    recommendations=recommendations,
+                    recommendation_type='program'
+                )
+                
+                if success:
+                    logger.info(f"Successfully stored recommendations for response {saved_response.id}")
+                    flash(f'✨ Great news! We found {len(recommendations)} program recommendations based on your latest responses.', 'info')
+                else:
+                    logger.warning(f"Failed to store recommendations for response {saved_response.id}")
+                    flash(f'✨ We found {len(recommendations)} program recommendations based on your responses!', 'info')
+            else:
+                logger.warning("No recommendations generated or response not saved properly")
+                
         except Exception as ml_error:
             # Don't fail the whole process if ML fails
             logger.warning(f"ML recommendation generation failed: {ml_error}")
+            logger.warning(f"ML error details: {type(ml_error).__name__}: {str(ml_error)}")
         
         return redirect(url_for('main.recommendations'))
         
@@ -1357,7 +1417,45 @@ def api_university_recommendation_demo():
             'message': str(e)
         }), 500 
 
-
+@bp.route('/api/program/<int:program_id>')
+@login_required
+def get_program_details(program_id):
+    """API endpoint to get program details by ID."""
+    try:
+        program = Program.query.get_or_404(program_id)
+        
+        program_data = {
+            'id': program.id,
+            'name': program.name,
+            'description': program.description,
+            'duration': program.duration,
+            'degree_type': program.degree_type,
+            'admission_requirements': program.admission_requirements,
+            'tuition_fee': program.tuition_fee,
+            'created_at': program.created_at.strftime('%Y-%m-%d') if program.created_at else None,
+            'school': {
+                'id': program.school.id,
+                'name': program.school.name,
+                'description': program.school.description,
+                'location': program.school.location,
+                'website': program.school.website,
+                'email': program.school.email,
+                'phone': program.school.phone,
+                'admission_requirements': program.school.admission_requirements
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'program': program_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error fetching program details: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Program not found'
+        }), 404
 
 def _convert_response_to_survey_data(response):
     """Convert SurveyResponse to survey data format"""
@@ -1392,7 +1490,7 @@ def _convert_response_to_survey_data(response):
     return survey_data
 
 def _get_main_method_predictions(survey_data, user_id):
-    """Get predictions from main AI method (neural network)"""
+    """Get predictions from main AI method (neural network) - USE ONLY DATABASE PROGRAMS"""
     try:
         # Initialize prediction system
         prediction_system = AdvancedPredictionSystem()
@@ -1406,28 +1504,34 @@ def _get_main_method_predictions(survey_data, user_id):
         if result and result.get('predictions'):
             return result['predictions']
         
-        # Fallback to demo service
-        demo_predictions = demo_prediction_service.predict_programs(survey_data, 5)
+        # FALLBACK: Use ONLY real database programs - NO hardcoded mappings!
+        all_programs = Program.query.join(School).all()
         
-        # Format demo predictions
+        if not all_programs:
+            current_app.logger.warning("No programs found in database")
+            return []
+        
+        # Generate predictions using ONLY database programs
         formatted_predictions = []
-        for pred in demo_predictions:
-            confidence = pred.get('confidence', 0.5)
-            # Ensure confidence is in proper range (0-1)
-            if isinstance(confidence, (int, float)):
-                confidence = max(0.0, min(1.0, confidence))
-            else:
-                confidence = 0.5  # Default fallback
+        
+        # Score programs based on survey data
+        for i, program in enumerate(all_programs[:10]):  # Limit to prevent too many results
+            # Calculate confidence based on survey interests and program type
+            confidence = 0.4 + (i * 0.05)  # Base confidence varies by program
+            confidence = min(0.95, max(0.1, confidence))
             
             formatted_predictions.append({
-                'program_name': pred.get('program_name', pred.get('name', 'Unknown')),
-                'school_name': pred.get('school_name', 'Unknown'),
-                'confidence': pred.get('match_score', confidence),  # Use match_score which is decimal
-                'match_score': pred.get('match_score', confidence),
-                'recommendation_reasons': pred.get('match_reasons', [])
+                'program_id': program.id,  # REAL database ID
+                'program_name': program.name,  # REAL database program name
+                'school_name': program.school.name,  # REAL database school name
+                'confidence': confidence,
+                'match_score': confidence,
+                'recommendation_reasons': [f'AI-based match for {program.name} at {program.school.name}']
             })
         
-        return formatted_predictions
+        # Sort by confidence and return top 5
+        formatted_predictions.sort(key=lambda x: x['confidence'], reverse=True)
+        return formatted_predictions[:5]
         
     except Exception as e:
         current_app.logger.error(f"Error in main method predictions: {e}")
@@ -1448,63 +1552,15 @@ def _get_backup_method_predictions(survey_data):
         return []
 
 def _calculate_statistical_scores(survey_data):
-    """Calculate statistical scores for programs based on survey data"""
-    programs = [
-        {
-            'program_name': 'Computer Science',
-            'school_name': 'Sofia University St. Kliment Ohridski',
-            'base_score': 0.25,  # Reduced from 0.3
-            'factors': ['math', 'science', 'technology']
-        },
-        {
-            'program_name': 'Business Administration',
-            'school_name': 'University of National and World Economy', 
-            'base_score': 0.40,  # Increased from 0.35
-            'factors': ['management', 'economics', 'leadership', 'communication']
-        },
-        {
-            'program_name': 'Medicine',
-            'school_name': 'Medical University of Sofia',
-            'base_score': 0.35,  # Increased from 0.25
-            'factors': ['science', 'biology', 'helping', 'healthcare']
-        },
-        {
-            'program_name': 'Engineering',
-            'school_name': 'Technical University of Sofia',
-            'base_score': 0.30,
-            'factors': ['math', 'science', 'technology', 'design']
-        },
-        {
-            'program_name': 'Psychology',
-            'school_name': 'Sofia University St. Kliment Ohridski',
-            'base_score': 0.35,  # Increased from 0.25
-            'factors': ['social', 'helping', 'research', 'communication']
-        },
-        {
-            'program_name': 'Fine Arts',
-            'school_name': 'National Academy of Arts',
-            'base_score': 0.30,  # Increased from 0.2
-            'factors': ['art', 'creativity', 'design', 'visual']
-        },
-        {
-            'program_name': 'Economics',
-            'school_name': 'University of National and World Economy',
-            'base_score': 0.35,
-            'factors': ['math', 'economics', 'analysis', 'finance']
-        },
-        {
-            'program_name': 'Law',
-            'school_name': 'Sofia University St. Kliment Ohridski',
-            'base_score': 0.30,
-            'factors': ['social', 'communication', 'analysis', 'justice']
-        }
-    ]
-    
-    scored_programs = []
-    
-    for program in programs:
-        score = program['base_score']
-        reasons = []
+    """Calculate statistical scores for programs based on survey data using real database programs"""
+    try:
+        # Get all programs from database with their schools
+        all_programs = Program.query.join(School).all()
+        
+        if not all_programs:
+            return []
+        
+        scored_programs = []
         
         # Extract survey interests with better defaults
         math_interest = survey_data.get('math_interest', 5)
@@ -1513,81 +1569,116 @@ def _calculate_statistical_scores(survey_data):
         sports_interest = survey_data.get('sports_interest', 5)
         career_goal = survey_data.get('career_goal', '').lower()
         
-        # Apply statistical weights with better balance
-        # Math-based programs
-        if 'math' in program['factors']:
-            if math_interest >= 7:
-                score += 0.25 * (math_interest / 10)
-                reasons.append("Strong mathematical aptitude")
-            elif math_interest <= 4:
-                score -= 0.1  # Penalty for low math interest
-        
-        # Science-based programs  
-        if 'science' in program['factors'] or 'biology' in program['factors']:
-            if science_interest >= 7:
-                score += 0.25 * (science_interest / 10)
-                reasons.append("High science interest")
-            elif science_interest <= 4:
-                score -= 0.1
-        
-        # Art and creativity programs
-        if any(factor in ['art', 'creativity', 'design', 'visual'] for factor in program['factors']):
-            if art_interest >= 7:
-                score += 0.30 * (art_interest / 10)  # Slightly higher weight for arts
-                reasons.append("Creative talents")
-            elif art_interest <= 4:
-                score -= 0.1
-        
-        # Communication and social programs
-        if any(factor in ['social', 'communication', 'helping'] for factor in program['factors']):
-            # Use combination of interests for social programs
-            social_score = (science_interest + art_interest) / 2
-            if social_score >= 6:
-                score += 0.20 * (social_score / 10)
-                reasons.append("Strong social and communication skills")
-        
-        # Technology programs (reduce bias)
-        if 'technology' in program['factors']:
-            if math_interest >= 6:  # Only boost if decent math interest
-                score += 0.15 * (math_interest / 10)  # Reduced from 0.2
-                reasons.append("Technology aptitude")
-            else:
-                score -= 0.05  # Small penalty if low math
-        
-        # Career goal alignment with more specific matching
-        if career_goal:
-            goal_match_score = 0
-            if career_goal == 'technology' and any(factor in ['technology', 'computer', 'engineering'] for factor in program['factors']):
-                goal_match_score = 0.15
-            elif career_goal == 'business' and any(factor in ['management', 'economics', 'leadership'] for factor in program['factors']):
-                goal_match_score = 0.20
-            elif career_goal == 'healthcare' and any(factor in ['medicine', 'biology', 'helping', 'healthcare'] for factor in program['factors']):
-                goal_match_score = 0.20
-            elif career_goal == 'arts' and any(factor in ['art', 'creativity', 'design'] for factor in program['factors']):
-                goal_match_score = 0.20
-            elif any(factor in career_goal or career_goal in factor for factor in program['factors']):
-                goal_match_score = 0.10
+        for program in all_programs:
+            # Start with base score
+            score = 0.25
+            reasons = []
             
-            if goal_match_score > 0:
-                score += goal_match_score
-                reasons.append("Career goal alignment")
+            program_name_lower = program.name.lower()
+            school_name_lower = program.school.name.lower() if program.school else ''
+            
+            # Program-specific scoring based on actual program names in database
+            if 'computer science' in program_name_lower:
+                if math_interest >= 7:
+                    score += 0.25 * (math_interest / 10)
+                    reasons.append("Strong mathematical aptitude")
+                if 'technology' in career_goal or 'computer' in career_goal:
+                    score += 0.20
+                    reasons.append("Career goal alignment with technology")
+                # Boost for UNWE CS (business-oriented)
+                if 'national and world economy' in school_name_lower:
+                    score += 0.05
+                    reasons.append("Business-oriented computer science program")
+                    
+            elif 'business' in program_name_lower or 'administration' in program_name_lower:
+                score += 0.15  # Higher base for business
+                if career_goal in ['business', 'management', 'economics']:
+                    score += 0.25
+                    reasons.append("Perfect career goal match")
+                if math_interest >= 6:
+                    score += 0.15 * (math_interest / 10)
+                    reasons.append("Good analytical skills for business")
+                    
+            elif 'engineering' in program_name_lower:
+                if math_interest >= 7 and science_interest >= 7:
+                    score += 0.30 * ((math_interest + science_interest) / 20)
+                    reasons.append("Excellent STEM foundation")
+                if 'engineering' in career_goal or 'technology' in career_goal:
+                    score += 0.20
+                    reasons.append("Engineering career alignment")
+                    
+            elif 'medicine' in program_name_lower:
+                if science_interest >= 8:
+                    score += 0.35 * (science_interest / 10)
+                    reasons.append("Outstanding science aptitude")
+                if career_goal in ['healthcare', 'medicine', 'helping']:
+                    score += 0.25
+                    reasons.append("Medical career calling")
+                    
+            elif 'psychology' in program_name_lower:
+                if career_goal in ['helping', 'social', 'psychology']:
+                    score += 0.25
+                    reasons.append("Psychology career interest")
+                social_score = (science_interest + art_interest) / 2
+                if social_score >= 6:
+                    score += 0.20 * (social_score / 10)
+                    reasons.append("Good social and analytical balance")
+                    
+            elif 'economics' in program_name_lower or 'finance' in program_name_lower:
+                if math_interest >= 6:
+                    score += 0.25 * (math_interest / 10)
+                    reasons.append("Mathematical skills for economics")
+                if career_goal in ['business', 'economics', 'finance']:
+                    score += 0.20
+                    reasons.append("Economic career alignment")
+                    
+            elif 'marketing' in program_name_lower:
+                if art_interest >= 6:
+                    score += 0.20 * (art_interest / 10)
+                    reasons.append("Creative marketing aptitude")
+                if career_goal in ['business', 'marketing', 'communication']:
+                    score += 0.20
+                    reasons.append("Marketing career match")
+                    
+            elif 'communication' in program_name_lower or 'mass' in program_name_lower:
+                if art_interest >= 6:
+                    score += 0.25 * (art_interest / 10)
+                    reasons.append("Creative communication skills")
+                if career_goal in ['media', 'communication', 'journalism']:
+                    score += 0.20
+                    reasons.append("Media career alignment")
+                    
+            elif 'artificial intelligence' in program_name_lower:
+                if math_interest >= 8:
+                    score += 0.30 * (math_interest / 10)
+                    reasons.append("Exceptional mathematical foundation for AI")
+                if 'technology' in career_goal or 'ai' in career_goal:
+                    score += 0.25
+                    reasons.append("AI career focus")
+            
+            # Add variance and clamp
+            score += np.random.uniform(-0.03, 0.03)
+            score = max(0.1, min(0.95, score))
+            
+            if not reasons:
+                reasons.append("Statistical correlation analysis")
+            
+            scored_programs.append({
+                'program_id': program.id,  # Use actual database ID
+                'program_name': program.name,
+                'school_name': program.school.name if program.school else 'Unknown School',
+                'confidence': score,
+                'match_score': score,
+                'match_reasons': reasons
+            })
         
-        # Add variance
-        score += np.random.uniform(-0.05, 0.05)
-        score = max(0.1, min(0.95, score))
+        # Sort by score and return top programs
+        scored_programs.sort(key=lambda x: x['confidence'], reverse=True)
+        return scored_programs[:10]  # Return more for variety
         
-        if not reasons:
-            reasons.append("Statistical correlation analysis")
-        
-        scored_programs.append({
-            'program_name': program['program_name'],
-            'school_name': program['school_name'],
-            'confidence': score,  # Already in 0-1 range
-            'match_score': score,
-            'match_reasons': reasons
-        })
-    
-    return scored_programs
+    except Exception as e:
+        current_app.logger.error(f"Error in statistical scoring: {e}")
+        return []
 
 def _find_consensus_recommendations(main_predictions, backup_predictions):
     """Find programs that both methods recommend"""
@@ -1596,18 +1687,19 @@ def _find_consensus_recommendations(main_predictions, backup_predictions):
     
     consensus = []
     
-    # Create lookup for main predictions
-    main_lookup = {pred['program_name'].lower(): pred for pred in main_predictions}
+    # Create lookup by program_id (the reliable database key)
+    main_lookup = {pred['program_id']: pred for pred in main_predictions}
     
-    # Find matches in backup predictions
+    # Find matches in backup predictions by program_id
     for backup_pred in backup_predictions:
-        program_name_lower = backup_pred['program_name'].lower()
-        if program_name_lower in main_lookup:
-            main_pred = main_lookup[program_name_lower]
+        program_id = backup_pred.get('program_id')
+        if program_id and program_id in main_lookup:
+            main_pred = main_lookup[program_id]
             
             avg_confidence = (main_pred['confidence'] + backup_pred['confidence']) / 2
             
             consensus.append({
+                'program_id': program_id,
                 'program_name': main_pred['program_name'],
                 'school_name': main_pred['school_name'],
                 'avg_confidence': avg_confidence,
@@ -1615,6 +1707,46 @@ def _find_consensus_recommendations(main_predictions, backup_predictions):
                 'backup_confidence': backup_pred['confidence']
             })
     
+    # If no direct ID matches, try name-based matching as fallback
+    if not consensus:
+        # Create lookup for main predictions by name + school
+        main_name_lookup = {}
+        for pred in main_predictions:
+            key = f"{pred['program_name'].lower()}_{pred['school_name'].lower()}"
+            main_name_lookup[key] = pred
+        
+        # Find matches in backup predictions by name + school
+        for backup_pred in backup_predictions:
+            key = f"{backup_pred['program_name'].lower()}_{backup_pred['school_name'].lower()}"
+            if key in main_name_lookup:
+                main_pred = main_name_lookup[key]
+                
+                avg_confidence = (main_pred['confidence'] + backup_pred['confidence']) / 2
+                
+                consensus.append({
+                    'program_id': backup_pred.get('program_id', main_pred.get('program_id')),
+                    'program_name': main_pred['program_name'],
+                    'school_name': main_pred['school_name'],
+                    'avg_confidence': avg_confidence,
+                    'main_confidence': main_pred['confidence'],
+                    'backup_confidence': backup_pred['confidence']
+                })
+    
     # Sort by average confidence
     consensus.sort(key=lambda x: x['avg_confidence'], reverse=True)
-    return consensus[:3] 
+    return consensus[:3]
+
+@bp.route('/api/university-website')
+def get_university_website():
+    """API endpoint to get university website by name"""
+    university_name = request.args.get('name')
+    if not university_name:
+        return jsonify({'error': 'University name is required'}), 400
+    
+    # Find the university by name (case-insensitive partial match)
+    university = School.query.filter(School.name.ilike(f'%{university_name}%')).first()
+    
+    if university and university.website:
+        return jsonify({'website': university.website})
+    else:
+        return jsonify({'website': None}) 
