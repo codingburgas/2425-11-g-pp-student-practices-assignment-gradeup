@@ -60,7 +60,7 @@
                                                 <i class="fas fa-calendar-check"></i>
                                                 <div class="status-details">
                                                     <h5>Latest Survey Date</h5>
-                                                    <p>{{ user_responses[0].created_at.strftime('%B %d, %Y at %I:%M %p') if user_responses else 'N/A' }}</p>
+                                                    <p>{{ user_responses[0].created_at|formatlocal('%B %d, %Y at %I:%M %p') if user_responses else 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -175,10 +175,7 @@
                                                         <i class="fas fa-university"></i>
                                                         <span>Visit University</span>
                                                     </button>
-                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ consensus.program_id }}', 'program')">
-                                                        <i class="fas fa-heart"></i>
-                                                        <span>Add to Favorites</span>
-                                                    </button>
+
                                                 </div>
                                             </div>
                                             {% endfor %}
@@ -193,7 +190,7 @@
                                                 <h4>Neural Network Recommendations</h4>
                                             </div>
                                             {% for pred in main_predictions[:3] %}
-                                                                                         <div class="enhanced-recommendation-item neural-item">
+                                            <div class="enhanced-recommendation-item neural-item">
                                                 <div class="rec-rank-enhanced neural">{{ loop.index }}</div>
                                                 <div class="rec-content">
                                                     <div class="rec-main-info">
@@ -211,7 +208,7 @@
                                                     <div class="single-method-score">
                                                         <div class="confidence-display neural">
                                                             <div class="confidence-bar-enhanced">
-                                                                <div class="confidence-fill-enhanced neural" style="width: {{ (pred.confidence * 100)|round }}%;"></div>
+                                                                <div class="confidence-fill-enhanced neural" data-width="{{ (pred.confidence * 100)|round }}"></div>
                                                             </div>
                                                             <span class="confidence-percentage">{{ (pred.confidence * 100)|round }}%</span>
                                                         </div>
@@ -226,9 +223,7 @@
                                                         <i class="fas fa-university"></i>
                                                         <span>University</span>
                                                     </button>
-                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ pred.program_id }}', 'program')">
-                                                        <i class="fas fa-heart"></i>
-                                                    </button>
+
                                                 </div>
                                             </div>
                                             {% endfor %}
@@ -244,7 +239,7 @@
                                             </div>
                                             {% set statistical_recs = backup_predictions or program_recommendations %}
                                             {% for rec in statistical_recs[:3] %}
-                                                                                         <div class="enhanced-recommendation-item statistical-item">
+                                            <div class="enhanced-recommendation-item statistical-item">
                                                 <div class="rec-rank-enhanced statistical">{{ loop.index }}</div>
                                                 <div class="rec-content">
                                                     <div class="rec-main-info">
@@ -262,7 +257,7 @@
                                                     <div class="single-method-score">
                                                         <div class="confidence-display statistical">
                                                             <div class="confidence-bar-enhanced">
-                                                                <div class="confidence-fill-enhanced statistical" style="width: {{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}%;"></div>
+                                                                <div class="confidence-fill-enhanced statistical" data-width="{{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}"></div>
                                                             </div>
                                                             <span class="confidence-percentage">{{ ((rec.confidence if rec.confidence else rec.match_score) * 100)|round }}%</span>
                                                         </div>
@@ -277,9 +272,7 @@
                                                         <i class="fas fa-university"></i>
                                                         <span>University</span>
                                                     </button>
-                                                    <button class="action-btn favorite" onclick="addToFavorites('{{ rec.program_id }}', 'program')">
-                                                        <i class="fas fa-heart"></i>
-                                                    </button>
+
                                                 </div>
                                             </div>
                                             {% endfor %}
@@ -1352,7 +1345,6 @@
     font-style: normal;
     font-variant: normal;
     text-rendering: auto;
-    speak: none;
     /* Ensure icon content displays */
     min-width: 1.2em;
     min-height: 1.2em;
@@ -2126,23 +2118,7 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-.action-btn.favorite {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
 
-.action-btn.favorite:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.5);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.action-btn.favorite.active {
-    background: #ef4444;
-    color: white;
-}
 
 .enhanced-recommendation-item {
     flex-direction: column;
@@ -2169,6 +2145,12 @@
         font-size: 0.7rem;
         padding: 0.15rem 0.5rem;
     }
+}
+
+/* Default state for confidence bars */
+.confidence-fill-enhanced {
+    width: 0%;
+    transition: width 0.8s ease-in-out;
 }
 </style>
 
@@ -2211,6 +2193,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000); // Wait 1 second for FontAwesome to load
 });
 
+// Initialize confidence bars with data-width attributes
+document.addEventListener('DOMContentLoaded', function() {
+    const confidenceBars = document.querySelectorAll('.confidence-fill-enhanced[data-width]');
+    confidenceBars.forEach(function(bar) {
+        const width = bar.getAttribute('data-width');
+        if (width) {
+            bar.style.width = width + '%';
+        }
+    });
+});
+
 // Interactive Functions for Program Recommendations
 function viewProgramDetails(programId, programName) {
     // Create and show modal with program details
@@ -2220,7 +2213,10 @@ function viewProgramDetails(programId, programName) {
         <div class="modal-overlay" onclick="closeModal()"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-graduation-cap"></i> ${programName}</h3>
+                <div class="modal-header-content">
+                    <h3><i class="fas fa-graduation-cap"></i> ${programName}</h3>
+                    <p class="modal-subtitle">Computer Science</p>
+                </div>
                 <button class="modal-close" onclick="closeModal()">
                     <i class="fas fa-times"></i>
                 </button>
@@ -2250,138 +2246,696 @@ function viewProgramDetails(programId, programName) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                animation: modalFadeIn 0.4s ease-out;
             }
+            
             .modal-overlay {
                 position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(5px);
+                background: rgba(15, 15, 35, 0.85);
+                backdrop-filter: blur(12px);
+                animation: overlayFadeIn 0.3s ease-out;
             }
+            
             .modal-content {
                 position: relative;
-                background: linear-gradient(135deg, rgba(30, 30, 70, 0.95), rgba(15, 15, 35, 0.95));
-                border-radius: 1rem;
+                background: rgba(15, 15, 35, 0.95);
+                backdrop-filter: blur(20px);
+                border-radius: 1.5rem;
                 border: 1px solid rgba(139, 92, 246, 0.3);
-                max-width: 500px;
+                max-width: 600px;
                 width: 90%;
-                max-height: 80vh;
+                max-height: 85vh;
+                overflow: hidden;
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.4),
+                    0 0 0 1px rgba(139, 92, 246, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                 overflow-y: auto;
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             }
+            
+            .modal-content::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 200px;
+                background: linear-gradient(135deg, 
+                    rgba(139, 92, 246, 0.1) 0%, 
+                    rgba(6, 182, 212, 0.05) 50%, 
+                    transparent 100%);
+                pointer-events: none;
+            }
+            
             .modal-header {
+                position: relative;
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-                padding: 1.5rem;
-                border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+                align-items: flex-start;
+                padding: 2rem 2rem 1.5rem;
+                border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+                background: linear-gradient(135deg, 
+                    rgba(139, 92, 246, 0.08) 0%, 
+                    rgba(6, 182, 212, 0.03) 100%);
             }
+            
+            .modal-header-content {
+                flex: 1;
+                margin-right: 1rem;
+            }
+            
             .modal-header h3 {
-                color: white;
+                color: #F8FAFC;
+                margin: 0 0 0.5rem 0;
+                font-size: 1.5rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                line-height: 1.2;
+            }
+            
+            .modal-header h3 i {
+                color: #8B5CF6;
+                font-size: 1.3rem;
+                text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            }
+            
+            .modal-subtitle {
+                color: rgba(248, 250, 252, 0.7);
+                font-size: 0.9rem;
                 margin: 0;
+                font-weight: 400;
+            }
+            
+            .modal-close {
+                background: rgba(239, 68, 68, 0.1);
+                border: 1px solid rgba(239, 68, 68, 0.2);
+                color: rgba(239, 68, 68, 0.8);
+                font-size: 1.1rem;
+                cursor: pointer;
+                padding: 0.75rem;
+                border-radius: 0.75rem;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                flex-shrink: 0;
+            }
+            
+            .modal-close:hover {
+                background: rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.4);
+                color: #ef4444;
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+            
+            .modal-body {
+                padding: 0 2rem 2rem;
+                color: #F8FAFC;
+                position: relative;
+            }
+            
+            .loading-spinner {
+                text-align: center;
+                padding: 3rem 2rem;
+            }
+            
+            .loading-spinner i {
+                font-size: 2.5rem;
+                margin-bottom: 1.5rem;
+                color: #8B5CF6;
+                animation: spin 1s linear infinite;
+            }
+            
+            .loading-spinner p {
+                color: rgba(248, 250, 252, 0.7);
+                font-size: 1rem;
+                margin: 0;
+            }
+            
+            .program-info {
+                display: grid;
+                gap: 1.5rem;
+            }
+            
+            .info-section {
+                background: rgba(30, 30, 70, 0.3);
+                border: 1px solid rgba(139, 92, 246, 0.15);
+                border-radius: 1rem;
+                padding: 1.5rem;
+                transition: all 0.3s ease;
+            }
+            
+            .info-section:hover {
+                border-color: rgba(139, 92, 246, 0.3);
+                background: rgba(30, 30, 70, 0.4);
+                transform: translateY(-2px);
+            }
+            
+            .info-section h4 {
+                color: #F8FAFC;
+                margin: 0 0 1rem 0;
+                font-size: 1.1rem;
+                font-weight: 600;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
             }
-            .modal-close {
-                background: none;
+            
+            .info-section h4 i {
+                color: #8B5CF6;
+                font-size: 1rem;
+            }
+            
+            .info-section p {
+                color: rgba(248, 250, 252, 0.8);
+                margin: 0 0 0.5rem 0;
+                line-height: 1.5;
+                font-size: 0.95rem;
+            }
+            
+            .info-section p:last-child {
+                margin-bottom: 0;
+            }
+            
+            .info-section p strong {
+                color: #F8FAFC;
+                font-weight: 600;
+            }
+            
+            .modal-actions {
+                display: flex;
+                gap: 1rem;
+                margin-top: 2rem;
+                flex-wrap: wrap;
+            }
+            
+            .modal-actions .action-btn {
+                flex: 1;
+                min-width: 140px;
+                padding: 0.875rem 1.5rem;
+                border-radius: 0.75rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
                 border: none;
-                color: rgba(255, 255, 255, 0.7);
-                font-size: 1.2rem;
                 cursor: pointer;
-                padding: 0.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .modal-actions .action-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+                transition: left 0.5s ease;
+            }
+            
+            .modal-actions .action-btn:hover::before {
+                left: 100%;
+            }
+            
+            .modal-actions .action-btn.primary {
+                background: linear-gradient(135deg, #8B5CF6, #6366f1);
+                color: white;
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            }
+            
+            .modal-actions .action-btn.primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+                background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            }
+            
+            .modal-actions .action-btn.secondary {
+                background: rgba(16, 185, 129, 0.1);
+                color: #10b981;
+                border: 1px solid rgba(16, 185, 129, 0.3);
+            }
+            
+            .modal-actions .action-btn.secondary:hover {
+                background: rgba(16, 185, 129, 0.2);
+                border-color: rgba(16, 185, 129, 0.5);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            
+            .program-meta-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            
+            .meta-item i {
+                color: #8B5CF6;
+                width: 16px;
+                text-align: center;
+            }
+            
+            .meta-value {
+                color: #F8FAFC;
+                font-weight: 500;
+            }
+            
+            .meta-label {
+                color: rgba(248, 250, 252, 0.6);
+                font-size: 0.85rem;
+            }
+            
+            .tuition-highlight {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+                border: 1px solid rgba(16, 185, 129, 0.2);
+                border-radius: 0.75rem;
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+            
+            .tuition-highlight .price {
+                color: #10b981;
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+            
+            .requirement-section {
+                margin-bottom: 1rem;
+            }
+            
+            .requirement-section h6 {
+                color: #F8FAFC;
+                font-size: 0.95rem;
+                font-weight: 600;
+                margin: 0 0 0.5rem 0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .requirement-section h6 i {
+                color: #8B5CF6;
+                font-size: 0.85rem;
+            }
+            
+            .requirement-section p {
+                color: rgba(248, 250, 252, 0.8);
+                margin: 0;
+                line-height: 1.5;
+                font-size: 0.9rem;
+            }
+            
+            .contact-grid {
+                display: grid;
+                gap: 0.75rem;
+            }
+            
+            .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem;
+                background: rgba(30, 30, 70, 0.3);
+                border: 1px solid rgba(139, 92, 246, 0.15);
                 border-radius: 0.5rem;
                 transition: all 0.3s ease;
             }
-            .modal-close:hover {
-                background: rgba(239, 68, 68, 0.2);
-                color: #ef4444;
+            
+            .contact-item:hover {
+                border-color: rgba(139, 92, 246, 0.3);
+                background: rgba(30, 30, 70, 0.4);
             }
-            .modal-body {
-                padding: 1.5rem;
-                color: white;
-            }
-            .loading-spinner {
+            
+            .contact-item i {
+                color: #8B5CF6;
+                width: 16px;
                 text-align: center;
-                padding: 2rem;
             }
-            .loading-spinner i {
-                font-size: 2rem;
-                margin-bottom: 1rem;
-                color: #8b5cf6;
+            
+            .contact-item a {
+                color: rgba(248, 250, 252, 0.9);
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.3s ease;
+            }
+            
+            .contact-item a:hover {
+                color: #8B5CF6;
+                text-decoration: none;
+            }
+            
+            .error-state {
+                text-align: center;
+                padding: 3rem 2rem;
+            }
+            
+            .error-state i {
+                font-size: 3rem;
+                color: rgba(239, 68, 68, 0.7);
+                margin-bottom: 1.5rem;
+            }
+            
+            .error-state h4 {
+                color: #F8FAFC;
+                margin: 0 0 1rem 0;
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+            
+            .error-state p {
+                color: rgba(248, 250, 252, 0.7);
+                margin: 0 0 2rem 0;
+                line-height: 1.5;
+            }
+            
+            @keyframes modalFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes overlayFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes modalSlideUp {
+                from { 
+                    opacity: 0;
+                    transform: translateY(50px) scale(0.95);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            @media (max-width: 768px) {
+                .modal-content {
+                    width: 95%;
+                    max-height: 90vh;
+                    border-radius: 1rem;
+                }
+                
+                .modal-header {
+                    padding: 1.5rem 1.5rem 1rem;
+                }
+                
+                .modal-header h3 {
+                    font-size: 1.3rem;
+                }
+                
+                .modal-body {
+                    padding: 0 1.5rem 1.5rem;
+                }
+                
+                .info-section {
+                    padding: 1rem;
+                }
+                
+                .modal-actions {
+                    flex-direction: column;
+                }
+                
+                .modal-actions .action-btn {
+                    min-width: auto;
+                }
+                
+                .program-meta-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .modal-content {
+                    width: 98%;
+                    max-height: 95vh;
+                }
+                
+                .modal-header {
+                    padding: 1rem;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+                
+                .modal-header-content {
+                    margin-right: 0;
+                    width: 100%;
+                }
+                
+                .modal-close {
+                    align-self: flex-end;
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                }
             }
         `;
         document.head.appendChild(styles);
     }
     
-    // Simulate loading program details (replace with actual API call)
-    setTimeout(() => {
-        const modalBody = modal.querySelector('.modal-body');
-        modalBody.innerHTML = `
-            <div class="program-info">
-                <div class="info-section">
-                    <h4><i class="fas fa-info-circle"></i> Program Information</h4>
-                    <p><strong>Program ID:</strong> ${programId}</p>
-                    <p><strong>Name:</strong> ${programName}</p>
-                    <p><strong>Type:</strong> Bachelor's Degree</p>
-                    <p><strong>Duration:</strong> 4 years</p>
-                    <p><strong>Language:</strong> English/Bulgarian</p>
-                </div>
-                <div class="info-section">
-                    <h4><i class="fas fa-book"></i> Description</h4>
-                    <p>This program provides comprehensive education in the field, combining theoretical knowledge with practical skills to prepare students for successful careers.</p>
-                </div>
-                <div class="info-section">
-                    <h4><i class="fas fa-euro-sign"></i> Tuition & Fees</h4>
-                    <p><strong>Annual Tuition:</strong> €1,500 - €3,000</p>
-                    <p><strong>Application Fee:</strong> €50</p>
-                </div>
-                <div class="modal-actions">
-                    <button class="action-btn primary" onclick="window.open('#', '_blank')">
-                        <i class="fas fa-external-link-alt"></i>
-                        <span>Apply Now</span>
+    // Fetch actual program details from API
+    fetch(`/api/program/${programId}`)
+        .then(response => response.json())
+        .then(data => {
+            const modalBody = modal.querySelector('.modal-body');
+            
+            // Handle both successful response and fallback case
+            const program = data.success ? data.program : data.fallback_program;
+            
+            if (program) {
+                const school = program.school || {};
+                
+                // Update modal header with school subtitle
+                const modalSubtitle = modal.querySelector('.modal-subtitle');
+                if (modalSubtitle) {
+                    modalSubtitle.textContent = school.name || 'University';
+                }
+                
+                // Show warning banner if this is fallback data
+                const warningBanner = !data.success ? `
+                    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1)); 
+                                border: 1px solid rgba(245, 158, 11, 0.3); 
+                                border-radius: 0.75rem; 
+                                padding: 1rem; 
+                                margin-bottom: 1.5rem;
+                                display: flex;
+                                align-items: center;
+                                gap: 0.75rem;">
+                        <i class="fas fa-info-circle" style="color: #f59e0b; font-size: 1.1rem;"></i>
+                        <span style="color: rgba(248, 250, 252, 0.9); font-size: 0.9rem;">
+                            Some program details are temporarily unavailable. Showing general information.
+                        </span>
+                    </div>
+                ` : '';
+                
+                modalBody.innerHTML = `
+                    <div class="program-info">
+                        ${warningBanner}
+                        <div class="info-section">
+                            <h4><i class="fas fa-info-circle"></i> Program Information</h4>
+                            <div class="program-meta-grid">
+                                <div class="meta-item">
+                                    <i class="fas fa-id-card"></i>
+                                    <div>
+                                        <div class="meta-label">Program ID</div>
+                                        <div class="meta-value">${program.id}</div>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <div>
+                                        <div class="meta-label">Degree Type</div>
+                                        <div class="meta-value">${program.degree_type || 'Bachelor'}</div>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    <div>
+                                        <div class="meta-label">Duration</div>
+                                        <div class="meta-value">${program.duration || '4 years'}</div>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>
+                                        <div class="meta-label">Location</div>
+                                        <div class="meta-value">${school.location || 'Bulgaria'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${program.description ? `
+                        <div class="info-section">
+                            <h4><i class="fas fa-align-left"></i> Program Description</h4>
+                            <p>${program.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${school.description ? `
+                        <div class="info-section">
+                            <h4><i class="fas fa-university"></i> About ${school.name}</h4>
+                            <p>${school.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${program.tuition_fee ? `
+                        <div class="info-section">
+                            <h4><i class="fas fa-dollar-sign"></i> Tuition & Fees</h4>
+                            <div class="tuition-highlight">
+                                <p><strong>Annual Tuition:</strong> <span class="price">$${program.tuition_fee.toLocaleString()}</span></p>
+                                <p><em>Contact the university for detailed fee breakdown and payment plans</em></p>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${program.admission_requirements || school.admission_requirements ? `
+                        <div class="info-section">
+                            <h4><i class="fas fa-clipboard-check"></i> Admission Requirements</h4>
+                            ${program.admission_requirements ? `
+                                <div class="requirement-section">
+                                    <h6><i class="fas fa-graduation-cap"></i> Program-Specific Requirements</h6>
+                                    <p>${program.admission_requirements}</p>
+                                </div>
+                            ` : ''}
+                            ${school.admission_requirements ? `
+                                <div class="requirement-section">
+                                    <h6><i class="fas fa-university"></i> General University Requirements</h6>
+                                    <p>${school.admission_requirements}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        ${school.email || school.phone || school.website ? `
+                        <div class="info-section">
+                            <h4><i class="fas fa-address-book"></i> Contact Information</h4>
+                            <div class="contact-grid">
+                                ${school.email ? `
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <a href="mailto:${school.email}">${school.email}</a>
+                                </div>
+                                ` : ''}
+                                ${school.phone ? `
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <a href="tel:${school.phone}">${school.phone}</a>
+                                </div>
+                                ` : ''}
+                                ${school.website ? `
+                                <div class="contact-item">
+                                    <i class="fas fa-globe"></i>
+                                    <a href="${school.website}" target="_blank">Visit Website</a>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="modal-actions">
+                            ${school.website ? `
+                            <button class="action-btn primary" onclick="window.open('${school.website}', '_blank')">
+                                <i class="fas fa-external-link-alt"></i>
+                                <span>Visit University</span>
+                            </button>
+                            ` : `
+                            <button class="action-btn primary" onclick="showNotification('Contact information available above', 'info')">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Contact Info</span>
+                            </button>
+                            `}
+                            
+                        </div>
+                    </div>
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h4>Unable to Load Program Details</h4>
+                        <p>Sorry, we couldn't load the details for this program. Please try again later.</p>
+                        <button class="action-btn primary" onclick="closeModal()">
+                            <i class="fas fa-times"></i>
+                            <span>Close</span>
+                        </button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching program details:', error);
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-wifi"></i>
+                    <h4>Connection Error</h4>
+                    <p>Unable to connect to the server. Please check your internet connection and try again.</p>
+                    <button class="action-btn primary" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                        <span>Close</span>
                     </button>
-                    <button class="action-btn secondary" onclick="addToFavorites('${programId}', 'program')">
-                        <i class="fas fa-heart"></i>
-                        <span>Add to Favorites</span>
-                    </button>
                 </div>
-            </div>
-        `;
-    }, 1000);
+            `;
+        });
 }
 
 function visitUniversity(universityName) {
-    // Create a simple modal or redirect to university page
-    const confirmed = confirm(`Visit ${universityName}'s official website?`);
-    if (confirmed) {
-        // In a real app, you'd have actual university URLs
-        const searchQuery = encodeURIComponent(universityName + " official website");
-        window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
-    }
+    // Get the university website from the database
+    fetch(`/api/university-website?name=${encodeURIComponent(universityName)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.website) {
+                const confirmed = confirm(`Visit ${universityName}'s official website?`);
+                if (confirmed) {
+                    window.open(data.website, '_blank');
+                }
+            } else {
+                // Fallback if no website is available
+                showNotification(`Website not available for ${universityName}`, 'info');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching university website:', error);
+            // Fallback to search if API fails
+            const confirmed = confirm(`Visit ${universityName}'s information page?`);
+            if (confirmed) {
+                window.open(`{{ url_for('main.universities') }}?search=${encodeURIComponent(universityName)}`, '_blank');
+            }
+        });
 }
 
-function addToFavorites(itemId, type) {
-    // Add to favorites functionality
-    const btn = event.target.closest('.action-btn.favorite');
-    
-    if (btn.classList.contains('active')) {
-        // Remove from favorites
-        btn.classList.remove('active');
-        btn.innerHTML = '<i class="fas fa-heart"></i>';
-        showNotification(`Removed from favorites`, 'info');
-    } else {
-        // Add to favorites
-        btn.classList.add('active');
-        btn.innerHTML = '<i class="fas fa-heart"></i>';
-        showNotification(`Added to favorites!`, 'success');
-        
-        // In a real app, you'd make an API call to save this
-        // fetch('/api/favorites', { method: 'POST', body: JSON.stringify({itemId, type}) })
-    }
-}
+// Favorites functionality completely removed
 
 function closeModal() {
     const modal = document.querySelector('.program-modal');
