@@ -85,22 +85,14 @@
                                 </div>
                             </div>
                             
-                            <div class="stat-item">
-                                <div class="stat-icon favorites">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div class="stat-details">
-                                    <h4>{{ user.favorites.count() }}</h4>
-                                    <p>Favorite Schools</p>
-                                </div>
-                            </div>
+                            <!-- Favorites functionality removed -->
                             
                             <div class="stat-item">
                                 <div class="stat-icon recommendations">
                                     <i class="fas fa-star"></i>
                                 </div>
                                 <div class="stat-details">
-                                    <h4>0</h4>
+                                    <h4>{{ total_recommendations }}</h4>
                                     <p>Recommendations</p>
                                 </div>
                             </div>
@@ -128,7 +120,7 @@
                                 </div>
                                 <div class="activity-details">
                                     <h5>{{ response.survey.title }}</h5>
-                                    <p>Completed on {{ response.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                    <p>Completed on {{ response.created_at|formatlocal('%B %d, %Y at %I:%M %p') }}</p>
                                 </div>
                                 <div class="activity-meta">
                                     <span class="cosmic-badge cosmic-badge-info">
@@ -463,9 +455,7 @@
     background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
 }
 
-.stat-icon.favorites {
-    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-}
+
 
 .stat-icon.recommendations {
     background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
