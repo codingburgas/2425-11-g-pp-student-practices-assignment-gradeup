@@ -28,7 +28,7 @@
                         </span>
                         <span class="stat-badge">
                             <i class="fas fa-star"></i>
-                            {{ favorites_count }} Favorites
+                            {{ survey_progress|round }}% Complete
                         </span>
                     </div>
                 </div>
@@ -102,8 +102,8 @@
                                     <i class="fas fa-star"></i>
                                 </div>
                                 <div class="stat-details">
-                                    <span class="stat-number">{{ favorites_count }}</span>
-                                    <span class="stat-label">Favorite Universities</span>
+                                                        <span class="stat-number">{{ overall_progress|round }}%</span>
+                    <span class="stat-label">Overall Progress</span>
                                 </div>
                             </div>
                             
@@ -185,37 +185,7 @@
                 </div>
                 {% endif %}
                 
-                {% if recent_favorites %}
-                <div class="col-lg-6 mb-4">
-                    <div class="cosmic-card">
-                        <div class="card-header">
-                            <h3><i class="fas fa-star me-2"></i>Favorite Universities</h3>
-                        </div>
-                        <div class="card-body">
-                            {% for favorite in recent_favorites %}
-                            <div class="favorite-item">
-                                <div class="favorite-avatar">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div class="favorite-info">
-                                    <h5>{{ favorite.school.name }}</h5>
-                                    <p class="text-muted">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ favorite.school.location }}
-                                    </p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            
-                            <div class="text-center mt-3">
-                                <a href="{{ url_for('main.favorites') }}" class="cosmic-btn cosmic-btn-ghost">
-                                    View All Favorites
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+                <!-- Favorites functionality removed -->
             </div>
         </div>
     </div>
@@ -529,16 +499,16 @@
     padding: 2rem 0;
 }
 
-.recommendation-item, .favorite-item {
+.recommendation-item {
     padding: 1rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.recommendation-item:last-child, .favorite-item:last-child {
+.recommendation-item:last-child {
     border-bottom: none;
 }
 
-.recommendation-info h5, .favorite-info h5 {
+.recommendation-info h5 {
     color: white;
     margin-bottom: 0.25rem;
 }
@@ -547,23 +517,6 @@
     margin-top: 0.5rem;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.8);
-}
-
-.favorite-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.favorite-avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #5b14ae, #3b82f6);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
 }
 
 /* Quick Actions */
