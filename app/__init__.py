@@ -6,6 +6,8 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from config import Config
+from datetime import datetime, timezone
+import pytz
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -55,6 +57,35 @@ def create_app(config_class=Config):
     # Register Recommendation Engine blueprint
     from app.ml.recommendation_blueprint import recommendation_bp
     app.register_blueprint(recommendation_bp)
+
+    # Add timezone conversion filters
+    @app.template_filter('localtime')
+    def localtime_filter(utc_datetime, timezone_name='Europe/Sofia'):
+        """Convert UTC datetime to local timezone"""
+        if utc_datetime is None:
+            return 'N/A'
+        
+        # Assume the datetime stored is in UTC
+        if utc_datetime.tzinfo is None:
+            utc_datetime = utc_datetime.replace(tzinfo=pytz.UTC)
+        
+        # Convert to specified timezone (default to Sofia, Bulgaria)
+        local_tz = pytz.timezone(timezone_name)
+        local_datetime = utc_datetime.astimezone(local_tz)
+        
+        return local_datetime
+    
+    @app.template_filter('formatlocal')
+    def formatlocal_filter(utc_datetime, fmt='%B %d, %Y at %I:%M %p', timezone_name='Europe/Sofia'):
+        """Convert UTC datetime to local timezone and format it"""
+        if utc_datetime is None:
+            return 'N/A'
+        
+        local_datetime = localtime_filter(utc_datetime, timezone_name)
+        if local_datetime == 'N/A':
+            return 'N/A'
+            
+        return local_datetime.strftime(fmt)
 
     # Register error handlers
     @app.errorhandler(404)
