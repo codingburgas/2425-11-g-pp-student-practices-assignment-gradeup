@@ -130,22 +130,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="stat-card favorites">
-                                        <div class="stat-visual">
-                                            <div class="stat-icon">
-                                                <i class="fas fa-heart"></i>
-                                            </div>
-                                            <div class="stat-progress">
-                                                <div class="progress-circle" data-percent="{{ (favorites_count * 25) if favorites_count <= 4 else 100 }}">
-                                                    <span class="progress-number">{{ favorites_count }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="stat-info">
-                                            <h4>Favorites</h4>
-                                            <p>Schools saved</p>
-                                        </div>
-                                    </div>
+                                    <!-- Favorites functionality removed -->
                                     
                                     <div class="stat-card engagement">
                                         <div class="stat-visual">
@@ -285,16 +270,7 @@
                             </div>
                             {% endif %}
                             
-                            {% if favorites_count > 0 %}
-                            <div class="timeline-item">
-                                <div class="timeline-dot favorites"></div>
-                                <div class="timeline-content">
-                                    <h4>Schools Favorited</h4>
-                                    <p>{{ favorites_count }} school{{ 's' if favorites_count != 1 else '' }} added to favorites</p>
-                                    <span class="timeline-date">Ongoing</span>
-                                </div>
-                            </div>
-                            {% endif %}
+                            <!-- Favorites timeline removed -->
                             
                             <div class="timeline-item">
                                 <div class="timeline-dot joined"></div>
@@ -344,19 +320,7 @@
                             </div>
                             {% endif %}
                             
-                            {% if favorites_count > 0 %}
-                            <div class="achievement-card earned">
-                                <div class="achievement-icon">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <div class="achievement-content">
-                                    <h4>School Explorer</h4>
-                                    <p>Favorited schools</p>
-                                    <div class="achievement-date">Earned</div>
-                                </div>
-                                <div class="achievement-shine"></div>
-                            </div>
-                            {% endif %}
+                            <!-- Favorites achievement removed -->
                             
                             {% if user.bio %}
                             <div class="achievement-card earned">
@@ -786,10 +750,7 @@
     color: #3B82F6;
 }
 
-.stat-card.favorites .stat-icon {
-    background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
-}
+
 
 .stat-card.engagement .stat-icon {
     background: rgba(245, 158, 11, 0.2);
@@ -1089,9 +1050,7 @@
     background: #3B82F6;
 }
 
-.timeline-dot.favorites {
-    background: #EF4444;
-}
+
 
 .timeline-dot.joined {
     background: var(--cosmic-purple);
