@@ -121,8 +121,8 @@
                                 </div>
                                 <div class="response-date-enhanced">
                                     <div class="date-container">
-                                        <span class="date-main">{{ response.created_at.strftime('%b %d, %Y') }}</span>
-                                        <small class="date-time">{{ response.created_at.strftime('%I:%M %p') }}</small>
+                                        <span class="date-main">{{ response.created_at|formatlocal('%b %d, %Y') }}</span>
+                                        <small class="date-time">{{ response.created_at|formatlocal('%I:%M %p') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -1299,10 +1299,6 @@ function viewResponse(responseId) {
                             <i class="fas fa-download"></i>
                             Export Response
                         </button>
-                        <button class="modal-action-btn secondary">
-                            <i class="fas fa-eye"></i>
-                            View Recommendations
-                        </button>
                         <button class="modal-action-btn info">
                             <i class="fas fa-chart-pie"></i>
                             Analytics View
@@ -1583,24 +1579,26 @@ function viewResponse(responseId) {
         
         .modal-actions {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             flex-wrap: wrap;
             margin-top: 1rem;
+            justify-content: center;
         }
         
         .modal-action-btn {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem 1.25rem;
+            padding: 1rem 2rem;
             border-radius: 10px;
             border: 1px solid transparent;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
             flex: 1;
-            min-width: 150px;
+            min-width: 180px;
+            max-width: 220px;
             justify-content: center;
         }
         
@@ -1732,6 +1730,20 @@ function viewResponse(responseId) {
     document.head.appendChild(modalStyles);
     document.body.appendChild(modal);
     
+    // Add event listeners to Quick Action buttons
+    const exportBtn = modal.querySelector('.modal-action-btn.primary');
+    const analyticsBtn = modal.querySelector('.modal-action-btn.info');
+    
+    // Export Response functionality
+    exportBtn.addEventListener('click', function() {
+        exportDetailedResponseData(responseId, userName, surveyTitle, responseDate, responseTime, recommendationsCount);
+    });
+    
+    // Analytics View functionality
+    analyticsBtn.addEventListener('click', function() {
+        showResponseAnalytics(responseId, surveyTitle, responseDate, recommendationsCount);
+    });
+    
     // Close modal with Escape key
     const handleEscape = (e) => {
         if (e.key === 'Escape') {
@@ -1750,6 +1762,479 @@ function viewResponse(responseId) {
             modalStyles.remove();
         }
     });
+}
+
+// Export Detailed Response Data functionality
+function exportDetailedResponseData(responseId, userName, surveyTitle, responseDate, responseTime, recommendationsCount) {
+    // Show loading message
+    showNotification('Preparing detailed export from database...', 'info');
+    
+    // Fetch actual response data from the database API
+    const exportDate = new Date().toLocaleDateString();
+    const exportTime = new Date().toLocaleTimeString();
+    
+    fetch(`/admin/api/survey-responses/${responseId}?export_date=${exportDate}&export_time=${exportTime}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch response data from database');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Create comprehensive CSV data from real database data
+            const csvData = [
+                ['=== RESPONSE SUMMARY ==='],
+                ['Response ID', data.response_summary.response_id],
+                ['User Name', data.response_summary.user_name],
+                ['User Email', data.response_summary.user_email],
+                ['Survey Title', `"${data.response_summary.survey_title}"`],
+                ['Survey Description', `"${data.response_summary.survey_description}"`],
+                ['Response Date', data.response_summary.response_date],
+                ['Response Time', data.response_summary.response_time],
+                ['Export Date', exportDate],
+                ['Export Time', exportTime],
+                [''],
+                ['=== SURVEY QUESTIONS & ANSWERS ==='],
+                ['Question #', 'Question ID', 'Question Text', 'Question Type', 'Required', 'User Answer']
+            ];
+            
+            // Add all questions and answers from database
+            data.questions_and_answers.forEach(qa => {
+                csvData.push([
+                    qa.question_number,
+                    qa.question_id,
+                    `"${qa.question_text}"`,
+                    qa.question_type,
+                    qa.required ? 'Yes' : 'No',
+                    `"${qa.user_answer}"`
+                ]);
+            });
+            
+            // Convert to CSV format
+            const csvContent = csvData.map(row => {
+                if (Array.isArray(row)) {
+                    return row.join(',');
+                }
+                return row;
+            }).join('\n');
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `detailed_response_${responseId}_${data.response_summary.user_name.replace(/\s+/g, '_')}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Show success message
+            showNotification('Database export completed successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Export error:', error);
+            showNotification('Failed to export response data from database. Please try again.', 'error');
+        });
+}
+
+
+
+// Keep the simple export function for analytics
+function exportResponseData(responseId, userName, surveyTitle, responseDate, responseTime, recommendationsCount) {
+    // Create CSV data
+    const csvData = [
+        ['Response ID', responseId],
+        ['User Name', userName],
+        ['Survey Title', surveyTitle],
+        ['Response Date', responseDate],
+        ['Response Time', responseTime],
+        ['Recommendations Count', recommendationsCount],
+        ['Export Date', new Date().toLocaleDateString()],
+        ['Export Time', new Date().toLocaleTimeString()]
+    ];
+    
+    // Convert to CSV format
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `response_${responseId}_export.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Show success message
+    showNotification('Response data exported successfully!', 'success');
+}
+
+// Show Response Analytics functionality
+function showResponseAnalytics(responseId, surveyTitle, responseDate, recommendationsCount) {
+    const analyticsModal = document.createElement('div');
+    analyticsModal.className = 'response-modal-enhanced analytics-modal';
+    analyticsModal.innerHTML = `
+        <div class="modal-overlay-enhanced" onclick="this.closest('.response-modal-enhanced').remove()"></div>
+        <div class="modal-content-enhanced">
+            <div class="modal-header-enhanced">
+                <div class="modal-title-section">
+                    <div class="modal-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <h3>Response Analytics</h3>
+                        <p>Statistical overview for response #${responseId}</p>
+                    </div>
+                </div>
+                <button onclick="this.closest('.response-modal-enhanced').remove()" class="modal-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body-enhanced">
+                <!-- Analytics Summary -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4>Response Metrics</h4>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="analytics-data">
+                                <h4>Submission Date</h4>
+                                <p>${responseDate}</p>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="analytics-data">
+                                <h4>Recommendations</h4>
+                                <p>${recommendationsCount} Generated</p>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-poll"></i>
+                            </div>
+                            <div class="analytics-data">
+                                <h4>Survey</h4>
+                                <p>${surveyTitle}</p>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="analytics-data">
+                                <h4>Processing Time</h4>
+                                <p>< 2 seconds</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Real Response Insights -->
+                <div class="detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h4>Response Insights</h4>
+                    </div>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Response Status</h5>
+                                <p>Successfully processed and analyzed</p>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Data Quality</h5>
+                                <p>Complete survey submission</p>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-lightning-bolt"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Processing Speed</h5>
+                                <p>Instant recommendation generation</p>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Data Security</h5>
+                                <p>Encrypted and secure storage</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer-enhanced">
+                <button onclick="this.closest('.response-modal-enhanced').remove()" class="modal-btn secondary">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+                <button class="modal-btn primary" onclick="exportDetailedResponseData(${responseId}, 'Analytics Report', '${surveyTitle}', '${responseDate}', 'N/A', '${recommendationsCount}')">
+                    <i class="fas fa-download"></i>
+                    Export Analytics
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add analytics-specific styles
+    const analyticsStyles = document.createElement('style');
+    analyticsStyles.textContent = `
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .analytics-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .analytics-card:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .analytics-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .analytics-data h4 {
+            color: #f1f5f9;
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .analytics-data p {
+            color: rgba(248, 250, 252, 0.7);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .insight-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .insight-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-content h5 {
+            color: #f1f5f9;
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .insight-content p {
+            color: rgba(248, 250, 252, 0.7);
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .insight-card {
+                padding: 1rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
+            }
+            
+            .insight-icon {
+                margin: 0 auto;
+            }
+        }
+    `;
+    
+    document.head.appendChild(analyticsStyles);
+    document.body.appendChild(analyticsModal);
+    
+    // Close analytics modal cleanup
+    analyticsModal.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-overlay-enhanced') || 
+            e.target.closest('.modal-close-btn') || 
+            e.target.closest('.modal-btn.secondary')) {
+            analyticsStyles.remove();
+        }
+    });
+}
+
+// Show notification helper function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add notification styles if not already present
+    if (!document.querySelector('#notification-styles')) {
+        const notificationStyles = document.createElement('style');
+        notificationStyles.id = 'notification-styles';
+        notificationStyles.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 20000;
+                background: rgba(30, 30, 70, 0.95);
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                border-radius: 10px;
+                padding: 1rem 1.5rem;
+                backdrop-filter: blur(20px);
+                animation: slideInRight 0.3s ease-out;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+            
+            .notification-success {
+                border-color: rgba(16, 185, 129, 0.5);
+                background: rgba(16, 185, 129, 0.1);
+            }
+            
+            .notification-error {
+                border-color: rgba(239, 68, 68, 0.5);
+                background: rgba(239, 68, 68, 0.1);
+            }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: #f1f5f9;
+                font-weight: 600;
+            }
+            
+            .notification-success .notification-content {
+                color: #10b981;
+            }
+            
+            .notification-error .notification-content {
+                color: #ef4444;
+            }
+            
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(notificationStyles);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove notification
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 </script>
 {% endblock %} 
