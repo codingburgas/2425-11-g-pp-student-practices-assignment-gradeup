@@ -36,7 +36,8 @@
         <div class="container-fluid">
             {% if surveys %}
                 <div class="row">
-                    {% for survey in surveys %}
+                    {% for info in survey_info %}
+                        {% set survey = info.survey %}
                         <div class="col-lg-6 col-xl-4 mb-4">
                             <div class="cosmic-survey-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
                                 <div class="survey-card-header">
@@ -46,9 +47,25 @@
                                         </div>
                                     </div>
                                     <div class="survey-status">
-                                        <span class="status-badge active">
-                                            <i class="fas fa-circle"></i> Active
-                                        </span>
+                                        {% if current_user.is_authenticated %}
+                                            {% if info.submission_count == 0 %}
+                                                <span class="status-badge available">
+                                                    <i class="fas fa-circle"></i> Available
+                                                </span>
+                                            {% elif info.can_retake %}
+                                                <span class="status-badge retake">
+                                                    <i class="fas fa-redo"></i> {{ info.retakes_left }} retake{{ 's' if info.retakes_left != 1 else '' }} left
+                                                </span>
+                                            {% else %}
+                                                <span class="status-badge completed">
+                                                    <i class="fas fa-check-circle"></i> Completed ({{ max_submissions }}/{{ max_submissions }})
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="status-badge active">
+                                                <i class="fas fa-circle"></i> Active
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 
@@ -65,17 +82,35 @@
                                             <i class="fas fa-clock"></i>
                                             <span>~{{ (survey.get_questions()|length * 0.5)|round|int }} min</span>
                                         </div>
+                                        {% if current_user.is_authenticated and info.submission_count > 0 %}
+                                        <div class="meta-item">
+                                            <i class="fas fa-user-check"></i>
+                                            <span>Completed {{ info.submission_count }} time{{ 's' if info.submission_count != 1 else '' }}</span>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 
                                 <div class="survey-card-footer">
                                     {% if current_user.is_authenticated %}
-                                        <a href="{{ url_for('main.take_survey', survey_id=survey.id) }}" 
-                                           class="cosmic-btn-enhanced primary survey-btn">
-                                            <i class="fas fa-play"></i>
-                                            <span>Start Survey</span>
-                                            <div class="btn-cosmic-glow"></div>
-                                        </a>
+                                        {% if info.can_retake %}
+                                            <a href="{{ url_for('main.take_survey', survey_id=survey.id) }}" 
+                                               class="cosmic-btn-enhanced primary survey-btn">
+                                                <i class="fas fa-{{ 'play' if info.submission_count == 0 else 'redo' }}"></i>
+                                                <span>{{ 'Start Survey' if info.submission_count == 0 else 'Retake Survey' }}</span>
+                                                <div class="btn-cosmic-glow"></div>
+                                            </a>
+                                        {% else %}
+                                            <div class="survey-completed-notice">
+                                                <div class="notice-icon">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="notice-content">
+                                                    <span class="notice-text">Survey Completed</span>
+                                                    <span class="notice-subtitle">Maximum submissions reached</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                     {% else %}
                                         <a href="{{ url_for('auth.login') }}" 
                                            class="cosmic-btn-enhanced ghost survey-btn">
@@ -92,21 +127,58 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <!-- Empty State -->
-                <div class="cosmic-empty-state" data-aos="fade-up">
-                    <div class="empty-state-icon">
-                        <div class="professional-emoji size-xxl cosmic-glow">
-                            <i class="fas fa-poll-h"></i>
+                <!-- Enhanced Empty State -->
+                <div class="cosmic-empty-state-enhanced" data-aos="fade-up">
+                    <div class="empty-state-background">
+                        <div class="floating-icons">
+                            <i class="fas fa-poll floating-icon"></i>
+                            <i class="fas fa-chart-line floating-icon"></i>
+                            <i class="fas fa-clipboard-list floating-icon"></i>
+                            <i class="fas fa-graduation-cap floating-icon"></i>
                         </div>
                     </div>
-                    <h3>No Surveys Available</h3>
-                    <p>There are no active surveys at the moment. Please check back later!</p>
-                    <div class="empty-state-actions">
-                        <a href="{{ url_for('main.index') }}" class="cosmic-btn-enhanced primary">
-                            <i class="fas fa-home"></i>
-                            <span>Back to Home</span>
-                            <div class="btn-cosmic-glow"></div>
-                        </a>
+                    
+                    <div class="empty-state-content">
+                        <div class="empty-state-icon-enhanced">
+                            <div class="icon-container">
+                                <div class="professional-emoji size-xxl cosmic-glow-enhanced">
+                                    <i class="fas fa-poll-h"></i>
+                                </div>
+                                <div class="pulse-rings">
+                                    <div class="pulse-ring"></div>
+                                    <div class="pulse-ring"></div>
+                                    <div class="pulse-ring"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="empty-state-text">
+                            <h2>No Surveys Available Right Now</h2>
+                            <p class="lead">We're currently preparing exciting new surveys to help you discover your perfect university match.</p>
+                            <div class="info-cards">
+                                <div class="info-card">
+                                    <i class="fas fa-clock"></i>
+                                    <span>New surveys coming soon</span>
+                                </div>
+                                <div class="info-card">
+                                    <i class="fas fa-bell"></i>
+                                    <span>Get notified when available</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="empty-state-actions-enhanced">
+                            <a href="{{ url_for('main.dashboard') }}" class="cosmic-btn-enhanced primary">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Back to Dashboard</span>
+                                <div class="btn-cosmic-glow"></div>
+                            </a>
+                            <a href="{{ url_for('main.universities') }}" class="cosmic-btn-enhanced secondary">
+                                <i class="fas fa-university"></i>
+                                <span>Explore Universities</span>
+                                <div class="btn-cosmic-glow"></div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             {% endif %}
@@ -155,12 +227,29 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.3);
     border-radius: 2rem;
-    color: #10B981;
     font-size: 0.85rem;
     font-weight: 600;
+    border: 1px solid;
+}
+
+.survey-status .status-badge.active,
+.survey-status .status-badge.available {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+}
+
+.survey-status .status-badge.retake {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #F59E0B;
+}
+
+.survey-status .status-badge.completed {
+    background: rgba(107, 114, 128, 0.2);
+    border-color: rgba(107, 114, 128, 0.3);
+    color: #9CA3AF;
 }
 
 .survey-status .status-badge i {
@@ -170,6 +259,47 @@
 @keyframes pulse-status {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
+}
+
+.survey-completed-notice {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(107, 114, 128, 0.1);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    border-radius: 12px;
+    color: rgba(156, 163, 175, 0.9);
+    text-align: left;
+}
+
+.survey-completed-notice .notice-icon {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(107, 114, 128, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9CA3AF;
+}
+
+.survey-completed-notice .notice-content {
+    flex: 1;
+}
+
+.survey-completed-notice .notice-text {
+    display: block;
+    font-weight: 600;
+    color: #D1D5DB;
+    margin-bottom: 0.25rem;
+}
+
+.survey-completed-notice .notice-subtitle {
+    display: block;
+    font-size: 0.85rem;
+    color: #9CA3AF;
 }
 
 .survey-card-body {
@@ -245,37 +375,202 @@
 }
 
 /* ===== ENHANCED EMPTY STATE ===== */
-.cosmic-empty-state {
+.cosmic-empty-state-enhanced {
+    position: relative;
     text-align: center;
-    padding: 4rem 2rem;
-    max-width: 600px;
+    padding: 6rem 2rem;
+    max-width: 800px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
-.empty-state-icon .professional-emoji {
-    background: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
-    opacity: 0.7;
+.empty-state-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0.1;
 }
 
-.cosmic-empty-state h3 {
-    color: var(--star-white);
+.floating-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.floating-icon {
+    position: absolute;
     font-size: 2rem;
+    color: rgba(139, 92, 246, 0.3);
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-icon:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-icon:nth-child(2) {
+    top: 30%;
+    right: 15%;
+    animation-delay: 1.5s;
+}
+
+.floating-icon:nth-child(3) {
+    bottom: 25%;
+    left: 20%;
+    animation-delay: 3s;
+}
+
+.floating-icon:nth-child(4) {
+    bottom: 20%;
+    right: 10%;
+    animation-delay: 4.5s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+    50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+}
+
+.empty-state-content {
+    position: relative;
+    z-index: 2;
+}
+
+.empty-state-icon-enhanced {
+    position: relative;
+    margin-bottom: 3rem;
+}
+
+.icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cosmic-glow-enhanced {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #C084FC 100%);
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+    position: relative;
+    z-index: 3;
+}
+
+.pulse-rings {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.pulse-ring {
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    height: 120px;
+    width: 120px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 2s ease-out infinite;
+}
+
+.pulse-ring:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.pulse-ring:nth-child(2) {
+    animation-delay: 0.7s;
+}
+
+.pulse-ring:nth-child(3) {
+    animation-delay: 1.4s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+.empty-state-text h2 {
+    color: var(--star-white);
+    font-size: 2.5rem;
     font-weight: 700;
-    margin: 1.5rem 0 1rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.cosmic-empty-state p {
-    color: rgba(248, 250, 252, 0.7);
-    font-size: 1.1rem;
+.empty-state-text .lead {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1.2rem;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.empty-state-actions {
+.info-cards {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 2rem;
+    margin-bottom: 3rem;
     flex-wrap: wrap;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 2rem;
+    color: rgba(139, 92, 246, 0.9);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+}
+
+.info-card i {
+    font-size: 1.1rem;
+    color: rgba(139, 92, 246, 0.8);
+}
+
+.empty-state-actions-enhanced {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.cosmic-btn-enhanced.secondary {
+    background: rgba(75, 85, 99, 0.2);
+    border: 1px solid rgba(156, 163, 175, 0.3);
+    color: rgba(156, 163, 175, 0.9);
+}
+
+.cosmic-btn-enhanced.secondary:hover {
+    background: rgba(75, 85, 99, 0.3);
+    border-color: rgba(156, 163, 175, 0.5);
+    color: var(--star-white);
+    transform: translateY(-2px);
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -290,6 +585,50 @@
     
     .survey-meta {
         gap: 1rem;
+    }
+    
+    .cosmic-empty-state-enhanced {
+        padding: 4rem 1rem;
+    }
+    
+    .empty-state-text h2 {
+        font-size: 2rem;
+    }
+    
+    .empty-state-text .lead {
+        font-size: 1.1rem;
+    }
+    
+    .info-cards {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .info-card {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .empty-state-actions-enhanced {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .cosmic-btn-enhanced {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .floating-icon {
+        font-size: 1.5rem;
+    }
+    
+    .pulse-ring {
+        height: 100px;
+        width: 100px;
     }
     
     .meta-item {
