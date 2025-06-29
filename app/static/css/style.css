@@ -4627,3 +4627,9 @@ html, body {
     padding: 8px 2px 8px 2px;
   }
 }
+
+@media (max-width: 768px) {
+  .d-none-mobile {
+    display: none !important;
+  }
+}
