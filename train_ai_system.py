@@ -88,15 +88,49 @@ class AISystemTrainer:
         return 0  # Default to first program
     
     def _create_synthetic_data(self, num_samples=200):
-        """Create synthetic data for demo purposes."""
-        # Use the same logic as before, but generate more samples
+        """Create synthetic data for demo purposes with label-feature correlation."""
         X_data = []
         y_labels = []
         np.random.seed(42)
         for i in range(num_samples):
-            # Randomly assign a program (simulate 5 programs)
+            # Assign a label (simulate 5 programs)
             label = np.random.randint(0, 5)
-            features = np.random.normal(loc=5, scale=2, size=15)  # 15 features
+            # Generate features based on label
+            if label == 0:  # Engineering
+                features = np.array([
+                    np.random.uniform(8, 10),  # math_interest
+                    np.random.uniform(7, 10),  # science_interest
+                    np.random.uniform(2, 5),   # art_interest
+                    np.random.uniform(3, 6),   # sports_interest
+                ] + list(np.random.uniform(1, 10, 11)))
+            elif label == 1:  # Science
+                features = np.array([
+                    np.random.uniform(6, 8),   # math_interest
+                    np.random.uniform(8, 10),  # science_interest
+                    np.random.uniform(2, 5),   # art_interest
+                    np.random.uniform(3, 6),   # sports_interest
+                ] + list(np.random.uniform(1, 10, 11)))
+            elif label == 2:  # Arts
+                features = np.array([
+                    np.random.uniform(2, 5),   # math_interest
+                    np.random.uniform(3, 6),   # science_interest
+                    np.random.uniform(8, 10),  # art_interest
+                    np.random.uniform(3, 6),   # sports_interest
+                ] + list(np.random.uniform(1, 10, 11)))
+            elif label == 3:  # Business
+                features = np.array([
+                    np.random.uniform(6, 8),   # math_interest
+                    np.random.uniform(5, 7),   # science_interest
+                    np.random.uniform(5, 7),   # art_interest
+                    np.random.uniform(3, 6),   # sports_interest
+                ] + list(np.random.uniform(7, 10, 1)) + list(np.random.uniform(1, 10, 10)))
+            else:  # Sports
+                features = np.array([
+                    np.random.uniform(3, 6),   # math_interest
+                    np.random.uniform(3, 6),   # science_interest
+                    np.random.uniform(3, 6),   # art_interest
+                    np.random.uniform(8, 10),  # sports_interest
+                ] + list(np.random.uniform(1, 10, 11)))
             features = np.clip(features, 1, 10)
             X_data.append(features)
             y_labels.append(label)
