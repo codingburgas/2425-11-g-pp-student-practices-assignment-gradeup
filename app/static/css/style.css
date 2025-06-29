@@ -4633,3 +4633,51 @@ html, body {
     display: none !important;
   }
 }
+
+@media (max-width: 992px) {
+  /* Ensure hero columns stack correctly on mobile/tablet and content is centered */
+  .hero-section .row {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .hero-section .col-lg-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .hero-content {
+    margin-bottom: 3rem;
+  }
+  
+  .hero-actions {
+    justify-content: center;
+  }
+  
+  /* Make the mockup responsive without changing its design */
+  .mockup-container {
+    transform: none !important; /* Disable 3D tilt on mobile */
+  }
+
+  .mockup-screen {
+    aspect-ratio: 10 / 12;
+    height: auto;
+    width: 100%;
+    max-width: 350px;
+    min-width: 280px;
+    margin: 0 auto;
+  }
+}
+
+/* --- DEFINITIVE OVERFLOW FIX --- */
+/* This will find any element causing overflow and cut it off, removing the purple line. */
+html,
+body,
+.main-content,
+.home-container,
+.particles-background,
+.cosmic-background {
+  width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box; /* Ensure padding/border is included in width */
+}
