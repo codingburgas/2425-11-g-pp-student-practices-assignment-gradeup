@@ -11,7 +11,7 @@ services:
     branch: main
     plan: free
     buildCommand: "./build.sh"
-    startCommand: ".venv/bin/gunicorn app:app"
+    startCommand: "waitress-serve --host=0.0.0.0 --port=$PORT app:app"
     envVars:
       - key: FLASK_APP
         value: app.py
