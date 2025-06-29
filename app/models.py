@@ -27,8 +27,7 @@ class User(UserMixin, db.Model):
     
     survey_responses = db.relationship('SurveyResponse', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
-    
-    favorites = db.relationship('Favorite', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -106,8 +105,7 @@ class User(UserMixin, db.Model):
             'location': self.location,
             'created_at': self.created_at,
             'profile_picture': self.profile_picture,
-            'survey_count': self.survey_responses.count(),
-            'favorites_count': self.favorites.count()
+            'survey_count': self.survey_responses.count()
         }
     
     def can_view_profile(self, viewer=None):
@@ -142,8 +140,7 @@ class School(db.Model):
     
     programs = db.relationship('Program', backref='school', lazy='dynamic', cascade='all, delete-orphan')
     
-    
-    favorites = db.relationship('Favorite', backref='school', lazy='dynamic', cascade='all, delete-orphan')
+
     
     def __repr__(self):
         return f'<School {self.name}>'
@@ -280,17 +277,3 @@ class PredictionHistory(db.Model):
     def __repr__(self):
         return f'<PredictionHistory {self.id} for User {self.user_id}>'
 
-class Favorite(db.Model):
-    __tablename__ = 'favorites'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'school_id', name='unique_user_school_favorite'),)
-    
-    def __repr__(self):
-        return f'<Favorite {self.id} by User {self.user_id} for School {self.school_id}>' 
