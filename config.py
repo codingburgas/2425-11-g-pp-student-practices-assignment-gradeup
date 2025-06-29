@@ -16,19 +16,23 @@ class Config:
     # Email verification toggle
     DISABLE_EMAIL_VERIFICATION = os.environ.get('DISABLE_EMAIL_VERIFICATION', 'false').lower() in ['true', 'on', '1', 'yes']
     
-    # Platform-specific database driver and connection string
-    if platform.system() == 'Darwin':  # macOS
-        DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-        SQLALCHEMY_DATABASE_URI = (
-            f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-            f"?driver={DB_DRIVER.replace(' ', '+')}"
-            f"&TrustServerCertificate=yes"
-            f"&Encrypt=no"
-        )
-    else:  # Windows/Linux
-        DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-            'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
+    # Database configuration
+    if os.environ.get('DATABASE_URL'):
+        SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1)
+    else:
+        # Platform-specific database driver and connection string for local development
+        if platform.system() == 'Darwin':  # macOS
+            DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
+            SQLALCHEMY_DATABASE_URI = (
+                f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+                f"?driver={DB_DRIVER.replace(' ', '+')}"
+                f"&TrustServerCertificate=yes"
+                f"&Encrypt=no"
+            )
+        else:  # Windows/Linux
+            DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
+            SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+                'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
