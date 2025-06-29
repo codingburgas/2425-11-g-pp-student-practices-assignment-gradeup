@@ -264,8 +264,6 @@ def users():
         query = query.order_by(User.created_at.desc())
     elif sort_by == 'created_at_asc':
         query = query.order_by(User.created_at.asc())
-    elif sort_by == 'location':
-        query = query.order_by(User.location.asc().nullslast(), User.username.asc())
     else:  # default to username
         query = query.order_by(User.username.asc())
     
