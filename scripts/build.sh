@@ -7,6 +7,6 @@ echo "Setting up database..."
 python setup.py
 
 echo "Training AI model..."
-python train_ai_system.py
+python scripts/train_ai_system.py
 
 echo "Build completed successfully!" 
