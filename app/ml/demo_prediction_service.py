@@ -85,6 +85,16 @@ class DemoPredictionService:
         Returns:
             List of mock predictions with realistic confidence scores
         """
+        # Ensure programs are loaded
+        if not self.demo_programs:
+            self.logger.info("No programs loaded, attempting to reload from database")
+            self._load_programs_from_database()
+            
+        # If still no programs, return empty list
+        if not self.demo_programs:
+            self.logger.error("No programs available in database")
+            return []
+            
         predictions = []
         
         # Extract interests from survey data
@@ -352,20 +362,33 @@ class DemoPredictionService:
         if not program_scores:
             # Ensure we always have some recommendations by adding diverse default programs
             self.logger.warning("No matching programs found, adding default recommendations")
-            default_programs = [
-                {
-                    'program': self.demo_programs[3],  # Business Administration
+            
+            # Safely select default programs from available programs
+            default_programs = []
+            if len(self.demo_programs) >= 1:
+                default_programs.append({
+                    'program': self.demo_programs[0],
                     'confidence': 0.65
-                },
-                {
-                    'program': self.demo_programs[2],  # Medicine
+                })
+            if len(self.demo_programs) >= 2:
+                default_programs.append({
+                    'program': self.demo_programs[1],
                     'confidence': 0.60
-                },
-                {
-                    'program': self.demo_programs[0],  # Computer Science
+                })
+            if len(self.demo_programs) >= 3:
+                default_programs.append({
+                    'program': self.demo_programs[2],
                     'confidence': 0.55
-                }
-            ]
+                })
+            
+            # If we still don't have enough programs, create some basic ones
+            if len(default_programs) < 3 and len(self.demo_programs) > 0:
+                for i in range(len(default_programs), min(3, len(self.demo_programs))):
+                    default_programs.append({
+                        'program': self.demo_programs[i],
+                        'confidence': 0.5 - (i * 0.05)
+                    })
+            
             program_scores.extend(default_programs)
         
         # Sort by confidence and take top K
