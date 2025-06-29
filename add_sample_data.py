@@ -13,7 +13,7 @@ def add_sample_data():
     """Add sample data to the database."""
     try:
         from app import create_app, db
-        from app.models import School, Program, User, Survey, SurveyResponse, Favorite
+        from app.models import School, Program, User, Survey, SurveyResponse
         
         app = create_app()
         

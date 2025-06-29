@@ -47,7 +47,7 @@ def test_core_functionality():
             # Test database connectivity
             print("\n🗄️ Testing database connectivity...")
             try:
-                from app.models import School, Program, User, Survey, SurveyResponse, Favorite
+                from app.models import School, Program, User, Survey, SurveyResponse
                 
                 school_count = School.query.count()
                 program_count = Program.query.count() 
@@ -191,7 +191,7 @@ def test_core_functionality():
                 if isinstance(suggestions, dict):
                     print(f"✅ Personalized suggestions: SUCCESS ({len(suggestions)} categories)")
                     
-                    expected_categories = ['trending_programs', 'similar_user_favorites', 
+                    expected_categories = ['trending_programs', 
                                          'completion_suggestions', 'seasonal_recommendations']
                     
                     for category in expected_categories:

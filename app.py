@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation
 import os
 
 app = create_app()
@@ -46,7 +46,7 @@ def make_shell_context():
         'Survey': Survey,
         'SurveyResponse': SurveyResponse,
         'Recommendation': Recommendation,
-        'Favorite': Favorite
+
     }
 
 if __name__ == '__main__':
