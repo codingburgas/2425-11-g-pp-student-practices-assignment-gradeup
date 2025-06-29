@@ -1,12 +1,13 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.admin import bp
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, PredictionHistory
 from app import db
 import json
 from app.admin.forms import EditUserForm
 import pytz
 from datetime import timezone
+from app.data_collection.models import SurveyData
 
 def admin_required(f):
     """Decorator for requiring admin access to a route"""
@@ -110,6 +111,14 @@ def delete_user(user_id):
         return redirect(url_for('admin.users'))
     
     try:
+        # Delete all PredictionHistory records for this user
+        PredictionHistory.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+
+        # Delete all SurveyData records linked to this user's SurveyResponses
+        for response in user.survey_responses:
+            SurveyData.query.filter_by(response_id=response.id).delete(synchronize_session=False)
+
+        # Now delete the user (cascades to SurveyResponse, Recommendation, etc.)
         db.session.delete(user)
         db.session.commit()
         flash(f'User {user.username} deleted successfully.', 'success')
