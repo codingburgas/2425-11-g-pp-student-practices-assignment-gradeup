@@ -6,4 +6,7 @@ pip install -r requirements.txt
 echo "Setting up database..."
 python setup.py
 
+echo "Training AI model..."
+python train_ai_system.py
+
 echo "Build completed successfully!" 
