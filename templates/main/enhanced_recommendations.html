@@ -191,24 +191,7 @@
             </div>
             {% endif %}
             
-            <!-- Similar Users -->
-            {% if personalized_suggestions.similar_user_favorites %}
-            <div class="mb-4">
-                <h4 class="h5">Students Like You Also Liked</h4>
-                <div class="row">
-                    {% for sim in personalized_suggestions.similar_user_favorites %}
-                    <div class="col-md-4 mb-3">
-                        <div class="card border-info">
-                            <div class="card-body">
-                                <h6 class="card-title">{{ sim.school_name }}</h6>
-                                <small class="text-info">{{ sim.reason }}</small>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+            <!-- Similar users favorites functionality removed -->
             
             <!-- Completion Suggestions -->
             {% if personalized_suggestions.completion_suggestions %}
@@ -216,7 +199,7 @@
                 <h4 class="h5">Next Steps for You</h4>
                 {% for suggestion in personalized_suggestions.completion_suggestions %}
                 <div class="alert alert-light border-left-primary">
-                    <h6><i class="fas fa-{{ 'poll' if suggestion.type == 'survey' else 'star' if suggestion.type == 'favorites' else 'user-edit' }}"></i> {{ suggestion.title }}</h6>
+                    <h6><i class="fas fa-{{ 'poll' if suggestion.type == 'survey' else 'user-edit' }}"></i> {{ suggestion.title }}</h6>
                     <p class="mb-2">{{ suggestion.description }}</p>
                     <a href="{{ suggestion.action_url }}" class="btn btn-primary btn-sm">Get Started</a>
                 </div>
