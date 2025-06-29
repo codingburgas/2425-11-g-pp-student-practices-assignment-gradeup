@@ -35,11 +35,14 @@ class MLModelService:
     def initialize(self, instance_path: str):
         """Initialize the service with Flask app instance path."""
         self.model_path = os.path.join(instance_path, 'models', 'recommendation_model.pkl')
-        
+    
     def load_model(self) -> bool:
         """Load the trained model from disk."""
         try:
+            self._get_app_logger().info(f"Attempting to load model from: {self.model_path}")
+            
             if self.model_path and os.path.exists(self.model_path):
+                self._get_app_logger().info(f"Model file found, loading...")
                 self.model = MLTrainingPipeline.load_pipeline(self.model_path)
                 self.is_trained = True
                 self._get_app_logger().info(f"Model loaded successfully from {self.model_path}")

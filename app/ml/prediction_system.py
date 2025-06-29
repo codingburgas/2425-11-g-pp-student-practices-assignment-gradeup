@@ -69,9 +69,13 @@ class AdvancedPredictionSystem:
             # Try ML service first
             if self.ml_service.is_trained:
                 try:
+                    self.logger.info("ML service is trained, attempting to use trained model")
                     base_predictions = self.ml_service.predict_programs(survey_data, top_k * 2)
+                    self.logger.info(f"ML service returned {len(base_predictions)} predictions")
                 except Exception as e:
                     self.logger.warning(f"ML service failed, falling back to demo: {e}")
+            else:
+                self.logger.info("ML service is not trained, using demo service")
             
             # Fall back to demo service if no ML predictions
             if len(base_predictions) == 0:
