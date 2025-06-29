@@ -222,33 +222,30 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                    Confirm Delete
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the user "<strong><span id="userName"></span></strong>"?</p>
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <strong>Warning:</strong> This will permanently delete all user data including survey responses and cannot be undone.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Cancel
+<div id="deleteModal" class="cosmic-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirm Deletion
+            </h3>
+            <button onclick="closeModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the user "<span id="userName"></span>"?</p>
+            <p class="warning-text">This action cannot be undone and will remove all user data including survey responses.</p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeModal()" class="cosmic-btn cosmic-btn-ghost">Cancel</button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="cosmic-btn cosmic-btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Delete User
                 </button>
-                <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-1"></i>Delete User
-                    </button>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -257,34 +254,39 @@
 function confirmDelete(userName, deleteUrl) {
     document.getElementById('userName').textContent = userName;
     document.getElementById('deleteForm').action = deleteUrl;
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
 }
 
 // Attach delete handlers
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle delete button clicks
     document.querySelectorAll('.delete-user-btn').forEach(button => {
         button.addEventListener('click', function() {
             confirmDelete(this.dataset.userName, this.dataset.deleteUrl);
         });
     });
-    
     // Show notifications for successful operations
     const urlParams = new URLSearchParams(window.location.search);
-    
     if (urlParams.get('deleted') === 'true') {
         showNotification('User deleted successfully', 'success');
     }
-    
     if (urlParams.get('updated') === 'true') {
         showNotification('User updated successfully', 'success');
     }
-    
     if (urlParams.get('admin_toggled') === 'true') {
         showNotification('User role updated successfully', 'success');
     }
 });
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 </script>
 
 <style>
@@ -1106,6 +1108,87 @@ document.addEventListener('DOMContentLoaded', function() {
         justify-content: center;
         width: 100%;
     }
+}
+
+.cosmic-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+.modal-content {
+    background: var(--dark-space);
+    margin: 15% auto;
+    padding: 0;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+}
+.modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h3 {
+    color: var(--star-white);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.modal-header h3 i {
+    color: #f87171;
+}
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(248, 250, 252, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+.modal-close:hover {
+    color: var(--star-white);
+    background: rgba(139, 92, 246, 0.2);
+}
+.modal-body {
+    padding: 1rem 2rem;
+}
+.modal-body p {
+    color: rgba(248, 250, 252, 0.8);
+    margin-bottom: 1rem;
+}
+.warning-text {
+    color: #f87171;
+    font-size: 0.9rem;
+}
+.modal-footer {
+    padding: 1rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+.cosmic-btn-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: white;
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+.cosmic-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6);
+    color: white;
+    text-decoration: none;
 }
 </style>
 {% endblock %} 
