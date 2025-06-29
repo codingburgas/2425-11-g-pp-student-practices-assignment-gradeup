@@ -8,8 +8,10 @@ services:
   - type: web
     name: gradeup-app
     runtime: python
+    branch: main
+    plan: free
     buildCommand: "./build.sh"
-    startCommand: "gunicorn app:app"
+    startCommand: ".venv/bin/gunicorn app:app"
     envVars:
       - key: FLASK_APP
         value: app.py
