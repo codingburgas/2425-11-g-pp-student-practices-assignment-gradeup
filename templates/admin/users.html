@@ -117,7 +117,7 @@
                         {% if user.bio %}
                         <div class="detail-item bio">
                             <i class="fas fa-quote-left"></i>
-                            <span>{{ user.bio[:100] }}{% if user.bio|length > 100 %}...{% endif %}</span>
+                            <span>{{ user.bio }}</span>
                         </div>
                         {% endif %}
                     </div>
