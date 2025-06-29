@@ -17,9 +17,9 @@ class DemoPredictionService:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        # NO HARDCODED PROGRAMS! Use ONLY database programs
+        # Don't load programs during initialization - load them when needed
         self.demo_programs = []
-        self._load_programs_from_database()
+        self._programs_loaded = False
 
     def _load_programs_from_database(self):
         """Load all programs from the actual database - NO FAKE PROGRAMS!"""
@@ -86,9 +86,10 @@ class DemoPredictionService:
             List of mock predictions with realistic confidence scores
         """
         # Ensure programs are loaded
-        if not self.demo_programs:
-            self.logger.info("No programs loaded, attempting to reload from database")
+        if not self._programs_loaded:
+            self.logger.info("Loading programs from database for first prediction")
             self._load_programs_from_database()
+            self._programs_loaded = True
             
         # If still no programs, return empty list
         if not self.demo_programs:
