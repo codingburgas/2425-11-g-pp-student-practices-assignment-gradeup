@@ -33,7 +33,8 @@ def create_admin_user():
                 admin = User(
                     username='admin',
                     email='admin@example.com',
-                    is_admin=True
+                    is_admin=True,
+                    email_verified=True
                 )
                 admin.set_password('admin123')
                 db.session.add(admin)
