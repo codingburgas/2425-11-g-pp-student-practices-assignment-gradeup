@@ -17,176 +17,62 @@ class DemoPredictionService:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.demo_programs = [
-            {
-                'id': 1,
-                'name': 'Computer Science',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
-            },
-            {
-                'id': 2,
-                'name': 'Electrical Engineering',
-                'school_name': 'Technical University of Sofia',
-                'degree_type': 'Bachelor',
-                'keywords': ['engineering', 'electricity', 'physics', 'technology', 'math', 'science']
-            },
-            {
-                'id': 3,
-                'name': 'Medicine',
-                'school_name': 'Medical University of Sofia',
-                'degree_type': 'Master',
-                'keywords': ['medicine', 'biology', 'health', 'science', 'healthcare']
-            },
-            {
-                'id': 4,
-                'name': 'Business Administration',
-                'school_name': 'New Bulgarian University',
-                'degree_type': 'Bachelor',
-                'keywords': ['business', 'management', 'leadership', 'economics', 'finance']
-            },
-            {
-                'id': 5,
-                'name': 'Psychology',
-                'school_name': 'Plovdiv University Paisii Hilendarski',
-                'degree_type': 'Bachelor',
-                'keywords': ['psychology', 'mental_health', 'research', 'helping', 'social']
-            },
-            {
-                'id': 6,
-                'name': 'Economics',
-                'school_name': 'University of National and World Economy',
-                'degree_type': 'Bachelor',
-                'keywords': ['economics', 'finance', 'business', 'mathematics', 'statistics']
-            },
-            {
-                'id': 7,
-                'name': 'Fine Arts',
-                'school_name': 'National Academy of Arts',
-                'degree_type': 'Bachelor',
-                'keywords': ['art', 'design', 'creative', 'drawing', 'painting', 'sculpture']
-            },
-            {
-                'id': 8,
-                'name': 'Mechanical Engineering',
-                'school_name': 'Technical University of Sofia',
-                'degree_type': 'Bachelor',
-                'keywords': ['engineering', 'mechanical', 'design', 'technology', 'physics']
-            },
-            {
-                'id': 9,
-                'name': 'Law',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Master',
-                'keywords': ['law', 'legal', 'justice', 'social', 'politics']
-            },
-            {
-                'id': 10,
-                'name': 'Architecture',
-                'school_name': 'University of Architecture, Civil Engineering and Geodesy',
-                'degree_type': 'Master',
-                'keywords': ['architecture', 'design', 'civil engineering', 'construction', 'art']
-            },
-            {
-                'id': 11,
-                'name': 'Computer Science',
-                'school_name': 'New Bulgarian University',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
-            },
-            {
-                'id': 12,
-                'name': 'Computer Science',
-                'school_name': 'Plovdiv University Paisii Hilendarski',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
-            },
-            {
-                'id': 13,
-                'name': 'Computer Science',
-                'school_name': 'American University in Bulgaria',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science']
-            },
-            {
-                'id': 14,
-                'name': 'Informatics and Computer Science',
-                'school_name': 'Burgas Free University',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'math', 'science', 'informatics']
-            },
-            {
-                'id': 15,
-                'name': 'Computer Systems and Technologies',
-                'school_name': 'Ruse University Angel Kanchev',
-                'degree_type': 'Bachelor',
-                'keywords': ['technology', 'programming', 'software', 'computer', 'systems', 'science']
-            }
-        ]
+        # NO HARDCODED PROGRAMS! Use ONLY database programs
+        self.demo_programs = []
+        self._load_programs_from_database()
+
+    def _load_programs_from_database(self):
+        """Load all programs from the actual database - NO FAKE PROGRAMS!"""
+        try:
+            from app.models import Program, School
+            programs = Program.query.join(School).all()
+            
+            for program in programs:
+                # Generate keywords based on actual program name
+                keywords = self._generate_keywords_from_name(program.name)
+                
+                self.demo_programs.append({
+                    'id': program.id,  # REAL database ID
+                    'name': program.name,  # REAL database program name
+                    'school_name': program.school.name,  # REAL database school name
+                    'degree_type': program.degree_type or 'Bachelor',
+                    'keywords': keywords
+                })
+                
+            self.logger.info(f"Loaded {len(self.demo_programs)} real programs from database")
+            
+        except Exception as e:
+            self.logger.error(f"Error loading programs from database: {e}")
+            # If database fails, create empty list - NO FAKE FALLBACKS!
+            self.demo_programs = []
+
+    def _generate_keywords_from_name(self, program_name: str) -> List[str]:
+        """Generate keywords based on the actual program name"""
+        name_lower = program_name.lower()
+        keywords = []
         
-        # Add more diverse programs for better recommendations
-        self.diverse_programs = [
-            {
-                'id': 16,
-                'name': 'Mathematics',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['mathematics', 'algebra', 'geometry', 'statistics', 'science']
-            },
-            {
-                'id': 17,
-                'name': 'Graphic Design',
-                'school_name': 'National Academy of Arts',
-                'degree_type': 'Bachelor',
-                'keywords': ['design', 'art', 'creative', 'visual', 'graphics', 'digital']
-            },
-            {
-                'id': 18,
-                'name': 'Sports Science',
-                'school_name': 'National Sports Academy',
-                'degree_type': 'Bachelor',
-                'keywords': ['sports', 'physical', 'fitness', 'exercise', 'coaching']
-            },
-            {
-                'id': 19,
-                'name': 'Tourism Management',
-                'school_name': 'University of Economics - Varna',
-                'degree_type': 'Bachelor',
-                'keywords': ['tourism', 'management', 'business', 'hospitality']
-            },
-            {
-                'id': 20,
-                'name': 'International Relations',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['politics', 'international', 'diplomacy', 'languages']
-            },
-            {
-                'id': 21,
-                'name': 'Journalism',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['media', 'writing', 'communication', 'reporting']
-            },
-            {
-                'id': 22,
-                'name': 'History',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['history', 'humanities', 'research', 'culture']
-            },
-            {
-                'id': 23,
-                'name': 'Chemistry',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'degree_type': 'Bachelor',
-                'keywords': ['chemistry', 'science', 'laboratory', 'research']
-            }
-        ]
+        # Add program name words as keywords
+        keywords.extend(name_lower.split())
         
-        # Combine regular and diverse programs
-        self.demo_programs.extend(self.diverse_programs)
+        # Add relevant keywords based on program type
+        if 'computer' in name_lower or 'informatics' in name_lower:
+            keywords.extend(['technology', 'programming', 'software', 'math', 'science'])
+        elif 'engineering' in name_lower:
+            keywords.extend(['engineering', 'technology', 'physics', 'math', 'science'])
+        elif 'business' in name_lower or 'administration' in name_lower:
+            keywords.extend(['management', 'leadership', 'economics', 'finance'])
+        elif 'medicine' in name_lower or 'medical' in name_lower:
+            keywords.extend(['biology', 'health', 'science', 'healthcare'])
+        elif 'psychology' in name_lower:
+            keywords.extend(['mental_health', 'research', 'helping', 'social'])
+        elif 'economics' in name_lower:
+            keywords.extend(['finance', 'business', 'mathematics', 'statistics'])
+        elif 'law' in name_lower:
+            keywords.extend(['legal', 'justice', 'social', 'politics'])
+        elif 'communication' in name_lower or 'mass' in name_lower:
+            keywords.extend(['media', 'writing', 'reporting'])
+        
+        return list(set(keywords))  # Remove duplicates
     
     def predict_programs(self, survey_data: Dict[str, Any], top_k: int = 5) -> List[Dict[str, Any]]:
         """
