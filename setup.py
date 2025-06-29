@@ -532,6 +532,15 @@ def create_sample_survey():
         print(f"Error creating sample survey: {str(e)}")
         return False
 
+def verify_admin_email():
+    app = create_app(Config)
+    with app.app_context():
+        admin = User.query.filter_by(username='admin').first()
+        if admin and not admin.email_verified:
+            admin.email_verified = True
+            db.session.commit()
+            print("Admin user email marked as verified (via setup.py).")
+
 def main():
     """Main execution function"""
     print("=" * 50)
@@ -569,4 +578,5 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main() 
+    main()
+    verify_admin_email() 
