@@ -1,64 +1,12 @@
 import os
-import pyodbc
 import sys
 import json
 from datetime import datetime
 from sqlalchemy import create_engine, text, inspect
-from sqlalchemy.engine.url import make_url
 from app import create_app, db
 from app.models import User, School, Program, Survey
 from config import Config
 from werkzeug.security import generate_password_hash
-import platform
-
-DB_NAME = 'SchoolRecommendation'
-SERVER = 'localhost'
-DRIVER = 'ODBC Driver 17 for SQL Server'
-
-def drop_database():
-    """Drop the database if it exists"""
-    try:
-        if platform.system() == 'Windows':
-            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
-        else:
-            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};UID=sa;PWD=yo(!)urStrongPassword12;DATABASE=master'
-        drop_db_sql = f"""
-        IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DB_NAME}')
-        BEGIN
-            ALTER DATABASE [{DB_NAME}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-            DROP DATABASE [{DB_NAME}];
-        END
-        """
-        
-        print(f"Connecting to SQL Server on {SERVER}...")
-        with pyodbc.connect(conn_str, autocommit=True) as conn:
-            with conn.cursor() as cursor:
-                print(f"Dropping database '{DB_NAME}' if it exists...")
-                cursor.execute(drop_db_sql)
-                print(f"Database '{DB_NAME}' dropped successfully (if it existed).")
-        return True
-    except Exception as e:
-        print(f"Error dropping database: {str(e)}")
-        return False
-
-def create_database():
-    """Create the database if it doesn't exist"""
-    try:
-        if platform.system() == 'Windows':
-            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};Trusted_Connection=yes;DATABASE=master'
-        else:
-            conn_str = f'DRIVER={{{DRIVER}}};SERVER={SERVER};UID=sa;PWD=yo(!)urStrongPassword12;DATABASE=master'
-        create_db_sql = f"CREATE DATABASE [{DB_NAME}]"
-        
-        print(f"Creating database '{DB_NAME}'...")
-        with pyodbc.connect(conn_str, autocommit=True) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(create_db_sql)
-                print(f"Database '{DB_NAME}' created successfully.")
-        return True
-    except Exception as e:
-        print(f"Error creating database: {str(e)}")
-        return False
 
 def create_tables():
     """Create all tables using SQLAlchemy models"""
@@ -583,48 +531,31 @@ def create_sample_survey():
         print(f"Error creating sample survey: {str(e)}")
         return False
 
-# REMOVED: create_sample_survey_responses_with_recommendations()
-# This function was creating fake survey responses for testing.
-# Now the database starts clean and only real user responses are created.
-
 def main():
     """Main execution function"""
     print("=" * 50)
     print("School Recommendation System - Database Setup")
     print("=" * 50)
     
-    
-    if not drop_database():
-        print("Database drop failed. Exiting...")
-        sys.exit(1)
-    
-    
-    if not create_database():
-        print("Database creation failed. Exiting...")
-        sys.exit(1)
-    
-    
+    # Create tables
     if not create_tables():
         print("Table creation failed. Exiting...")
         sys.exit(1)
     
-    
+    # Create admin user
     if not create_admin_user():
         print("Admin user creation failed. Exiting...")
         sys.exit(1)
     
-    
+    # Create sample schools
     if not create_sample_schools():
         print("Sample schools creation failed. Exiting...")
         sys.exit(1)
     
-    
+    # Create sample survey
     if not create_sample_survey():
         print("Sample survey creation failed. Exiting...")
         sys.exit(1)
-    
-    # Skip creating sample survey responses - let users create real ones
-    print("Database ready for real survey responses!")
     
     print("=" * 50)
     print("Database setup completed successfully!")

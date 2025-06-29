@@ -6,41 +6,38 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'hard-to-guess-string')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 
     # Email verification toggle
     DISABLE_EMAIL_VERIFICATION = os.environ.get('DISABLE_EMAIL_VERIFICATION', 'false').lower() in ['true', 'on', '1', 'yes']
     
-    # Database configuration for Render (PostgreSQL)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql+psycopg://", 1)
+    # Use the new PostgreSQL database URL
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://gradeup_user:lEKw2auoDCQe8ZlEzRBGam9agzqbs56f@dpg-d1go5afgi27c73bv8vb0-a/gradeup_db_uopn_asj1'
     
-    # Fallback to local database configuration if DATABASE_URL is not set
-    if not SQLALCHEMY_DATABASE_URI:
-        DB_USER = os.environ.get('DB_USER')
-        DB_PASSWORD = os.environ.get('DB_PASSWORD')
-        DB_HOST = os.environ.get('DB_HOST')
-        DB_NAME = os.environ.get('DB_NAME')
-
-        # Platform-specific database driver and connection string
-        if platform.system() == 'Darwin':  # macOS
-            DB_DRIVER = os.environ.get('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
-            SQLALCHEMY_DATABASE_URI = (
-                f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-                f"?driver={DB_DRIVER.replace(' ', '+')}"
-                f"&TrustServerCertificate=yes"
-                f"&Encrypt=no"
-            )
-        else:  # Windows/Linux
-            SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://@localhost/SchoolRecommendation?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
-
+    # Handle SSL for PostgreSQL on Render
+    if SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+    
+    # Add SSL mode for PostgreSQL
+    if 'postgresql://' in SQLALCHEMY_DATABASE_URI:
+        if '?' not in SQLALCHEMY_DATABASE_URI:
+            SQLALCHEMY_DATABASE_URI += '?sslmode=require'
+        elif 'sslmode=' not in SQLALCHEMY_DATABASE_URI:
+            SQLALCHEMY_DATABASE_URI += '&sslmode=require'
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_SUBJECT_PREFIX = '[School Recommendation]'
     MAIL_SENDER = os.environ.get('MAIL_USERNAME')  # Use the authenticated Gmail account as sender
+
+    # Application settings
+    POSTS_PER_PAGE = 10
+    LANGUAGES = ['en', 'bg']
+    
+    # Email verification settings
+    EMAIL_VERIFICATION_REQUIRED = os.environ.get('EMAIL_VERIFICATION_REQUIRED', 'false').lower() == 'true'
