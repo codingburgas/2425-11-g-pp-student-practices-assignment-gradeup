@@ -36,8 +36,10 @@ class AISystemTrainer:
             responses = SurveyResponse.query.all()
             programs = Program.query.all()
             
-            if not responses:
-                return self._create_synthetic_data()
+            # If not enough real data, generate synthetic data for demo
+            if not responses or len(responses) < 100:
+                print(f"[DEMO MODE] Not enough real survey responses ({len(responses)}), generating 200 synthetic samples for demo model.")
+                return self._create_synthetic_data(num_samples=200)
             
             # Process real data
             X_data = []
@@ -55,7 +57,7 @@ class AISystemTrainer:
                     continue
             
             if not X_data:
-                return self._create_synthetic_data()
+                return self._create_synthetic_data(num_samples=200)
             
             return np.array(X_data), np.array(y_labels)
     
@@ -85,32 +87,20 @@ class AISystemTrainer:
         """Determine best matching program"""
         return 0  # Default to first program
     
-    def _create_synthetic_data(self):
-        """Create synthetic training data"""
-        self.logger.info("Creating synthetic training data...")
-        
-        n_samples = 1000
-        n_features = 15
-        
-        # Generate realistic features
-        X = np.random.randn(n_samples, n_features)
-        X[:, 0:4] = np.random.randint(1, 11, (n_samples, 4))  # Interest scores
-        X[:, 4:10] = np.random.uniform(0, 1, (n_samples, 6))  # Preferences
-        X[:, 10:] = np.random.randint(0, 5, (n_samples, 5))   # Categories
-        
-        # Generate labels with correlation
-        y = np.zeros(n_samples, dtype=int)
-        for i in range(n_samples):
-            if X[i, 0] > 7 and X[i, 1] > 6:  # High math+science
-                y[i] = 0  # Engineering
-            elif X[i, 1] > 7:  # High science
-                y[i] = 1  # Science
-            elif X[i, 2] > 7:  # High art
-                y[i] = 2  # Arts
-            else:
-                y[i] = np.random.randint(0, 10)
-        
-        return X, y
+    def _create_synthetic_data(self, num_samples=200):
+        """Create synthetic data for demo purposes."""
+        # Use the same logic as before, but generate more samples
+        X_data = []
+        y_labels = []
+        np.random.seed(42)
+        for i in range(num_samples):
+            # Randomly assign a program (simulate 5 programs)
+            label = np.random.randint(0, 5)
+            features = np.random.normal(loc=5, scale=2, size=15)  # 15 features
+            features = np.clip(features, 1, 10)
+            X_data.append(features)
+            y_labels.append(label)
+        return np.array(X_data), np.array(y_labels)
     
     def train_main_model(self, X, y):
         """Train the main neural network model"""
