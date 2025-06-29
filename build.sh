@@ -4,6 +4,12 @@ set -o errexit
 
 pip install -r requirements.txt
 
-# Reset migration history and apply the complete migration
-flask db stamp 43975b6cbf11
-flask db upgrade 
+# Create database tables directly without migrations
+python -c "
+from app import create_app
+from app.models import db
+app = create_app()
+with app.app_context():
+    db.create_all()
+    print('Database tables created successfully')
+" 
