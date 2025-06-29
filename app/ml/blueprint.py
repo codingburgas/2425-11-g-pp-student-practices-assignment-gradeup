@@ -21,9 +21,14 @@ def initialize_ml_service(app):
     """Initialize the ML service when the app starts."""
     try:
         ml_service.initialize(app.instance_path)
-        ml_service.load_model()
+        success = ml_service.load_model()
+        if not success:
+            print(f"FATAL: Model file not found at {ml_service.model_path} or failed to load. The app will use demo mode.")
+        else:
+            print(f"SUCCESS: Model loaded from {ml_service.model_path}")
         app.logger.info("ML service initialized successfully")
     except Exception as e:
+        print(f"FATAL: Exception during ML service initialization: {e}")
         app.logger.error(f"Error initializing ML service: {e}")
 
 
