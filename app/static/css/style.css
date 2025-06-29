@@ -4681,3 +4681,15 @@ body,
   overflow-x: hidden !important;
   box-sizing: border-box; /* Ensure padding/border is included in width */
 }
+
+@media (max-width: 768px) {
+  /* Fix overflow on /users page */
+  .search-panel,
+  .users-grid,
+  .page-header {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+}
