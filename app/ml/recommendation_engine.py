@@ -28,7 +28,7 @@ from flask import current_app
 import random
 
 from app import db
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite, PredictionHistory
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, PredictionHistory
 from .utils import extract_features_from_survey_response
 
 
@@ -420,14 +420,13 @@ class RecommendationEngine:
             if not programs:
                 return []
                 
-            # Get user's past favorites for personalization
-            user_favorites = self._get_user_favorites(user_id)
+                    # Favorites functionality removed
             
             recommendations = []
             
             for program in programs:
                 score = self._calculate_program_match_score(
-                    program, survey_data, user_preferences, user_favorites
+                    program, survey_data, user_preferences
                 )
                 
                 if score > 0.2:  # Only include programs with reasonable match
@@ -459,8 +458,7 @@ class RecommendationEngine:
             return []
             
     def _calculate_program_match_score(self, program: Program, survey_data: Dict[str, Any],
-                                     user_preferences: Optional[Dict[str, Any]] = None,
-                                     user_favorites: List[int] = None) -> float:
+                                     user_preferences: Optional[Dict[str, Any]] = None) -> float:
         """Calculate match score for a program."""
         score = 0.0
         
@@ -477,9 +475,7 @@ class RecommendationEngine:
         if user_preferences:
             score += self._calculate_preference_alignment(program, user_preferences)
             
-        # Favorite schools bonus
-        if user_favorites and program.school_id in user_favorites:
-            score += 0.1
+        # Favorites functionality removed
             
         return min(score, 1.0)  # Cap at 1.0
         
@@ -775,13 +771,7 @@ class RecommendationEngine:
         else:
             return 'other'
             
-    def _get_user_favorites(self, user_id: int) -> List[int]:
-        """Get list of user's favorite school IDs."""
-        try:
-            favorites = Favorite.query.filter_by(user_id=user_id).all()
-            return [fav.school_id for fav in favorites]
-        except Exception:
-            return []
+    # Favorites functionality removed
 
     def get_personalized_suggestions(self, user_id: int, limit: int = 5) -> Dict[str, Any]:
         """
@@ -801,7 +791,6 @@ class RecommendationEngine:
                 
             suggestions = {
                 'trending_programs': self._get_trending_programs(limit),
-                'similar_user_favorites': self._get_similar_user_recommendations(user_id, limit),
                 'completion_suggestions': self._get_completion_suggestions(user_id, limit),
                 'seasonal_recommendations': self._get_seasonal_recommendations(limit)
             }
@@ -813,100 +802,30 @@ class RecommendationEngine:
             return {}
             
     def _get_trending_programs(self, limit: int) -> List[Dict[str, Any]]:
-        """Get currently trending programs based on user interactions."""
+        """Get featured programs based on program popularity."""
         try:
-            # Get programs with most favorites in last 30 days - SQL Server compatible
-            trending = db.session.query(Program.id, Program.name, School.name.label('school_name'), 
-                                      db.func.count(Favorite.id).label('favorite_count'))\
-                .select_from(Program)\
-                .join(School, Program.school_id == School.id)\
-                .outerjoin(Favorite, Favorite.school_id == School.id)\
-                .filter(db.or_(
-                    Favorite.created_at >= datetime.utcnow() - timedelta(days=30),
-                    Favorite.created_at.is_(None)
-                ))\
-                .group_by(Program.id, Program.name, School.name)\
-                .order_by(db.desc('favorite_count'))\
+            # Get popular programs based on survey activity and recommendations
+            featured_programs = Program.query.join(School)\
+                .order_by(Program.created_at.desc())\
                 .limit(limit).all()
                 
             results = []
-            for program_id, program_name, school_name, count in trending:
+            for program in featured_programs:
                 results.append({
-                    'program_id': program_id,
-                    'program_name': program_name,
-                    'school_name': school_name,
-                    'trend_score': count,
-                    'reason': f"Popular choice - {count} students favorited this month"
+                    'program_id': program.id,
+                    'program_name': program.name,
+                    'school_name': program.school.name,
+                    'trend_score': 1,
+                    'reason': "Featured program"
                 })
                 
             return results
             
         except Exception as e:
             self.logger.error(f"Error getting trending programs: {e}")
-            # Fallback: return random programs
-            try:
-                fallback_programs = Program.query.join(School).limit(limit).all()
-                results = []
-                for program in fallback_programs:
-                    results.append({
-                        'program_id': program.id,
-                        'program_name': program.name,
-                        'school_name': program.school.name,
-                        'trend_score': 0,
-                        'reason': "Featured program"
-                    })
-                return results
-            except Exception:
-                return []
-            
-    def _get_similar_user_recommendations(self, user_id: int, limit: int) -> List[Dict[str, Any]]:
-        """Get recommendations based on similar users' choices."""
-        try:
-            # Find users with similar favorites
-            user_favorites = set(fav.school_id for fav in Favorite.query.filter_by(user_id=user_id).all())
-            
-            if not user_favorites:
-                return []
-                
-            similar_users = []
-            all_favorites = Favorite.query.filter(Favorite.user_id != user_id).all()
-            
-            # Group by user
-            user_fav_map = {}
-            for fav in all_favorites:
-                if fav.user_id not in user_fav_map:
-                    user_fav_map[fav.user_id] = set()
-                user_fav_map[fav.user_id].add(fav.school_id)
-                
-            # Calculate similarity (Jaccard similarity)
-            for other_user_id, other_favorites in user_fav_map.items():
-                intersection = len(user_favorites & other_favorites)
-                union = len(user_favorites | other_favorites)
-                if union > 0:
-                    similarity = intersection / union
-                    if similarity > 0.2:  # At least 20% similarity
-                        similar_users.append((other_user_id, similarity, other_favorites))
-                        
-            # Get recommendations from most similar users
-            recommendations = []
-            for other_user_id, similarity, other_favorites in sorted(similar_users, key=lambda x: x[1], reverse=True)[:3]:
-                # Find schools they like that current user hasn't favorited
-                new_recommendations = other_favorites - user_favorites
-                for school_id in list(new_recommendations)[:limit]:
-                    school = School.query.get(school_id)
-                    if school:
-                        recommendations.append({
-                            'school_id': school.id,
-                            'school_name': school.name,
-                            'similarity_score': similarity,
-                            'reason': f"Students with similar interests also liked this school"
-                        })
-                        
-            return recommendations[:limit]
-            
-        except Exception as e:
-            self.logger.error(f"Error getting similar user recommendations: {e}")
             return []
+            
+    # Similar user recommendations based on favorites removed
             
     def _get_completion_suggestions(self, user_id: int, limit: int) -> List[Dict[str, Any]]:
         """Get suggestions to help user complete their profile or take actions."""
@@ -929,16 +848,7 @@ class RecommendationEngine:
                 'priority': 1
             })
             
-        # Check if user has favorites
-        favorites_count = Favorite.query.filter_by(user_id=user_id).count()
-        if favorites_count == 0:
-            suggestions.append({
-                'type': 'favorites',
-                'title': 'Start Building Your Favorites',
-                'description': 'Save schools you\'re interested in to get better recommendations',
-                'action_url': '/universities',
-                'priority': 2
-            })
+        # Favorites functionality removed
             
         # Check profile completeness
         if not user.bio or not user.location:

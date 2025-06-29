@@ -70,7 +70,7 @@ A web application that helps students find the perfect educational institution b
 - 🎓Student dashboard with personalized recommendations  
 - 🛠️ Admin panel for user and system management  
 - 🏫 School and program browsing  
-- ⭐ Favorites system to save and compare schools
+- 📊 Comprehensive progress tracking and analytics
 >You can view the full list of user stories [HERE](documentation/UserStories_GradeUp.docx).
 ---
 ## 🔧 Configuration Options

@@ -838,36 +838,49 @@ function updateProgress() {
     const questionCards = form.querySelectorAll('.survey-question-card');
     
     questionCards.forEach((card, index) => {
-        const questionNumber = index + 1;
-        const inputs = card.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked, textarea:not(:placeholder-shown), input[type="range"]');
+        let questionAnswered = false;
         
-        // Check for checkboxes (at least one should be checked)
+        // Check different input types separately
         const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+        const radioButtons = card.querySelectorAll('input[type="radio"]');
         const textareas = card.querySelectorAll('textarea');
+        const sliders = card.querySelectorAll('input[type="range"]');
         
         if (checkboxes.length > 0) {
+            // For checkboxes, at least one must be checked
             const checkedBoxes = card.querySelectorAll('input[type="checkbox"]:checked');
-            if (checkedBoxes.length > 0) {
-                answeredQuestions++;
-            }
+            questionAnswered = checkedBoxes.length > 0;
+        } else if (radioButtons.length > 0) {
+            // For radio buttons, one must be selected
+            const checkedRadios = card.querySelectorAll('input[type="radio"]:checked');
+            questionAnswered = checkedRadios.length > 0;
         } else if (textareas.length > 0) {
+            // For textareas, must have non-empty content
             const textarea = textareas[0];
-            if (textarea.value.trim() !== '') {
-                answeredQuestions++;
-            }
-        } else if (inputs.length > 0) {
+            questionAnswered = textarea.value.trim() !== '';
+        } else if (sliders.length > 0) {
+            // For sliders, mark as answered if user has interacted with them
+            // We'll track this by checking if the value has changed from default
+            const slider = sliders[0];
+            const defaultValue = Math.round((parseInt(slider.min) + parseInt(slider.max)) / 2);
+            questionAnswered = parseInt(slider.value) !== defaultValue || slider.dataset.touched === 'true';
+        }
+        
+        if (questionAnswered) {
             answeredQuestions++;
         }
     });
     
-    const progressPercent = Math.round((answeredQuestions / totalQuestions) * 100);
+    const progressPercent = totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
     
     // Update progress bar
     document.getElementById('progress-fill').style.width = progressPercent + '%';
     document.getElementById('progress-percent').textContent = progressPercent + '%';
     
-    // Update current question indicator
-    document.getElementById('current-question').textContent = Math.min(answeredQuestions + 1, totalQuestions);
+    // Update current question indicator - show number of completed questions
+    let currentQuestionNum = answeredQuestions;
+    
+    document.getElementById('current-question').textContent = currentQuestionNum;
     
     // Enable/disable submit button
     const submitBtn = document.getElementById('submit-btn');
@@ -885,6 +898,9 @@ function updateProgress() {
 function updateSliderValue(slider) {
     const valueDisplay = slider.parentElement.parentElement.querySelector('.value-display');
     valueDisplay.textContent = slider.value;
+    
+    // Mark slider as touched by user
+    slider.dataset.touched = 'true';
 }
 
 function createFloatingParticles() {

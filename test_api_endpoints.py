@@ -169,7 +169,7 @@ def test_api_endpoints():
                 
                 if isinstance(suggestions, dict):
                     print(f"✅ Personalized suggestions: {len(suggestions)} categories")
-                    expected_categories = ['trending_programs', 'similar_user_favorites', 'completion_suggestions', 'seasonal_recommendations']
+                    expected_categories = ['trending_programs', 'completion_suggestions', 'seasonal_recommendations']
                     missing_categories = [cat for cat in expected_categories if cat not in suggestions]
                     if not missing_categories:
                         print(f"   📋 All expected categories present")

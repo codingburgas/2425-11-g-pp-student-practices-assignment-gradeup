@@ -90,15 +90,7 @@
                     <div class="survey-details">
                         <div class="detail-item">
                             <i class="fas fa-question-circle"></i>
-                            <span>
-                                {% if survey.questions %}
-                                    {% set questions_count = survey.questions.count('},{') + 1 if survey.questions and survey.questions != '[]' else 0 %}
-                                    {{ questions_count }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                                Questions
-                            </span>
+                            <span>{{ survey.get_questions()|length }} Questions</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-users"></i>

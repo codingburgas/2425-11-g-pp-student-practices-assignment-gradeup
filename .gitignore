@@ -33,6 +33,8 @@ ENV/
 
 # Flask
 instance/
+!instance/models/
+!instance/models/*.pkl
 .webassets-cache
 *.db
 

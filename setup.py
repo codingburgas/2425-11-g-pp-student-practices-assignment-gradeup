@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.engine.url import make_url
 from app import create_app, db
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
+from app.models import User, School, Program, Survey
 from config import Config
 from werkzeug.security import generate_password_hash
 import platform
@@ -126,21 +126,24 @@ def create_sample_schools():
                             "description": "Study of algorithms, programming languages, and computational systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics entrance exam"
+                            "admission_requirements": "Mathematics entrance exam",
+                            "tuition_fee": 1800.00
                         },
                         {
                             "name": "Artificial Intelligence",
                             "description": "Study of machine learning, natural language processing, and computer vision",
                             "duration": "2 years",
                             "degree_type": "Master",
-                            "admission_requirements": "Bachelor degree in Computer Science or related field"
+                            "admission_requirements": "Bachelor degree in Computer Science or related field",
+                            "tuition_fee": 2500.00
                         },
                         {
                             "name": "Economics",
                             "description": "Study of economic systems, policies, and financial markets",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Economics"
+                            "admission_requirements": "Entrance exam in Economics",
+                            "tuition_fee": 1600.00
                         }
                     ]
                 },
@@ -158,21 +161,24 @@ def create_sample_schools():
                             "description": "Study of electrical systems, electronics, and power engineering",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics entrance exam"
+                            "admission_requirements": "Mathematics entrance exam",
+                            "tuition_fee": 1900.00
                         },
                         {
                             "name": "Mechanical Engineering",
                             "description": "Study of mechanical systems, design, and manufacturing",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics or Physics entrance exam"
+                            "admission_requirements": "Mathematics or Physics entrance exam",
+                            "tuition_fee": 1850.00
                         },
                         {
                             "name": "Computer Systems and Technologies",
                             "description": "Study of computer hardware, software systems, and networking",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics entrance exam"
+                            "admission_requirements": "Mathematics entrance exam",
+                            "tuition_fee": 1950.00
                         }
                     ]
                 },
@@ -190,21 +196,24 @@ def create_sample_schools():
                             "description": "Study of human health and disease, leading to physician qualification",
                             "duration": "6 years",
                             "degree_type": "Master",
-                            "admission_requirements": "Biology and Chemistry entrance exams"
+                            "admission_requirements": "Biology and Chemistry entrance exams",
+                            "tuition_fee": 6500.00
                         },
                         {
                             "name": "Dental Medicine",
                             "description": "Study of oral health and dental procedures",
                             "duration": "5 years",
                             "degree_type": "Master",
-                            "admission_requirements": "Biology and Chemistry entrance exams"
+                            "admission_requirements": "Biology and Chemistry entrance exams",
+                            "tuition_fee": 5800.00
                         },
                         {
                             "name": "Pharmacy",
                             "description": "Study of pharmaceutical sciences and medication management",
                             "duration": "5 years",
                             "degree_type": "Master",
-                            "admission_requirements": "Biology and Chemistry entrance exams"
+                            "admission_requirements": "Biology and Chemistry entrance exams",
+                            "tuition_fee": 4500.00
                         }
                     ]
                 },
@@ -222,21 +231,24 @@ def create_sample_schools():
                             "description": "Study of organizational management and business operations",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Economics or Mathematics"
+                            "admission_requirements": "Entrance exam in Economics or Mathematics",
+                            "tuition_fee": 1700.00
                         },
                         {
                             "name": "Finance",
                             "description": "Study of financial systems, markets, and investment",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Economics or Mathematics"
+                            "admission_requirements": "Entrance exam in Economics or Mathematics",
+                            "tuition_fee": 1750.00
                         },
                         {
                             "name": "Marketing",
                             "description": "Study of market research, advertising, and consumer behavior",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Economics"
+                            "admission_requirements": "Entrance exam in Economics",
+                            "tuition_fee": 1650.00
                         }
                     ]
                 },
@@ -254,21 +266,24 @@ def create_sample_schools():
                             "description": "Study of programming, software development, and computer systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Application and interview"
+                            "admission_requirements": "Application and interview",
+                            "tuition_fee": 3200.00
                         },
                         {
                             "name": "Psychology",
                             "description": "Study of human behavior, cognition, and mental processes",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Application and interview"
+                            "admission_requirements": "Application and interview",
+                            "tuition_fee": 2800.00
                         },
                         {
                             "name": "Mass Communications",
                             "description": "Study of media, journalism, and public relations",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Application and interview"
+                            "admission_requirements": "Application and interview",
+                            "tuition_fee": 2900.00
                         }
                     ]
                 },
@@ -286,21 +301,24 @@ def create_sample_schools():
                             "description": "Study of algorithms, programming languages, and software development",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics entrance exam"
+                            "admission_requirements": "Mathematics entrance exam",
+                            "tuition_fee": 1750.00
                         },
                         {
                             "name": "Biology",
                             "description": "Study of living organisms, ecology, and biological systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Biology entrance exam"
+                            "admission_requirements": "Biology entrance exam",
+                            "tuition_fee": 1600.00
                         },
                         {
                             "name": "Linguistics",
                             "description": "Study of language structure, acquisition, and communication",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Bulgarian language entrance exam"
+                            "admission_requirements": "Bulgarian language entrance exam",
+                            "tuition_fee": 1400.00
                         }
                     ]
                 },
@@ -318,21 +336,24 @@ def create_sample_schools():
                             "description": "Study of programming, algorithms, and computational systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "SAT/ACT scores, English proficiency"
+                            "admission_requirements": "SAT/ACT scores, English proficiency",
+                            "tuition_fee": 8900.00
                         },
                         {
                             "name": "Business Administration",
                             "description": "Study of management, marketing, and business operations",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "SAT/ACT scores, English proficiency"
+                            "admission_requirements": "SAT/ACT scores, English proficiency",
+                            "tuition_fee": 8500.00
                         },
                         {
                             "name": "Political Science",
                             "description": "Study of government systems, international relations, and public policy",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "SAT/ACT scores, English proficiency"
+                            "admission_requirements": "SAT/ACT scores, English proficiency",
+                            "tuition_fee": 8200.00
                         }
                     ]
                 },
@@ -350,21 +371,24 @@ def create_sample_schools():
                             "description": "Study of global business operations and management strategies",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "English proficiency, application"
+                            "admission_requirements": "English proficiency, application",
+                            "tuition_fee": 4200.00
                         },
                         {
                             "name": "Hospitality Management",
                             "description": "Study of hotel operations, tourism, and guest services",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "English proficiency, application"
+                            "admission_requirements": "English proficiency, application",
+                            "tuition_fee": 3800.00
                         },
                         {
                             "name": "Software Systems and Technologies",
                             "description": "Study of software development, programming, and IT systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "English proficiency, application"
+                            "admission_requirements": "English proficiency, application",
+                            "tuition_fee": 4500.00
                         }
                     ]
                 },
@@ -382,21 +406,24 @@ def create_sample_schools():
                             "description": "Study of programming, algorithms, and IT systems",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Mathematics or IT"
+                            "admission_requirements": "Entrance exam in Mathematics or IT",
+                            "tuition_fee": 2800.00
                         },
                         {
                             "name": "Law",
                             "description": "Study of legal systems, jurisprudence, and legal practice",
                             "duration": "5 years",
                             "degree_type": "Master",
-                            "admission_requirements": "Entrance exam in Bulgarian language and literature"
+                            "admission_requirements": "Entrance exam in Bulgarian language and literature",
+                            "tuition_fee": 3500.00
                         },
                         {
                             "name": "Business Administration",
                             "description": "Study of management, marketing, and business operations",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Entrance exam in Economics"
+                            "admission_requirements": "Entrance exam in Economics",
+                            "tuition_fee": 2600.00
                         }
                     ]
                 },
@@ -414,21 +441,24 @@ def create_sample_schools():
                             "description": "Study of computer hardware, networking, and system design",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics entrance exam"
+                            "admission_requirements": "Mathematics entrance exam",
+                            "tuition_fee": 1800.00
                         },
                         {
                             "name": "Mechanical Engineering",
                             "description": "Study of mechanical systems, manufacturing, and design",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics or Physics entrance exam"
+                            "admission_requirements": "Mathematics or Physics entrance exam",
+                            "tuition_fee": 1750.00
                         },
                         {
                             "name": "Economics",
                             "description": "Study of economic systems, market analysis, and financial management",
                             "duration": "4 years",
                             "degree_type": "Bachelor",
-                            "admission_requirements": "Mathematics or Economics entrance exam"
+                            "admission_requirements": "Mathematics or Economics entrance exam",
+                            "tuition_fee": 1550.00
                         }
                     ]
                 }
@@ -553,6 +583,10 @@ def create_sample_survey():
         print(f"Error creating sample survey: {str(e)}")
         return False
 
+# REMOVED: create_sample_survey_responses_with_recommendations()
+# This function was creating fake survey responses for testing.
+# Now the database starts clean and only real user responses are created.
+
 def main():
     """Main execution function"""
     print("=" * 50)
@@ -589,8 +623,12 @@ def main():
         print("Sample survey creation failed. Exiting...")
         sys.exit(1)
     
+    # Skip creating sample survey responses - let users create real ones
+    print("Database ready for real survey responses!")
+    
     print("=" * 50)
     print("Database setup completed successfully!")
+    print("Database is clean and ready for real user survey responses!")
     print("You can now start the application.")
     print("=" * 50)
     print("Admin credentials:")

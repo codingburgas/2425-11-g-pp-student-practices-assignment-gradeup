@@ -134,7 +134,7 @@ Your email has been successfully verified!
 Welcome to the School Recommendation System. You can now:
 - Complete surveys to get personalized school recommendations
 - Browse schools and programs
-- Save your favorite schools
+- Track your progress
         - Get detailed information about admission requirements
 
 Start exploring: http://localhost:5001
@@ -155,7 +155,7 @@ School Recommendation System Team
         <ul>
             <li>Complete surveys to get personalized school recommendations</li>
             <li>Browse schools and programs</li>
-            <li>Save your favorite schools</li>
+                                    <li>Track your progress</li>
             <li>Get detailed information about admission requirements</li>
         </ul>
         

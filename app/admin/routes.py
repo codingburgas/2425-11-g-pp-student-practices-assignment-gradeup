@@ -1,10 +1,12 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.admin import bp
-from app.models import User, School, Program, Survey, SurveyResponse, Recommendation, Favorite
+from app.models import User, School, Program, Survey, SurveyResponse, Recommendation
 from app import db
 import json
 from app.admin.forms import EditUserForm
+import pytz
+from datetime import timezone
 
 def admin_required(f):
     """Decorator for requiring admin access to a route"""
@@ -53,7 +55,16 @@ def users():
 @admin_required
 def user_detail(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('admin/user_detail.html', title=f'User: {user.username}', user=user)
+    
+    # Calculate total recommendations for this user
+    total_recommendations = 0
+    for response in user.survey_responses:
+        total_recommendations += response.recommendations.count()
+    
+    return render_template('admin/user_detail.html', 
+                         title=f'User: {user.username}', 
+                         user=user, 
+                         total_recommendations=total_recommendations)
 
 @bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 @admin_required
@@ -135,7 +146,41 @@ def admin_universities():
     universities = query.order_by(School.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False)
     
-    return render_template('admin/universities.html', title='University Management', universities=universities, search=search)
+    # Calculate dynamic statistics
+    stats = {}
+    
+    # Total universities
+    stats['total_universities'] = School.query.count()
+    
+    # Featured universities (schools with 3+ programs)
+    featured_count = 0
+    all_schools = School.query.all()
+    for school in all_schools:
+        if school.programs.count() >= 3:
+            featured_count += 1
+    stats['featured_universities'] = featured_count
+    
+    # Count unique countries
+    unique_countries = set()
+    for school in all_schools:
+        if school.location:
+            # Extract country from location (assuming format like "City, Country")
+            location_parts = school.location.split(',')
+            if len(location_parts) > 1:
+                country = location_parts[-1].strip()
+            else:
+                country = school.location.strip()
+            unique_countries.add(country)
+    stats['countries_count'] = len(unique_countries)
+    
+    # Total programs across all universities
+    stats['total_programs'] = Program.query.count()
+    
+    return render_template('admin/universities.html', 
+                         title='University Management', 
+                         universities=universities, 
+                         search=search,
+                         stats=stats)
 
 @bp.route('/universities/new', methods=['GET', 'POST'])
 @admin_required
@@ -225,7 +270,39 @@ def programs():
         page=page, per_page=20, error_out=False)
     
     universities = School.query.all()
-    return render_template('admin/programs.html', title='Program Management', programs=programs, universities=universities, search=search, selected_university=university_id)
+    
+    # Calculate dynamic statistics
+    stats = {}
+    
+    # Total programs
+    stats['total_programs'] = Program.query.count()
+    
+    # Universities offering programs
+    stats['universities_count'] = len(universities)
+    
+    # Count unique degree types
+    all_programs = Program.query.all()
+    unique_degree_types = set()
+    for program in all_programs:
+        if program.degree_type:
+            unique_degree_types.add(program.degree_type)
+    stats['degree_types_count'] = len(unique_degree_types)
+    
+    # Average tuition (only for programs with tuition data)
+    programs_with_tuition = [p for p in all_programs if p.tuition_fee is not None]
+    if programs_with_tuition:
+        avg_tuition = sum(p.tuition_fee for p in programs_with_tuition) / len(programs_with_tuition)
+        stats['avg_tuition'] = f"${avg_tuition:,.0f}"
+    else:
+        stats['avg_tuition'] = "N/A"
+    
+    return render_template('admin/programs.html', 
+                         title='Program Management', 
+                         programs=programs, 
+                         universities=universities, 
+                         search=search, 
+                         selected_university=university_id,
+                         stats=stats)
 
 @bp.route('/programs/new', methods=['GET', 'POST'])
 @admin_required
@@ -431,4 +508,72 @@ def survey_response_detail(response_id):
     response = SurveyResponse.query.get_or_404(response_id)
     return render_template('admin/survey_response_detail.html', 
                          title=f'Survey Response Details', 
-                         response=response) 
+                         response=response)
+
+@bp.route('/api/survey-responses/<int:response_id>')
+@admin_required
+def api_survey_response_data(response_id):
+    """API endpoint to get survey response data in JSON format"""
+    response = SurveyResponse.query.get_or_404(response_id)
+    
+    # Get survey questions
+    survey_questions = response.survey.get_questions()
+    
+    # Parse response answers
+    response_answers = {}
+    if response.answers:
+        try:
+            response_answers = json.loads(response.answers)
+        except json.JSONDecodeError:
+            response_answers = {}
+    
+    # Build questions and answers data
+    questions_data = []
+    for i, question in enumerate(survey_questions):
+        question_id = str(question.get('id', i + 1))
+        user_answer = response_answers.get(question_id, 'No answer')
+        
+        # Format the answer based on type
+        if isinstance(user_answer, list):
+            formatted_answer = ', '.join(str(item) for item in user_answer)
+        else:
+            formatted_answer = str(user_answer)
+        
+        questions_data.append({
+            'question_number': i + 1,
+            'question_id': question_id,
+            'question_text': question.get('text', f'Question {i + 1}'),
+            'question_type': question.get('type', 'text'),
+            'user_answer': formatted_answer,
+            'required': question.get('required', True)
+        })
+    
+    # Note: Recommendations data removed from CSV export as requested
+    
+    # Convert UTC to local timezone for display
+    def utc_to_local(utc_datetime, timezone_name='Europe/Sofia'):
+        if utc_datetime is None:
+            return None
+        if utc_datetime.tzinfo is None:
+            utc_datetime = utc_datetime.replace(tzinfo=pytz.UTC)
+        local_tz = pytz.timezone(timezone_name)
+        return utc_datetime.astimezone(local_tz)
+
+    # Build complete response data
+    local_created_at = utc_to_local(response.created_at)
+    response_data = {
+        'response_summary': {
+            'response_id': response.id,
+            'user_name': response.user.username,
+            'user_email': response.user.email,
+            'survey_title': response.survey.title,
+            'survey_description': response.survey.description,
+            'response_date': local_created_at.strftime('%b %d, %Y') if local_created_at else 'N/A',
+            'response_time': local_created_at.strftime('%I:%M %p') if local_created_at else 'N/A',
+            'export_date': request.args.get('export_date', 'N/A'),
+            'export_time': request.args.get('export_time', 'N/A')
+        },
+        'questions_and_answers': questions_data
+    }
+    
+    return jsonify(response_data) 

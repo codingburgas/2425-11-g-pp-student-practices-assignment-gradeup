@@ -208,85 +208,100 @@ class DualPredictionSystem:
             return self._get_fallback_backup_predictions(survey_data, top_k)
     
     def _get_fallback_backup_predictions(self, survey_data: Dict[str, Any], top_k: int) -> List[Dict[str, Any]]:
-        """Generate fallback predictions when backup model is unavailable."""
+        """Generate fallback predictions using ONLY REAL DATABASE PROGRAMS."""
         
-        # Simple rule-based predictions based on interests
-        programs = [
-            {'name': 'Computer Science', 'school': 'Sofia University', 'interests': ['math', 'technology']},
-            {'name': 'Engineering', 'school': 'Technical University', 'interests': ['math', 'science']},
-            {'name': 'Business', 'school': 'Economics University', 'interests': ['management', 'finance']},
-            {'name': 'Medicine', 'school': 'Medical University', 'interests': ['science', 'helping']},
-            {'name': 'Art & Design', 'school': 'Art Academy', 'interests': ['creativity', 'art']},
-            {'name': 'Psychology', 'school': 'Sofia University', 'interests': ['social', 'helping']},
-            {'name': 'Mathematics', 'school': 'Sofia University', 'interests': ['math', 'logic']},
-            {'name': 'Physics', 'school': 'Sofia University', 'interests': ['science', 'research']},
-        ]
-        
-        # Calculate simple scores based on survey data
-        scored_programs = []
-        
-        for i, program in enumerate(programs):
-            score = 0.3  # Base score
+        try:
+            # Get all programs from database with their schools
+            from app.models import Program, School
+            all_programs = Program.query.join(School).all()
             
-            # Add interest-based scoring
-            math_interest = survey_data.get('math_interest', 5)
-            science_interest = survey_data.get('science_interest', 5)
-            art_interest = survey_data.get('art_interest', 5)
+            if not all_programs:
+                return []
             
-            if 'math' in program['interests'] and math_interest > 6:
-                score += 0.2
-            if 'science' in program['interests'] and science_interest > 6:
-                score += 0.2
-            if 'art' in program['interests'] and art_interest > 6:
-                score += 0.2
+            # Calculate simple scores based on survey data
+            scored_programs = []
             
-            # Add some randomness
-            score += np.random.uniform(0, 0.3)
-            score = min(score, 0.95)  # Cap at 95%
+            for program in all_programs:
+                score = 0.3  # Base score
+                reasons = []
+                
+                # Add interest-based scoring based on actual program name
+                math_interest = survey_data.get('math_interest', 5)
+                science_interest = survey_data.get('science_interest', 5)
+                art_interest = survey_data.get('art_interest', 5)
+                
+                program_name_lower = program.name.lower()
+                
+                if 'computer' in program_name_lower or 'science' in program_name_lower:
+                    if math_interest > 6:
+                        score += 0.2
+                        reasons.append("Mathematical aptitude")
+                
+                if 'engineering' in program_name_lower:
+                    if science_interest > 6:
+                        score += 0.2
+                        reasons.append("Science background")
+                
+                if 'communication' in program_name_lower or 'mass' in program_name_lower:
+                    if art_interest > 6:
+                        score += 0.2
+                        reasons.append("Creative talents")
+                
+                # Add some randomness
+                score += np.random.uniform(0, 0.3)
+                score = min(score, 0.95)  # Cap at 95%
+                
+                if not reasons:
+                    reasons.append("Statistical correlation based on database")
+                
+                scored_programs.append({
+                    'program_id': program.id,  # REAL database ID
+                    'program_name': program.name,  # REAL database program name
+                    'school_name': program.school.name,  # REAL database school name
+                    'confidence': score,
+                    'match_score': score,
+                    'rank': 0,  # Will be set after sorting
+                    'method': 'rule_based_fallback',
+                    'match_reasons': reasons
+                })
             
-            scored_programs.append({
-                'program_id': i + 1,
-                'program_name': program['name'],
-                'school_name': program['school'],
-                'confidence': score,
-                'match_score': score,
-                'rank': 0,  # Will be set after sorting
-                'method': 'rule_based_fallback',
-                'match_reasons': [f"Matches your {', '.join(program['interests'])} interests"]
-            })
-        
-        # Sort by score and assign ranks
-        scored_programs.sort(key=lambda x: x['confidence'], reverse=True)
-        for i, prog in enumerate(scored_programs[:top_k]):
-            prog['rank'] = i + 1
-        
-        return scored_programs[:top_k]
+            # Sort by score and assign ranks
+            scored_programs.sort(key=lambda x: x['confidence'], reverse=True)
+            for i, prog in enumerate(scored_programs[:top_k]):
+                prog['rank'] = i + 1
+            
+            return scored_programs[:top_k]
+            
+        except Exception as e:
+            self.logger.error(f"Error in fallback backup predictions: {e}")
+            return []
     
     def _get_program_name_by_index(self, idx: int) -> str:
-        """Get program name by index for backup predictions."""
-        program_names = [
-            'Computer Science', 'Engineering', 'Business Administration',
-            'Medicine', 'Psychology', 'Art & Design', 'Mathematics',
-            'Physics', 'Law', 'Architecture'
-        ]
-        
-        if idx < len(program_names):
-            return program_names[idx]
-        else:
+        """Get program name by index using REAL DATABASE PROGRAMS."""
+        try:
+            from app.models import Program, School
+            programs = Program.query.join(School).all()
+            
+            if programs and idx < len(programs):
+                return programs[idx].name
+            else:
+                return f"Database Program {idx + 1}"
+        except Exception as e:
+            self.logger.error(f"Error getting program by index: {e}")
             return f"Program {idx + 1}"
     
     def _get_school_name_by_index(self, idx: int) -> str:
-        """Get school name by index for backup predictions."""
-        school_names = [
-            'Sofia University', 'Technical University', 'Economics University',
-            'Medical University', 'Sofia University', 'Art Academy',
-            'Sofia University', 'Sofia University', 'Sofia University',
-            'Architecture University'
-        ]
-        
-        if idx < len(school_names):
-            return school_names[idx]
-        else:
+        """Get school name by index using REAL DATABASE SCHOOLS."""
+        try:
+            from app.models import Program, School
+            programs = Program.query.join(School).all()
+            
+            if programs and idx < len(programs):
+                return programs[idx].school.name
+            else:
+                return 'Database University'
+        except Exception as e:
+            self.logger.error(f"Error getting school by index: {e}")
             return 'University'
     
     def _generate_statistical_reasons(self, survey_data: Dict[str, Any], program_idx: int) -> List[str]:

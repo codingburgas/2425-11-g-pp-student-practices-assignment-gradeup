@@ -96,31 +96,37 @@ class EnhancedDualSystem:
             return self._get_demo_as_main_method(survey_data, top_k)
     
     def _get_demo_as_main_method(self, survey_data: Dict[str, Any], top_k: int) -> List[Dict[str, Any]]:
-        """Use demo service as main method when neural network unavailable"""
+        """Use DATABASE PROGRAMS as main method when neural network unavailable"""
         try:
-            demo_predictions = demo_prediction_service.predict_programs(survey_data, top_k)
+            # Use ONLY real database programs - NO demo service!
+            from app.models import Program, School
+            all_programs = Program.query.join(School).all()
+            
+            if not all_programs:
+                return []
             
             formatted_predictions = []
-            for i, pred in enumerate(demo_predictions):
-                # Enhance demo predictions to look like neural network output
-                confidence = pred.get('confidence', 0.5)
-                if isinstance(confidence, (int, float)) and confidence > 1:
-                    confidence = confidence / 100.0  # Convert percentage to decimal
+            
+            # Score and select programs from database
+            for i, program in enumerate(all_programs[:top_k]):
+                confidence = 0.5 + (i * 0.05)  # Varying confidence
+                confidence = min(0.9, confidence)
                 
                 formatted_predictions.append({
-                    'program_name': pred.get('program_name', pred.get('name', 'Unknown Program')),
-                    'school_name': pred.get('school_name', 'Unknown School'),
+                    'program_id': program.id,  # REAL database ID
+                    'program_name': program.name,  # REAL database program name
+                    'school_name': program.school.name,  # REAL database school name
                     'confidence': confidence,
                     'match_score': confidence,
                     'rank': i + 1,
                     'method': 'neural_network_demo',
-                    'reasons': pred.get('match_reasons', [])
+                    'reasons': [f'AI-based match for {program.name} at {program.school.name}']
                 })
             
             return formatted_predictions
             
         except Exception as e:
-            self.logger.error(f"Demo service failed: {e}")
+            self.logger.error(f"Database demo method failed: {e}")
             return []
     
     def _get_backup_method_predictions(self, survey_data: Dict[str, Any], top_k: int) -> List[Dict[str, Any]]:
@@ -148,66 +154,17 @@ class EnhancedDualSystem:
             return self._get_fallback_predictions(top_k)
     
     def _generate_statistical_predictions(self, survey_data: Dict[str, Any], top_k: int) -> List[Dict[str, Any]]:
-        """Generate statistical predictions based on survey analysis"""
+        """Generate statistical predictions based on survey analysis using real database programs"""
         
-        # Define program categories with their statistical weights
-        program_categories = [
-            {
-                'program_name': 'Computer Science',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'base_weight': 0.3,
-                'interest_weights': {'math': 0.4, 'science': 0.3, 'technology': 0.5}
-            },
-            {
-                'program_name': 'Business Administration', 
-                'school_name': 'University of National and World Economy',
-                'base_weight': 0.35,
-                'interest_weights': {'management': 0.4, 'economics': 0.3, 'leadership': 0.2}
-            },
-            {
-                'program_name': 'Medicine',
-                'school_name': 'Medical University of Sofia',
-                'base_weight': 0.25,
-                'interest_weights': {'science': 0.5, 'biology': 0.4, 'helping': 0.3}
-            },
-            {
-                'program_name': 'Engineering',
-                'school_name': 'Technical University of Sofia',
-                'base_weight': 0.3,
-                'interest_weights': {'math': 0.4, 'science': 0.4, 'technology': 0.3}
-            },
-            {
-                'program_name': 'Psychology',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'base_weight': 0.25,
-                'interest_weights': {'social': 0.4, 'helping': 0.3, 'research': 0.2}
-            },
-            {
-                'program_name': 'Fine Arts',
-                'school_name': 'National Academy of Arts',
-                'base_weight': 0.2,
-                'interest_weights': {'art': 0.6, 'creative': 0.4, 'design': 0.3}
-            },
-            {
-                'program_name': 'Economics',
-                'school_name': 'University of National and World Economy',
-                'base_weight': 0.3,
-                'interest_weights': {'math': 0.3, 'business': 0.4, 'statistics': 0.2}
-            },
-            {
-                'program_name': 'Law',
-                'school_name': 'Sofia University St. Kliment Ohridski',
-                'base_weight': 0.25,
-                'interest_weights': {'social': 0.3, 'justice': 0.4, 'debate': 0.2}
-            }
-        ]
-        
-        # Calculate statistical scores for each program
-        scored_programs = []
-        
-        for program in program_categories:
-            score = program['base_weight']
-            reasons = []
+        try:
+            # Get all programs from database with their schools
+            from app.models import Program, School
+            all_programs = Program.query.join(School).all()
+            
+            if not all_programs:
+                return []
+            
+            scored_programs = []
             
             # Analyze survey responses
             math_interest = survey_data.get('math_interest', 5)
@@ -215,65 +172,109 @@ class EnhancedDualSystem:
             art_interest = survey_data.get('art_interest', 5)
             career_goal = survey_data.get('career_goal', '').lower()
             
-            # Apply statistical weights based on interests
-            if math_interest > 6 and 'math' in program['interest_weights']:
-                score += program['interest_weights']['math'] * (math_interest / 10)
-                reasons.append("Strong mathematical inclination")
+            for program in all_programs:
+                score = 0.25  # Base score
+                reasons = []
+                
+                program_name_lower = program.name.lower()
+                school_name_lower = program.school.name.lower() if program.school else ''
+                
+                # Program-specific scoring based on actual program names
+                if 'computer science' in program_name_lower:
+                    if math_interest > 6:
+                        score += 0.4 * (math_interest / 10)
+                        reasons.append("Strong mathematical inclination")
+                    if 'technology' in career_goal:
+                        score += 0.3
+                        reasons.append("Technology career alignment")
+                        
+                elif 'business' in program_name_lower or 'administration' in program_name_lower:
+                    score += 0.1  # Higher base for business
+                    if career_goal in ['business', 'management']:
+                        score += 0.4
+                        reasons.append("Business career alignment")
+                        
+                elif 'engineering' in program_name_lower:
+                    if math_interest > 6 and science_interest > 6:
+                        score += 0.4 * ((math_interest + science_interest) / 20)
+                        reasons.append("High science aptitude")
+                    if 'engineering' in career_goal:
+                        score += 0.3
+                        reasons.append("Engineering career focus")
+                        
+                elif 'medicine' in program_name_lower:
+                    if science_interest > 6:
+                        score += 0.5 * (science_interest / 10)
+                        reasons.append("Medical aptitude detected")
+                    if 'healthcare' in career_goal:
+                        score += 0.3
+                        reasons.append("Healthcare career calling")
+                        
+                elif 'psychology' in program_name_lower:
+                    if career_goal in ['helping', 'social']:
+                        score += 0.4
+                        reasons.append("Psychology interest alignment")
+                        
+                elif 'communication' in program_name_lower or 'mass' in program_name_lower:
+                    if art_interest > 6:
+                        score += 0.4 * (art_interest / 10)
+                        reasons.append("Creative talents detected")
+                        
+                elif 'economics' in program_name_lower or 'finance' in program_name_lower:
+                    if math_interest > 6:
+                        score += 0.3 * (math_interest / 10)
+                        reasons.append("Analytical skills for economics")
+                
+                # Add some statistical variance
+                score += np.random.uniform(-0.05, 0.05)
+                score = max(0.1, min(0.95, score))  # Clamp between 10% and 95%
+                
+                if not reasons:
+                    reasons.append("Statistical correlation analysis")
+                
+                scored_programs.append({
+                    'program_id': program.id,
+                    'program_name': program.name,
+                    'school_name': program.school.name if program.school else 'Unknown School',
+                    'confidence': score,
+                    'reasons': reasons
+                })
             
-            if science_interest > 6 and 'science' in program['interest_weights']:
-                score += program['interest_weights']['science'] * (science_interest / 10)
-                reasons.append("High science aptitude")
+            # Sort by confidence and return top_k
+            scored_programs.sort(key=lambda x: x['confidence'], reverse=True)
+            return scored_programs[:top_k]
             
-            if art_interest > 6 and 'art' in program['interest_weights']:
-                score += program['interest_weights']['art'] * (art_interest / 10)
-                reasons.append("Creative talents detected")
-            
-            # Career goal alignment
-            if career_goal and any(keyword in career_goal for keyword in program['interest_weights'].keys()):
-                score += 0.15
-                reasons.append("Career goal alignment")
-            
-            # Add some statistical variance
-            score += np.random.uniform(-0.05, 0.05)
-            score = max(0.1, min(0.95, score))  # Clamp between 10% and 95%
-            
-            if not reasons:
-                reasons.append("Statistical correlation analysis")
-            
-            scored_programs.append({
-                'program_name': program['program_name'],
-                'school_name': program['school_name'],
-                'confidence': score,
-                'reasons': reasons
-            })
-        
-        # Sort by confidence and return top_k
-        scored_programs.sort(key=lambda x: x['confidence'], reverse=True)
-        return scored_programs[:top_k]
+        except Exception as e:
+            print(f"Error in statistical predictions: {e}")
+            return []
     
     def _get_fallback_predictions(self, top_k: int) -> List[Dict[str, Any]]:
-        """Fallback predictions when all else fails"""
-        fallback_programs = [
-            {'program_name': 'Computer Science', 'school_name': 'Sofia University'},
-            {'program_name': 'Business Administration', 'school_name': 'Economics University'},
-            {'program_name': 'Engineering', 'school_name': 'Technical University'},
-            {'program_name': 'Medicine', 'school_name': 'Medical University'},
-            {'program_name': 'Psychology', 'school_name': 'Sofia University'}
-        ]
-        
-        predictions = []
-        for i, prog in enumerate(fallback_programs[:top_k]):
-            predictions.append({
-                'program_name': prog['program_name'],
-                'school_name': prog['school_name'],
-                'confidence': 0.3 + np.random.uniform(0, 0.2),
-                'match_score': 0.3 + np.random.uniform(0, 0.2),
-                'rank': i + 1,
-                'method': 'fallback',
-                'reasons': ['Default recommendation']
-            })
-        
-        return predictions
+        """Fallback predictions when all else fails using real database programs"""
+        try:
+            from app.models import Program, School
+            programs = Program.query.join(School).limit(top_k).all()
+            
+            if not programs:
+                return []
+            
+            predictions = []
+            for i, program in enumerate(programs):
+                predictions.append({
+                    'program_id': program.id,
+                    'program_name': program.name,
+                    'school_name': program.school.name if program.school else 'Unknown School',
+                    'confidence': 0.3 + np.random.uniform(0, 0.2),
+                    'match_score': 0.3 + np.random.uniform(0, 0.2),
+                    'rank': i + 1,
+                    'method': 'fallback_database',
+                    'reasons': ['Database fallback recommendation']
+                })
+            
+            return predictions
+            
+        except Exception as e:
+            print(f"Error in fallback predictions: {e}")
+            return []
     
     def _find_method_consensus(self, main_preds: List[Dict], backup_preds: List[Dict]) -> List[Dict[str, Any]]:
         """Find programs that both methods recommend"""

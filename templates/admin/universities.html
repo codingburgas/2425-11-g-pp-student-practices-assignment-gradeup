@@ -20,7 +20,7 @@
                     <div class="admin-stats">
                         <span class="stat-badge">
                             <i class="fas fa-university"></i>
-                            {{ universities.total }} Universities
+                            {{ stats.total_universities }} Universities
                         </span>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                             <i class="fas fa-university"></i>
                         </div>
                         <div class="stat-info">
-                            <h4>10</h4>
+                            <h4>{{ stats.total_universities }}</h4>
                             <p>Total Universities</p>
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <div class="stat-info">
-                            <h4>8</h4>
+                            <h4>{{ stats.featured_universities }}</h4>
                             <p>Featured</p>
                         </div>
                     </div>
@@ -71,8 +71,8 @@
                             <i class="fas fa-globe"></i>
                         </div>
                         <div class="stat-info">
-                            <h4>3</h4>
-                            <p>Countries</p>
+                            <h4>{{ stats.countries_count }}</h4>
+                            <p>{{ 'Country' if stats.countries_count == 1 else 'Countries' }}</p>
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                             <i class="fas fa-graduation-cap"></i>
                         </div>
                         <div class="stat-info">
-                            <h4>50+</h4>
+                            <h4>{{ stats.total_programs }}</h4>
                             <p>Programs</p>
                         </div>
                     </div>
@@ -104,45 +104,49 @@
                     {% if universities.items %}
                     <div class="universities-grid">
                         {% for university in universities.items %}
-                        <div class="university-card">
-                            <div class="university-header">
-                                <div class="university-icon">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div class="university-info">
+                        <div class="university-item">
+                            <div class="uni-header">
+                                <div class="uni-rank">{{ loop.index }}</div>
+                                <div class="uni-info">
                                     <h4>{{ university.name }}</h4>
-                                    <p class="university-location">
+                                    <p>
                                         <i class="fas fa-map-marker-alt"></i>
                                         {{ university.location or 'Location not specified' }}
                                     </p>
                                 </div>
-                            </div>
-                            
-                            <div class="university-stats">
-                                <div class="stat-item">
-                                    <span class="stat-value">{{ university.programs.count() }}</span>
-                                    <span class="stat-label">Programs</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value">{{ university.favorites.count() }}</span>
-                                    <span class="stat-label">Favorites</span>
+                                <div class="uni-score">
+                                    <span class="score">{{ university.programs.count() }}</span>
+                                    <small>Programs</small>
                                 </div>
                             </div>
                             
                             {% if university.description %}
-                            <div class="university-description">
-                                <p>{{ university.description[:100] }}{% if university.description|length > 100 %}...{% endif %}</p>
+                            <div class="uni-description">
+                                {{ university.description[:150] }}{% if university.description|length > 150 %}...{% endif %}
                             </div>
                             {% endif %}
                             
-                            <div class="university-actions">
-                                <a href="{{ url_for('admin.university_detail', university_id=university.id) }}" class="university-action-btn primary">
+                            <div class="uni-tags">
+                                <span class="tag">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    Higher Education
+                                </span>
+                                {% if university.location %}
+                                <span class="tag">
+                                    <i class="fas fa-globe"></i>
+                                    {{ university.location.split(',')[-1].strip() if ',' in university.location else university.location }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="uni-actions">
+                                <a href="{{ url_for('admin.university_detail', university_id=university.id) }}" class="uni-link primary">
                                     <i class="fas fa-eye"></i>
-                                    View Details
+                                    <span>View Details</span>
                                 </a>
-                                <a href="{{ url_for('admin.edit_university', university_id=university.id) }}" class="university-action-btn secondary">
+                                <a href="{{ url_for('admin.edit_university', university_id=university.id) }}" class="uni-link secondary">
                                     <i class="fas fa-edit"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </a>
                             </div>
                         </div>
@@ -372,7 +376,7 @@
     gap: 1.5rem;
 }
 
-.university-card {
+.university-item {
     background: rgba(15, 15, 35, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(139, 92, 246, 0.3);
@@ -383,22 +387,22 @@
     animation: cardSlideIn 0.8s ease-out;
 }
 
-.university-card:hover {
+.university-item:hover {
     transform: translateY(-5px);
     border-color: var(--cosmic-purple);
     box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
 }
 
-.university-header {
+.uni-header {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.university-icon {
-    width: 60px;
-    height: 60px;
+.uni-rank {
+    width: 40px;
+    height: 40px;
     background: var(--cosmic-gradient);
     border-radius: 50%;
     display: flex;
@@ -410,11 +414,11 @@
     box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
-.university-info {
+.uni-info {
     flex: 1;
 }
 
-.university-info h4 {
+.uni-info h4 {
     color: var(--star-white);
     font-size: 1.3rem;
     font-weight: 600;
@@ -425,7 +429,7 @@
     background-clip: text;
 }
 
-.university-location {
+.uni-info p {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -434,28 +438,18 @@
     margin: 0;
 }
 
-.university-location i {
+.uni-info i {
     color: var(--cosmic-purple);
 }
 
-.university-stats {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: rgba(30, 30, 70, 0.5);
-    border-radius: 1rem;
-    border: 1px solid rgba(139, 92, 246, 0.2);
-}
-
-.university-stats .stat-item {
+.uni-score {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 }
 
-.stat-value {
+.score {
     color: var(--star-white);
     font-size: 1.5rem;
     font-weight: 700;
@@ -465,28 +459,48 @@
     background-clip: text;
 }
 
-.stat-label {
+.score small {
     color: rgba(248, 250, 252, 0.6);
     font-size: 0.8rem;
     margin-top: 0.25rem;
 }
 
-.university-description {
+.uni-description {
     margin-bottom: 1.5rem;
 }
 
-.university-description p {
+.uni-description p {
     color: rgba(248, 250, 252, 0.8);
     line-height: 1.6;
     margin: 0;
 }
 
-.university-actions {
+.uni-tags {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.tag {
+    background: rgba(30, 30, 70, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    color: var(--star-white);
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.tag i {
+    color: var(--cosmic-purple);
+}
+
+.uni-actions {
     display: flex;
     gap: 0.75rem;
 }
 
-.university-action-btn {
+.uni-link {
     flex: 1;
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
@@ -503,12 +517,12 @@
     border: 1px solid;
 }
 
-.university-action-btn.primary {
+.uni-link.primary {
     background: rgba(139, 92, 246, 0.2);
     border-color: rgba(139, 92, 246, 0.3);
 }
 
-.university-action-btn.primary:hover {
+.uni-link.primary:hover {
     background: rgba(139, 92, 246, 0.3);
     border-color: var(--cosmic-purple);
     color: var(--star-white);
@@ -516,12 +530,12 @@
     transform: translateY(-2px);
 }
 
-.university-action-btn.secondary {
+.uni-link.secondary {
     background: rgba(30, 30, 70, 0.5);
     border-color: rgba(248, 250, 252, 0.2);
 }
 
-.university-action-btn.secondary:hover {
+.uni-link.secondary:hover {
     background: rgba(248, 250, 252, 0.1);
     border-color: rgba(248, 250, 252, 0.3);
     color: var(--star-white);
@@ -596,17 +610,13 @@
         grid-template-columns: 1fr;
     }
     
-    .university-header {
+    .uni-header {
         text-align: center;
         flex-direction: column;
         align-items: center;
     }
     
-    .university-stats {
-        justify-content: center;
-    }
-    
-    .university-actions {
+    .uni-actions {
         flex-direction: column;
     }
 }
