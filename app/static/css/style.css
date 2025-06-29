@@ -4571,3 +4571,59 @@ html, body {
     gap: 0.2rem;
   }
 }
+
+/* --- HERO MOCKUP FIXES FOR MOBILE & DESKTOP CONSISTENCY --- */
+.hero-section {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.mockup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: none !important;
+  border: none !important;
+}
+
+.mockup-screen {
+  background: #181a2a !important;
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border-radius: 18px;
+  aspect-ratio: 10/13;
+  max-width: 340px;
+  min-width: 220px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 18px 12px 18px 12px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .mockup-container {
+    padding: 0 8vw;
+  }
+  .mockup-screen {
+    max-width: 320px;
+    min-width: 180px;
+    aspect-ratio: 10/13;
+    padding: 12px 6px 12px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mockup-container {
+    padding: 0 2vw;
+  }
+  .mockup-screen {
+    max-width: 260px;
+    min-width: 120px;
+    aspect-ratio: 10/13;
+    padding: 8px 2px 8px 2px;
+  }
+}
