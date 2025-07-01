@@ -1058,6 +1058,48 @@ function initPerformanceMonitoring() {
     }
 }
 
+// Fix horizontal overflow issues
+function initOverflowFixes() {
+    // Monitor and fix any elements that might cause horizontal overflow
+    function checkHorizontalOverflow() {
+        const body = document.body;
+        const html = document.documentElement;
+        
+        if (body.scrollWidth > window.innerWidth || html.scrollWidth > window.innerWidth) {
+            // Find elements that extend beyond viewport
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(element => {
+                const rect = element.getBoundingClientRect();
+                if (rect.right > window.innerWidth) {
+                    element.style.maxWidth = '100%';
+                    element.style.overflowX = 'hidden';
+                    element.style.boxSizing = 'border-box';
+                }
+            });
+        }
+    }
+    
+    // Run on load and resize
+    checkHorizontalOverflow();
+    window.addEventListener('resize', throttle(checkHorizontalOverflow, 250));
+    
+    // Prevent elements from being positioned too far right
+    function constrainElementPositions() {
+        const positionedElements = document.querySelectorAll('[style*="left"], [style*="right"], [style*="margin"]');
+        positionedElements.forEach(element => {
+            const rect = element.getBoundingClientRect();
+            if (rect.right > window.innerWidth) {
+                const overflow = rect.right - window.innerWidth;
+                const currentLeft = parseInt(element.style.left || 0);
+                element.style.left = Math.max(0, currentLeft - overflow - 10) + 'px';
+            }
+        });
+    }
+    
+    // Apply constraints periodically
+    setInterval(constrainElementPositions, 1000);
+}
+
 // Initialize all mobile optimizations
 function initMobileOptimizations() {
     initViewportFix();
@@ -1066,6 +1108,7 @@ function initMobileOptimizations() {
     initNetworkOptimization();
     initMobileFormEnhancements();
     initPerformanceMonitoring();
+    initOverflowFixes();
 }
 
 // Add CSS animations for touch ripple
