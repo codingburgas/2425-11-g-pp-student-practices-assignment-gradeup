@@ -32,14 +32,11 @@ body {
   overflow-x: hidden;
   line-height: 1.6;
   min-height: 100vh;
-  max-width: 100vw;
-  position: relative;
 }
 
 html {
   scroll-behavior: smooth;
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 .cosmic-background {
@@ -493,8 +490,6 @@ html {
   z-index: 1;
   background: transparent;
   overflow-x: hidden;
-  max-width: 100vw;
-  box-sizing: border-box;
 }
 
 .home-container {
@@ -1937,9 +1932,6 @@ blockquote::before {
   .main-content {
     margin-left: 0;
     width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
   }
   
   .nav-links {
@@ -4771,9 +4763,6 @@ body,
   .main-content {
     margin-left: 0;
     width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-    box-sizing: border-box;
   }
   
   .nav-links {
@@ -5513,244 +5502,4 @@ body,
     white-space: nowrap !important;
     border: 0 !important;
   }
-}
-
-/* ===== HORIZONTAL OVERFLOW FIXES ===== */
-
-/* Ensure all containers respect viewport width */
-.container,
-.container-fluid,
-.row,
-.col,
-[class*="col-"] {
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-/* Fix for grid layouts */
-.universities-grid,
-.users-grid,
-.admin-dashboard-content,
-.dashboard-content {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-/* Ensure all cards and panels stay within bounds */
-.hero-glass-box,
-.university-item,
-.user-card,
-.admin-stat-card,
-.search-filter-card,
-.notification-container,
-.card,
-.modal-content {
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-/* Fix for form elements */
-.form-control,
-.cosmic-filter-input,
-.cosmic-search-input,
-.search-input,
-.auth-input,
-input,
-textarea,
-select {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Fix for navigation and sidebars */
-.sidebar,
-.top-navbar,
-.mobile-overlay {
-  max-width: 100vw;
-  box-sizing: border-box;
-}
-
-/* Ensure text doesn't break layout */
-.hero-title,
-.hero-description,
-.university-name,
-.user-name,
-.admin-title,
-h1, h2, h3, h4, h5, h6,
-p, span, div {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Fix for buttons and interactive elements */
-.btn,
-.cosmic-btn,
-.user-btn,
-.uni-link,
-button,
-[role="button"] {
-  max-width: 100%;
-  box-sizing: border-box;
-  word-wrap: break-word;
-}
-
-/* Tables responsive fix */
-.table-responsive {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.table {
-  width: 100%;
-  max-width: 100%;
-  table-layout: auto;
-}
-
-/* Images and media */
-img,
-video,
-iframe,
-embed,
-object {
-  max-width: 100%;
-  height: auto;
-  box-sizing: border-box;
-}
-
-/* Flex container fixes */
-.hero-actions,
-.uni-actions,
-.user-actions,
-.admin-actions,
-.nav-actions,
-.search-group,
-.filter-group {
-  flex-wrap: wrap;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Mobile-specific overflow fixes */
-@media (max-width: 768px) {
-  /* Ensure all elements are constrained on mobile */
-  *,
-  *::before,
-  *::after {
-    max-width: 100vw;
-    box-sizing: border-box;
-  }
-  
-  /* Special handling for fixed/absolute positioned elements */
-  .sidebar,
-  .mobile-overlay,
-  .top-navbar,
-  .notification-container {
-    max-width: 100vw !important;
-  }
-  
-  /* Ensure grids don't overflow */
-  .universities-grid,
-  .users-grid {
-    grid-template-columns: 1fr !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  
-  /* Container padding adjustments to prevent overflow */
-  .container-fluid {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    max-width: 100vw !important;
-  }
-  
-  /* Hero section specific fixes */
-  .hero-glass-box {
-    margin-left: 8px !important;
-    margin-right: 8px !important;
-    max-width: calc(100vw - 16px) !important;
-  }
-  
-  /* Text overflow fixes */
-  .hero-title,
-  .university-name,
-  .user-name {
-    font-size: clamp(1.2rem, 4vw, 2.5rem) !important;
-    line-height: 1.2 !important;
-  }
-}
-
-/* Extra small device fixes */
-@media (max-width: 480px) {
-  /* Even more aggressive constraints for very small screens */
-  .container-fluid {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-  }
-  
-  .hero-glass-box,
-  .university-item,
-  .user-card {
-    margin-left: 4px !important;
-    margin-right: 4px !important;
-    max-width: calc(100vw - 8px) !important;
-  }
-}
-
-/* Root level overflow prevention */
-html {
-  overflow-x: hidden !important;
-  max-width: 100vw !important;
-}
-
-body {
-  overflow-x: hidden !important;
-  max-width: 100vw !important;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-/* Final safety net for any remaining overflow */
-* {
-  max-width: 100%;
-}
-
-*:not(.sidebar):not(.mobile-overlay) {
-  max-width: 100vw;
-}
-
-/* Additional positioning fixes to prevent right-side overflow */
-.main-content > *,
-.hero-section > *,
-.container-fluid > *,
-.row > * {
-  position: relative;
-  max-width: 100%;
-}
-
-/* Prevent negative margins from causing overflow */
-@media (max-width: 768px) {
-  .hero-glass-box,
-  .card,
-  .university-item,
-  .user-card {
-    margin-left: max(0px, var(--original-margin-left, 0px)) !important;
-    margin-right: max(0px, var(--original-margin-right, 0px)) !important;
-  }
-}
-
-/* Fix for absolutely positioned elements */
-.modal,
-.dropdown-menu,
-.tooltip,
-.popover {
-  max-width: calc(100vw - 20px) !important;
-  left: max(10px, var(--original-left, 10px)) !important;
-  right: max(10px, var(--original-right, 10px)) !important;
 }
