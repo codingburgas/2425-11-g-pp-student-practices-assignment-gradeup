@@ -5503,3 +5503,93 @@ body,
     border: 0 !important;
   }
 }
+
+/* ===== DESKTOP FIXES FOR CONTENT CENTERING ===== */
+
+/* Basic Desktop Layout Fixes */
+@media (min-width: 1025px) {
+  /* Prevent horizontal overflow on desktop */
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Center all main containers */
+  .container-fluid {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  
+  /* Ensure main content doesn't overflow */
+  .main-content {
+    max-width: calc(100vw - var(--sidebar-width)) !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Center hero content */
+  .hero-glass-box {
+    max-width: 900px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Center grid layouts */
+  .universities-grid,
+  .users-grid {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+  }
+  
+  /* Center search and filter sections */
+  .search-section .container-fluid,
+  .filters-container {
+    max-width: 1000px !important;
+  }
+  
+  /* Better navigation centering */
+  .top-navbar-content {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 0 2rem !important;
+  }
+  
+  /* Center stats section */
+  .stats-section .container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Admin content centering */
+  .admin-dashboard-content,
+  .dashboard-content {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 0 2rem !important;
+  }
+}
+
+/* Large Desktop (1400px+) */
+@media (min-width: 1400px) {
+  .container-fluid {
+    max-width: 1600px !important;
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+  
+  .hero-glass-box {
+    max-width: 1000px !important;
+  }
+  
+  .universities-grid,
+  .users-grid {
+    max-width: 1400px !important;
+  }
+  
+  .top-navbar-content {
+    max-width: 1600px !important;
+    padding: 0 3rem !important;
+  }
+}
