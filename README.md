@@ -30,21 +30,21 @@ A web application that helps students find the perfect educational institution b
 <table>
   <tr>
     <td align="center">
-      <img src="documentation/assets/home_page.png" alt="Home Screen" width="600"/>
+      <img src="docs/documentation/assets/home_page.png" alt="Home Screen" width="600"/>
       <br/>Home Screen
     </td>
     <td align="center">
-      <img src="documentation/assets/welcome_page.png" alt="Welcome Screen" width="600"/>
+      <img src="docs/documentation/assets/welcome_page.png" alt="Welcome Screen" width="600"/>
       <br/>Welcome Back Page
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="documentation/assets/dashboard.png" alt="Dashboard" width="600"/>
+      <img src="docs/documentation/assets/dashboard.png" alt="Dashboard" width="600"/>
       <br/>Dashboard
     </td>
     <td align="center">
-      <img src="documentation/assets/survey.png" alt="Survey" width="600"/>
+      <img src="docs/documentation/assets/survey.png" alt="Survey" width="600"/>
       <br/>Survey
     </td>
   </tr>
